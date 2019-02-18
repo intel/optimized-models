@@ -34,7 +34,7 @@ copy ILSVRC2012_val_00033000.JPEG to ILSVRC2012_val_00033999.JPEG totally 1000 i
 
 7. run calibration
 if you just build pytorch from source, please use export PYTHONPATH to let the tools know the location of caffe2 build folder
-export LD_PRELOAD=the/location/of/libiomp5.so
+export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
 export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is the cores of one socket of your cpu
 
 ./run_caffe2.py -m $modelname -p calibration_folder  -v label_file  -b "batchsize"  -r calibration -o . --onnx
