@@ -1,3 +1,4 @@
+"""Generate quantized graph based on original fp32 graph"""
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -18,46 +19,48 @@
 import argparse
 import os
 import logging
+#import ctypes
+import pickle
 from mxnet import nd
 import mxnet as mx
-from mxnet.contrib.quantization import *
-from mxnet.base import SymbolHandle, check_call, _LIB, mx_uint, c_str_array
-import ctypes
-import pickle
+from mxnet.contrib.quantization import quantize_model
 
-def load_model(symbol_file, param_file, logger=None):
+
+
+def load_model(symbol_file, param_file, mlogger=None):
+    """load existing symbol model"""
     cur_path = os.path.dirname(os.path.realpath(__file__))
     symbol_file_path = os.path.join(cur_path, symbol_file)
-    if logger is not None:
-        logger.info('Loading symbol from file %s' % symbol_file_path)
+    if mlogger is not None:
+        mlogger.info('Loading symbol from file %s' % symbol_file_path)
     symbol = mx.sym.load(symbol_file_path)
 
     param_file_path = os.path.join(cur_path, param_file)
-    if logger is not None:
-        logger.info('Loading params from file %s' % param_file_path)
+    if mlogger is not None:
+        mlogger.info('Loading params from file %s' % param_file_path)
     save_dict = nd.load(param_file_path)
-    arg_params = {}
-    aux_params = {}
+    marg_params = {}
+    maux_params = {}
     for k, v in save_dict.items():
         tp, name = k.split(':', 1)
         if tp == 'arg':
-            arg_params[name] = v
+            marg_params[name] = v
         if tp == 'aux':
-            aux_params[name] = v
-    return symbol, arg_params, aux_params
+            maux_params[name] = v
+    return symbol, marg_params, maux_params
 
 
-def save_symbol(fname, sym, logger=None):
-    if logger is not None:
-        logger.info('Saving symbol into file at %s' % fname)
-    sym.save(fname)
+def save_symbol(fname, symbol, slogger=None):
+    if slogger is not None:
+        slogger.info('Saving symbol into file at %s' % fname)
+    symbol.save(fname)
 
 
-def save_params(fname, arg_params, aux_params, logger=None):
-    if logger is not None:
-        logger.info('Saving params into file at %s' % fname)
-    save_dict = {('arg:%s' % k): v.as_in_context(cpu()) for k, v in arg_params.items()}
-    save_dict.update({('aux:%s' % k): v.as_in_context(cpu()) for k, v in aux_params.items()})
+def save_params(fname, parg_params, paux_params, plogger=None):
+    if plogger is not None:
+        plogger.info('Saving params into file at %s' % fname)
+    save_dict = {('arg:%s' % k): v.as_in_context(mx.cpu()) for k, v in parg_params.items()}
+    save_dict.update({('aux:%s' % k): v.as_in_context(mx.cpu()) for k, v in paux_params.items()})
     mx.nd.save(fname, save_dict)
 
 def load_object(filename):
@@ -108,13 +111,13 @@ if __name__ == '__main__':
 
     # get batch size
     batch_size = args.batch_size
-    logger.info('batch size = %d for calibration' % batch_size)
+    logger.info('batch size = %d for calibration', batch_size)
     # get number of batches for calibration
     num_calib_batches = args.num_calib_batches
 
     calib_mode = args.calib_mode
     if calib_mode != 'none':
-        logger.info('number of batches = %d for calibration' % num_calib_batches)
+        logger.info('number of batches = %d for calibration', num_calib_batches)
 
     val_csr = load_object('val_csr.pkl')
     val_dns = load_object('val_dns.pkl')
@@ -122,18 +125,19 @@ if __name__ == '__main__':
 
     # creating data iterator
     data = mx.io.NDArrayIter({'csr_data': val_csr, 'dns_data': val_dns},
-                                  {'softmax_label': val_label}, batch_size,
-                                  shuffle=True, last_batch_handle='discard')
+                             {'softmax_label': val_label}, batch_size,
+                             shuffle=True, last_batch_handle='discard')
     # loading model
     sym, arg_params, aux_params = load_model('checkpoint-symbol.json', 'checkpoint-0000.params', logger)
     calib_layer = lambda name: (name.find('fullyconnected') != -1 or name.find('FullyConnected') != -1)
     cqsym, qarg_params, aux_params = quantize_model(sym=sym, arg_params=arg_params, aux_params=aux_params,
-                                                    data_names=['csr_data', 'dns_data'], label_names=['softmax_label', ],
-                                                    ctx=ctx, 
+                                                    data_names=['csr_data', 'dns_data'],
+                                                    label_names=['softmax_label', ],
+                                                    ctx=ctx,
                                                     calib_mode=calib_mode, calib_data=data,
-                                                    num_calib_examples=num_calib_batches * batch_size,
+                                                    num_calib_examples=num_calib_batches*batch_size,
                                                     calib_layer=calib_layer, quantized_dtype=args.quantized_dtype,
-                                                    calib_quantize_op = True,
+                                                    calib_quantize_op=True,
                                                     logger=logger)
     if calib_mode == 'entropy':
         suffix = '-quantized-%dbatches-entropy' % num_calib_batches

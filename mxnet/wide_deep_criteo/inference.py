@@ -1,3 +1,4 @@
+"""inference script to support accuracy and performance benchmark"""
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,46 +15,44 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-#python inference.py  --symbol-file=WD-quantized-162batches-naive-symbol.json --param-file=WD-quantized-0000.params
+
 import argparse
 import logging
-import os
+import ctypes
 import time
-import mxnet as mx
-from mxnet import nd
-from mxnet.contrib.quantization import *
-from data import *
+import os
 import pickle
+import mxnet as mx
+
+from mxnet import nd
 from mxnet.base import check_call, _LIB
-def download_dataset(dataset_url, dataset_dir, logger=None):
-    if logger is not None:
-        logger.info('Downloading dataset for inference from %s to %s' % (dataset_url, dataset_dir))
-    mx.test_utils.download(dataset_url, dataset_dir)
 
 
-def load_model(symbol_file, param_file, logger=None):
+
+def load_model(_symbol_file, _param_file, _logger=None):
+    """load existing symbol model"""
     cur_path = os.path.dirname(os.path.realpath(__file__))
-    symbol_file_path = os.path.join(cur_path, symbol_file)
-    if logger is not None:
-        logger.info('Loading symbol from file %s' % symbol_file_path)
+    symbol_file_path = os.path.join(cur_path, _symbol_file)
+    if _logger is not None:
+        _logger.info('Loading symbol from file %s' % symbol_file_path)
     symbol = mx.sym.load(symbol_file_path)
 
-    param_file_path = os.path.join(cur_path, param_file)
-    if logger is not None:
-        logger.info('Loading params from file %s' % param_file_path)
+    param_file_path = os.path.join(cur_path, _param_file)
+    if _logger is not None:
+        _logger.info('Loading params from file %s' % param_file_path)
     save_dict = nd.load(param_file_path)
-    arg_params = {}
-    aux_params = {}
+    _arg_params = {}
+    _aux_params = {}
     for k, v in save_dict.items():
         tp, name = k.split(':', 1)
         if tp == 'arg':
-            arg_params[name] = v
+            _arg_params[name] = v
         if tp == 'aux':
-            aux_params[name] = v
-    return symbol, arg_params, aux_params
-
+            _aux_params[name] = v
+    return symbol, _arg_params, _aux_params
 
 def advance_data_iter(data_iter, n):
+    """use to warm up data for performance benchmark"""
     assert n >= 0
     if n == 0:
         return data_iter
@@ -66,20 +65,6 @@ def advance_data_iter(data_iter, n):
                 return data_iter
         except StopIteration:
             has_next_batch = False
-
-
-
-# Related to feature engineering, please see preprocess in data.py
-#CRITEO = {
-#    'train': 'train.csv',
-#    'test': 'eval.csv',
-#    'num_linear_features': 26000,
-#    'num_embed_features': 26,
-#    'num_cont_features': 13,
-#    'embed_input_dims': 1000,
-#    'hidden_units': [8, 50, 100],
-#}
-
 
 CRITEO = {
     'train': 'train.csv',
@@ -113,7 +98,7 @@ if __name__ == '__main__':
     logger = logging.getLogger('logger')
     logger.setLevel(logging.INFO)
 
-    if args.accuracy == True:
+    if args.accuracy is True:
         logger.info('Accuracy Mode')
     else:
         logger.info('Performance Mode')
@@ -123,11 +108,11 @@ if __name__ == '__main__':
 
 
     batch_size = args.batch_size
-    logger.info('batch size = %d for inference' % batch_size)
+    logger.info('batch size = %d for inference', batch_size)
     label_name = args.label_name
-    logger.info('label_name = %s' % label_name)
+    logger.info('label_name = %s', label_name)
 
-    if args.accuracy == False:
+    if args.accuracy is False:
         val_csr = load_object('train_csr.pkl')
         val_dns = load_object('train_dns.pkl')
         val_label = load_object('train_label.pkl')
@@ -138,8 +123,8 @@ if __name__ == '__main__':
 
     # creating data iterator
     data = mx.io.NDArrayIter({'csr_data': val_csr, 'dns_data': val_dns},
-                                  {'softmax_label': val_label}, batch_size,
-                                  shuffle=False, last_batch_handle='discard')
+                             {'softmax_label': val_label}, batch_size,
+                             shuffle=False, last_batch_handle='discard')
 
     # loading model
     sym, arg_params, aux_params = load_model(symbol_file, param_file, logger)
@@ -147,7 +132,7 @@ if __name__ == '__main__':
 
     # make sure that fp32 inference works on the same images as calibrated quantized model
 
-    logger.info('Running model %s for inference' % symbol_file)
+    logger.info('Running model %s for inference', symbol_file)
 
     acc_m = mx.metric.create('acc')
     mod = mx.mod.Module(symbol=sym, context=ctx, data_names=['csr_data', 'dns_data'], label_names=[label_name, ])
@@ -161,8 +146,8 @@ if __name__ == '__main__':
     nbatch = 0
     for batch in data:
         if nbatch < args.num_batches:
-            batch_data.append(batch) 
-            nbatch += 1 
+            batch_data.append(batch)
+            nbatch += 1
         else:
             break
     #for data warmup
@@ -172,7 +157,7 @@ if __name__ == '__main__':
         if i < wi:
             mod.forward(batch, is_train=False)
             i += 1
-        else:        
+        else:
             break
     data.hard_reset()
     mx.nd.waitall()
@@ -186,7 +171,7 @@ if __name__ == '__main__':
     for batch in batch_data:
         nbatch += 1
         mod.forward(batch, is_train=False)
-        if args.accuracy == True:
+        if args.accuracy is True:
             for output in mod.get_outputs():
                 output.wait_to_read()
             mod.update_metric(acc_m, batch.label)
@@ -194,9 +179,9 @@ if __name__ == '__main__':
             mx.nd.waitall()
     speed = nbatch * batch_size / (time.time() - tic)
     logger.info("Run [%d] Batchs \tSpeed: %.2f samples/sec", nbatch, speed)
-    if args.accuracy == True:
+    if args.accuracy is True:
         logger.info(acc_m.get())
-    if "DO_WIDE_DEEP_PROFILING" in os.environ :
+    if "DO_WIDE_DEEP_PROFILING" in os.environ:
         print("wide_deep profiling end !")
         mx.profiler.set_state('stop')
         profiler_info = mx.profiler.dumps()
