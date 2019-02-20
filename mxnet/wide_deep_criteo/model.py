@@ -1,3 +1,4 @@
+"""Wide and Deep Model Definition"""
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -17,9 +18,9 @@
 
 import mxnet as mx
 
-
-def wide_deep_model(num_linear_features, num_embed_features, num_cont_features, 
+def wide_deep_model(num_linear_features, num_embed_features, num_cont_features,
                     input_dims, hidden_units):
+    """wide and deep model definition and generation"""
     # wide model
     csr_data = mx.symbol.Variable("csr_data", stype='csr')
     label = mx.symbol.Variable("softmax_label")
@@ -45,7 +46,7 @@ def wide_deep_model(num_linear_features, num_embed_features, num_cont_features,
     for i, embed in enumerate(embeds):
         embed_weight = mx.symbol.Variable('embed_%d_weight' % i, stype='row_sparse')
         features.append(mx.symbol.sparse.Embedding(data=embed, weight=embed_weight,
-                        input_dim=input_dims, output_dim=hidden_units[0], sparse_grad=True))
+                                                   input_dim=input_dims, output_dim=hidden_units[0], sparse_grad=True))
 
     hidden = mx.symbol.concat(*features, dim=1)
     hidden = mx.symbol.FullyConnected(data=hidden, num_hidden=hidden_units[1])

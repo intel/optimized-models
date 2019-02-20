@@ -1,3 +1,4 @@
+"""WnD training script"""
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,13 +16,14 @@
 # specific language governing permissions and limitations
 # under the License.
 
-import mxnet as mx
-from mxnet.test_utils import *
-from data import *
-from model import *
 import argparse
 import os
 import pickle
+import mxnet as mx
+#from mxnet.test_utils import *
+from data import get_uci_criteo
+from model import wide_deep_model
+
 parser = argparse.ArgumentParser(description="Run sparse wide and deep classification ",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument('--num-epoch', type=int, default=1,
@@ -69,7 +71,7 @@ if __name__ == '__main__':
     lr = args.lr
     ctx = mx.gpu(0) if args.cuda else mx.cpu()
 
-    # dataset    
+    # dataset
     data_dir = os.path.join(os.getcwd(), args.data_dir)
     train_data = os.path.join(data_dir, CRITEO['train'])
     val_data = os.path.join(data_dir, CRITEO['test'])
@@ -125,7 +127,7 @@ if __name__ == '__main__':
             speedometer(speedometer_param)
         # evaluate metric on validation dataset
         score = mod.score(eval_data, ['acc'])
-        logging.info('epoch %d, accuracy = %s' % (epoch, score[0][1]))
+        logging.info('epoch %d, accuracy = %s', epoch, score[0][1])
 
         mod.save_checkpoint("checkpoint", epoch, save_optimizer_states=False)
         # reset the iterator for next pass of data
