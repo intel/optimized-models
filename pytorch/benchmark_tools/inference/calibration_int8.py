@@ -1,26 +1,26 @@
+"""
+module to run calibration
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from random import randint
-from common import common_caffe2 as cc2
-
-import os
 import sys
-import timeit
+import os
 import logging
-import threading
-import itertools
 import numpy as np
-import inference.models as m
-import copy
-import onnx
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core, workspace
 from caffe2.python import transformations as tf
+import inference.models as m
+from common import common_caffe2 as cc2
 
 def Calibration(args, extra_args):
+    """
+    function to run calibration
+    """
+
     if not m.IsSupported(args.model):
         logging.error("Not supported model: {}".format(args.model))
         m.ShowModels()
@@ -45,10 +45,10 @@ def Calibration(args, extra_args):
 
     model_info = m.GetModelInfo(args.model)
     logging.warning("The inference inputs of {0} model:\n{1}"
-        .format(
-        args.model,
-        {str(k): str(v) for k, v in model_info.items()}
-    ))
+                    .format(
+                        args.model,
+                        {str(k): str(v) for k, v in model_info.items()}
+                        ))
 
     crop_size = int(model_info["crop_size"])
     if args.crop_size:
@@ -73,16 +73,16 @@ def Calibration(args, extra_args):
             mean[1, :, :] = int(mean_tmp[1])  # 117
             mean[2, :, :] = int(mean_tmp[2])  # 124
 
-    scale=[1]
+    scale = [1]
     if str(model_info["scale"]) != '':
         scale = (model_info["scale"]).split(' ')
-    rescale_size=256
+    rescale_size = 256
     if str(model_info["rescale_size"]) != '':
         rescale_size = int(model_info["rescale_size"])
-    color_format="BGR"
+    color_format = "BGR"
     if str(model_info["color_format"]) != '':
         color_format = model_info["color_format"]
-    if args.onnx_model :
+    if args.onnx_model:
         init_def, predict_def = cc2.OnnxToCaffe2(model_info["onnx_model"])
     else:
         with open(model_info["init_net"]) as i:
@@ -129,7 +129,7 @@ def Calibration(args, extra_args):
     def data_gen():
         for raw in images:
             imgs, _ = cc2.ImageProc.PreprocessImages(
-                    raw, crop_size,rescale_size, mean, scale, 1, need_normalize, color_format)
+                raw, crop_size, rescale_size, mean, scale, 1, need_normalize, color_format)
             #imgs, _ = cc2.ImageProc.PreprocessImagesByThreading(
             #        raw, crop_size,rescale_size, mean, scale, 1)
             yield imgs
@@ -143,7 +143,7 @@ def Calibration(args, extra_args):
     net.Proto().CopyFrom(predict_def)
     if args.device.lower() == 'ideep' and not args.noptimize:
         logging.warning('Optimizing module {} ....................'
-                .format(model_info["model_name"]))
+                        .format(model_info["model_name"]))
         tf.optimizeForMKLDNN(net)
     predict_def = net.Proto()
 
@@ -163,8 +163,8 @@ def Calibration(args, extra_args):
             images += images
         algorithm = KLCalib(kl_iter_num_for_range)
 
-    i=0
-    length=len(images)
+    i = 0
+    length = len(images)
     calib = Calibrator(algorithm, device_opts)
     for data in data_gen():
         i += 1
@@ -175,7 +175,7 @@ def Calibration(args, extra_args):
     predict_quantized, init_quantized = calib.DepositQuantizedModule(workspace, predict_def)
 
     cc2.SaveModel(args.output_file + '/init_net_int8.pb', init_quantized,
-            args.output_file + '/predict_net_int8.pb', predict_quantized)
+                  args.output_file + '/predict_net_int8.pb', predict_quantized)
     cc2.SaveModelPtxt(args.output_file + '/predict_net_int8.pbtxt', predict_quantized)
     cc2.SaveModelPtxt(args.output_file + '/init_net_int8.pbtxt', init_quantized)
 

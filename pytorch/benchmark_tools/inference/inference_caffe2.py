@@ -1,32 +1,32 @@
+"""main func to run inference"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
 from random import randint
-from common import common_caffe2 as cc2
 
 import os
 import sys
 import timeit
 import logging
-import threading
-import itertools
-import numpy as np
-import inference.models as m
 import copy
-import onnx
+import numpy as np
+
 from caffe2.proto import caffe2_pb2
-from caffe2.python import core, model_helper
+from caffe2.python import core
 from caffe2.python import workspace as ws
 from caffe2.python import transformations as tf
 
+import inference.models as m
+from common import common_caffe2 as cc2
+
 def PrintNetDef(model, net="predict_net"):
+    """print weight or predict"""
     if net not in ["predict_net", "init_net", "predict_net_int8", "onnx_model"]:
         logging.error("Unsupported net def file {}".format(net))
         return
-    from caffe2.proto import caffe2_pb2
-    dummy=0
+    dummy = 0
     model_info = m.GetModelInfo(model)
     with open(model_info[net]) as p:
         if model_info["model_type"] == "prototext" or model_info[net].split('.')[-1] == "pbtxt":
@@ -66,6 +66,7 @@ def PrintNetDef(model, net="predict_net"):
 
 
 def Run(args, extra_args):
+    """main func of run inference"""
     if not m.IsSupported(args.model):
         logging.error("Not supported model: {}".format(args.model))
         m.ShowModels()
@@ -91,7 +92,7 @@ def Run(args, extra_args):
     else:
         logging.warning("No validation or label file!")
     if args.annotations:
-        apath=args.annotations
+        apath = args.annotations
     elif args.model == 'faster-rcnn' or args.model == 'ssd':
         logging.error("currently only support fasterrcnn and ssd for voc dataset, so will just collect performance")
     iterations = args.iterations if args.iterations else sys.maxsize
@@ -109,10 +110,10 @@ def Run(args, extra_args):
                     .format(vars(args)))
     model_info = m.GetModelInfo(args.model)
     logging.warning("The inference inputs of {0} model:\n{1}"
-        .format(
-        args.model,
-        {str(k): str(v) for k, v in model_info.items()}
-    ))
+                    .format(
+                        args.model,
+                        {str(k): str(v) for k, v in model_info.items()}
+                    ))
     crop_size = int(model_info["crop_size"])
     if args.crop_size:
         crop_size = args.crop_size
@@ -135,18 +136,18 @@ def Run(args, extra_args):
             mean[0, :, :] = int(mean_tmp[0])  # 104
             mean[1, :, :] = int(mean_tmp[1])  # 117
             mean[2, :, :] = int(mean_tmp[2])  # 124
-    scale=[1]
+    scale = [1]
     if str(model_info["scale"]) != '':
         scale = (model_info["scale"]).split(' ')
-    rescale_size=256
+    rescale_size = 256
     if str(model_info["rescale_size"]) != '':
         rescale_size = int(model_info["rescale_size"])
-    color_format="BGR"
+    color_format = "BGR"
     if str(model_info["color_format"]) != '':
         color_format = model_info["color_format"]
 
     model_start_time = timeit.default_timer()
-    if args.onnx_model :
+    if args.onnx_model:
         init_def, predict_def = cc2.OnnxToCaffe2(model_info["onnx_model"])
     else:
         with open(model_info["init_net"]) as i:
@@ -157,9 +158,9 @@ def Run(args, extra_args):
                 init_def = caffe2_pb2.NetDef()
                 init_def.ParseFromString(i.read())
         if args.int8_model or args.int8_cosim:
-            predict_file=model_info["predict_net_int8"]
+            predict_file = model_info["predict_net_int8"]
         else:
-            predict_file=model_info["predict_net"]
+            predict_file = model_info["predict_net"]
         with open(predict_file) as p:
             if model_info["model_type"] == "prototext" or predict_file.split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
@@ -235,12 +236,12 @@ def Run(args, extra_args):
         ws.SwitchWorkspace(inf_ws_name, True)
         ws.FeedBlob(str(predict_def.op[0].input[0]), init_data, device_opts)
         ws.RunNetOnce(init_def)
-        
+
         net = core.Net(model_info["model_name"])
         net.Proto().CopyFrom(predict_def)
         tf.optimizeForMKLDNN(net)
         predict_def = net.Proto()
-        
+
         cosim_ws_name = "__fp32_ws__"
         ws.SwitchWorkspace(cosim_ws_name, True)
         ws.FeedBlob(str(cosim_predict_def.op[0].input[0]), init_data, device_opts)
@@ -265,15 +266,14 @@ def Run(args, extra_args):
         net.Proto().CopyFrom(predict_def)
         if args.device.lower() == 'ideep' and not args.noptimize:
             logging.warning('Optimizing module {} ....................'
-                    .format(model_info["model_name"]))
+                            .format(model_info["model_name"]))
             tf.optimizeForMKLDNN(net)
-        predict_def_ori = copy.deepcopy(predict_def)
         predict_def = net.Proto()
 
         # ws.CreateNet(predict_def)
         if (args.model == 'faster-rcnn' and args.device.lower() == 'gpu'):
             new_predict_def, _ = core.InjectCrossDeviceCopies(core.Net(predict_def))
-            net=core.Net(new_predict_def._net)
+            net = core.Net(new_predict_def._net)
             #ws.CreateNet(new_predict_def._net)
             predict_def = new_predict_def._net
 
@@ -321,9 +321,9 @@ def Run(args, extra_args):
     img_time = 0
     comp_time = 0
     processed_images = 0
-    images=[]
-    labels=[]
-    fnames=[]
+    images = []
+    labels = []
+    fnames = []
     if args.dummydata:
         init_label = np.ones((batch_size), dtype=np.int32)
         imgs = np.random.rand(batch_size, 3, crop_size, crop_size).astype(np.float32)
@@ -339,16 +339,18 @@ def Run(args, extra_args):
     forchw = 1
     if 'style-transfer' in args.model:
         forchw = 0
-    wi=warmup_iter-1
+    wi = warmup_iter-1
     while warmup_iter and not args.cosim:
         warmup_iter -= 1
         if args.dummydata:
-            imgs=images[wi-warmup_iter]
-            oshape=(crop_size, crop_size, 3)
+            imgs = images[wi-warmup_iter]
+            oshape = (crop_size, crop_size, 3)
         else:
             r = randint(0, len(images) - 1)
-            imgs, oshape = cc2.ImageProc.PreprocessImages(images[r], crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
-            #imgs, oshape = cc2.ImageProc.PreprocessImagesByThreading(images[r], crop_size, rescale_size, mean, scale, forchw)
+            imgs, oshape = cc2.ImageProc.PreprocessImages(
+                images[r], crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
+            #imgs, oshape = cc2.ImageProc.PreprocessImagesByThreading(
+            #    images[r], crop_size, rescale_size, mean, scale, forchw)
         if args.model == 'faster-rcnn':
             # init_def_update=copy.deepcopy(init_def)
             # cc2.UpdateImgInfo(oshape, init_def_update, predict_def, crop_size)
@@ -358,8 +360,8 @@ def Run(args, extra_args):
                 ws.FeedBlob(im_info_name, blob, device_opts_cpu)
             else:
                 ws.FeedBlob(im_info_name, blob, device_opts)
-        if ('style-transfer' in args.model or (args.model == 'faster-rcnn' and args.device.lower() == 'gpu')):
-            ws.FeedBlob(str(predict_def.op[0].input[0]), imgs);
+        if 'style-transfer' in args.model or (args.model == 'faster-rcnn' and args.device.lower() == 'gpu'):
+            ws.FeedBlob(str(predict_def.op[0].input[0]), imgs)
         else:
             ws.FeedBlob(str(predict_def.op[0].input[0]), imgs, device_opts)
         if predict_def.op[-1].type == 'Accuracy' and len(validation) > 0:
@@ -384,17 +386,18 @@ def Run(args, extra_args):
         processed_images += len(raw)
         img_start_time = timeit.default_timer()
         if args.dummydata:
-            imgs=raw
-            oshape=(crop_size, crop_size)
+            imgs = raw
+            oshape = (crop_size, crop_size)
         else:
-            imgs, oshape = cc2.ImageProc.PreprocessImages(raw, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format )
+            imgs, oshape = cc2.ImageProc.PreprocessImages(
+                raw, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
             #imgs, oshape = cc2.ImageProc.PreprocessImagesByThreading(raw, crop_size, rescale_size, mean, scale, forchw)
         # im_info_name, blob = cc2.CreateIMBlob(oshape, predict_def, crop_size)
         # ws.FeedBlob(im_info_name, blob, device_opts)
         # x = ws.FetchBlob(im_info_name)
         init_label = None
         if predict_def.op[-1].type == 'Accuracy' and args.dummydata:
-            init_label=labels[k]
+            init_label = labels[k]
         elif predict_def.op[-1].type == 'Accuracy' and len(validation) > 0:
             batch_fname = fnames[k]
             init_label = np.ones((len(fnames[k])), dtype=np.int32)
@@ -429,10 +432,10 @@ def Run(args, extra_args):
             ws.SwitchWorkspace(cosim_ws_name)
             if args.cosim:
                 ws.FeedBlob(
-                str(cosim_predict_def.op[0].input[0]), imgs, device_cosim)
+                    str(cosim_predict_def.op[0].input[0]), imgs, device_cosim)
             else:
                 ws.FeedBlob(
-                str(cosim_predict_def.op[0].input[0]), imgs, device_opts)
+                    str(cosim_predict_def.op[0].input[0]), imgs, device_opts)
             ws.SwitchWorkspace(inf_ws_name)
             ws.FeedBlob(str(predict_def.op[0].input[0]), imgs, device_opts)
             for i in range(len(predict_def.op)):
@@ -461,7 +464,7 @@ def Run(args, extra_args):
                     tol = {'atol': 1e-02, 'rtol': 1e-03}
                 else:
                     tol = {'atol': 5, 'rtol': 1e-01}
-                logging.warning("begin to check op[{}] {} input".format(i,predict_def.op[i].type))
+                logging.warning("begin to check op[{}] {} input".format(i, predict_def.op[i].type))
                 for k in range(len(inf_inputs)):
                     if predict_def.op[i].input[k][0] == '_':
                         continue
@@ -479,9 +482,9 @@ def Run(args, extra_args):
                     #        np.max(np.abs(
                     #            inf_inputs[k] - cosim_inputs[k]))))
                     #    return
-                logging.warning("pass checking op[{0}] {1} input".format(i,predict_def.op[i].type))
-                logging.warning("begin to check op[{0}] {1} output".format(i,predict_def.op[i].type))
-                for j in range(len(inf_results)):
+                logging.warning("pass checking op[{0}] {1} input".format(i, predict_def.op[i].type))
+                logging.warning("begin to check op[{0}] {1} output".format(i, predict_def.op[i].type))
+                for j, _ in enumerate(inf_results):
                     if predict_def.op[i].output[j][0] == '_':
                         continue
                     if args.cosim:
@@ -506,8 +509,8 @@ def Run(args, extra_args):
                        # return
                 logging.warning("pass checking op[{0}] {1} output".format(i, predict_def.op[i].type))
         else:
-            if ('style-transfer' in args.model or (args.model == 'faster-rcnn' and args.device.lower() == 'gpu')):
-                ws.FeedBlob(str(predict_def.op[0].input[0]), imgs);
+            if 'style-transfer' in args.model or (args.model == 'faster-rcnn' and args.device.lower() == 'gpu'):
+                ws.FeedBlob(str(predict_def.op[0].input[0]), imgs)
             else:
                 ws.FeedBlob(str(predict_def.op[0].input[0]), imgs, device_opts)
             if predict_def.op[-1].type == 'Accuracy':
@@ -526,9 +529,9 @@ def Run(args, extra_args):
             comp_elapsed_time = timeit.default_timer() - comp_start_time
             comp_time += comp_elapsed_time
             output = ws.FetchBlob(str(predict_def.op[-1].output[0]))
-            if predict_def.op[-1].type == 'Accuracy' :
+            if predict_def.op[-1].type == 'Accuracy':
                 output2 = ws.FetchBlob(str(predict_def.op[-2].output[0]))
-            elif  predict_def.op[-1].type == 'BoxWithNMSLimit' :
+            elif  predict_def.op[-1].type == 'BoxWithNMSLimit':
                 output2 = ws.FetchBlob(str(predict_def.op[-1].output[1]))
                 output3 = ws.FetchBlob(str(predict_def.op[-1].output[2]))
             logging.warning("[{0:.2%}] Output shape: {1}, computing in {2:.10f}"
@@ -553,7 +556,6 @@ def Run(args, extra_args):
                             .format(iterations))
             break
     if args.profile:
-        num = net.NumObservers()
         net.RemoveObserver(ob)
 
     if args.cosim:
@@ -567,11 +569,11 @@ def Run(args, extra_args):
     if len(accuracy_top1) > 0:
         mean_accuracy_top1 = 0
         mean_accuracy_top5 = 0
-        for i in range(len(accuracy_top1)):
-            mean_accuracy_top1 += accuracy_top1[i] * batch_size;
-            mean_accuracy_top5 += accuracy_top5[i] * batch_size;
-        mean_accuracy_top1 /= (batch_size * len(accuracy_top1))
-        mean_accuracy_top5 /= (batch_size * len(accuracy_top5))
+        for i, _ in enumerate(accuracy_top1):
+            mean_accuracy_top1 += accuracy_top1[i] * batch_size
+            mean_accuracy_top5 += accuracy_top5[i] * batch_size
+        mean_accuracy_top1 /= batch_size * len(accuracy_top1)
+        mean_accuracy_top5 /= batch_size * len(accuracy_top5)
         info_str += "\nAccuracy: {:.5%}".format(mean_accuracy_top1)
         info_str += "\nTop5Accuracy: {:.5%}".format(mean_accuracy_top5)
         total_image = processed_images

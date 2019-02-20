@@ -1,24 +1,24 @@
+"""common functions for inference and training"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
 import os
-import sys
-import timeit
 import logging
 import threading
 import itertools
-import numpy as np
+import math
 import copy
+from collections import defaultdict
+import numpy as np
 import six
 import cv2
-import math
 import onnx
-from collections import defaultdict
 
 
 class ImageProc(threading.Thread):
+    """handle dataset preprocess with thread"""
     threads = []
     imgs_one_thread = 8
 
@@ -35,12 +35,14 @@ class ImageProc(threading.Thread):
         self.imgs = None
         self.forchw = forchw
         self.scale = scale
-        self.need_normalize= need_normalize
+        self.need_normalize = need_normalize
         self.color_format = color_format
 
     def run(self):
         self.imgs = ImageProc.PreprocessImages(
-            self.img_paths, self.crop_size, self.rescale_size , self.mean, self.scale, self.forchw, self.need_normalize, self.color_format)
+            self.img_paths, self.crop_size, self.rescale_size,
+            self.mean, self.scale, self.forchw,
+            self.need_normalize, self.color_format)
 
     def kick_off(self):
         if self.started:
@@ -54,13 +56,13 @@ class ImageProc(threading.Thread):
         return self.imgs
 
     @staticmethod
-    def PopThread(img_paths, crop_size,rescale_size, mean, scale, forchw, need_normalize, color_format):
+    def PopThread(img_paths, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format):
         thread = None
         if len(ImageProc.threads) > 0:
             thread = ImageProc.threads.pop()
-            thread.reset(img_paths, crop_size,rescale_size, mean, scale, forchw, need_normalize, color_format)
+            thread.reset(img_paths, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
         else:
-            thread = ImageProc(img_paths, crop_size,rescale_size, mean, scale, forchw, need_normalize, color_format)
+            thread = ImageProc(img_paths, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
         return thread
 
     @staticmethod
@@ -79,29 +81,30 @@ class ImageProc(threading.Thread):
     def ShowImage(img, title):
         # Disabled
         return
-        from matplotlib import pyplot
-        pyplot.figure()
-        pyplot.imshow(img)
-        pyplot.axis('on')
-        pyplot.title(title)
+        #from matplotlib import pyplot
+        #pyplot.figure()
+        #pyplot.imshow(img)
+        #pyplot.axis('on')
+        #pyplot.title(title)
 
     @staticmethod
     def ShowImageInChannels(img):
         # Disabled
         return
-        from matplotlib import pyplot
-        pyplot.figure()
-        for i in range(3):
+        #from matplotlib import pyplot
+        #pyplot.figure()
+        #for i in range(3):
             # For some reason, pyplot subplot follows Matlab's indexing
             # convention (starting with 1). Well, we'll just follow it...
-            pyplot.subplot(1, 3, i + 1)
-            pyplot.imshow(img[i])
-            pyplot.axis('off')
-            pyplot.title("RGB channel {}".format(i + 1))
+            #pyplot.subplot(1, 3, i + 1)
+            #pyplot.imshow(img[i])
+            #pyplot.axis('off')
+            #pyplot.title("RGB channel {}".format(i + 1))
 
     @staticmethod
     def CropCenter(img, cropx, cropy):
-        y, x, c = img.shape
+        """center crop the image in dataset"""
+        y, x, _ = img.shape
         #startx = x // 2 - (cropx // 2)
         #starty = y // 2 - (cropy // 2)
         startx = int(math.floor(x * 0.5 - (cropx * 0.5)))
@@ -114,6 +117,7 @@ class ImageProc(threading.Thread):
 
     @staticmethod
     def Rescale(img, rescale_size):
+        """rescale the image with the given size"""
         #if input_height == 299:
         #    input_height = 320
         #    input_width = 320
@@ -124,16 +128,16 @@ class ImageProc(threading.Thread):
         logging.info("Original image shape: {} "
                      "and remember it should be in H, W, C!"
                      .format(str(img.shape)))
-        logging.info("Model's input shape is {0} x {1}"
-                     .format(rescale_size, rescale_size))
+        logging.info("Model's input shape is {0} x {0}"
+                     .format(rescale_size))
         #xaspect = input_width / input_height
         aspect = img.shape[1] / float(img.shape[0])
         logging.info("Orginal aspect ratio: {}".format(str(aspect)))
-        if aspect>=1:
+        if aspect >= 1:
             # landscape orientation - wide image
             res = int(rescale_size * aspect)
             imgScaled = cv2.resize(img, dsize=(res, rescale_size), interpolation=cv2_interpol)
-        elif aspect<1:
+        elif aspect < 1:
             # portrait orientation - tall image
             res = int(rescale_size / aspect)
             #imgScaled = cv2.resize(img, dsize=(input_height, res), interpolation=cv2_interpol)
@@ -144,8 +148,9 @@ class ImageProc(threading.Thread):
 
     @staticmethod
     def SaveImage(image, filename):
+        """save image"""
         if image.shape[0] != 1:
-            logging.error()
+            logging.error("the shape[0] of the image is not 1")
             return
         img = np.squeeze(image)
         # switch to HWC
@@ -157,6 +162,7 @@ class ImageProc(threading.Thread):
 
     @staticmethod
     def PreprocessSingleImage(image_path, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format):
+        """preprocess single image"""
         #This is used for cv2.imread
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
@@ -167,34 +173,34 @@ class ImageProc(threading.Thread):
         # switch to CHW
             img = img.swapaxes(1, 2).swapaxes(0, 1)
             # switch to RGB
-            if color_format=='RGB':
+            if color_format == 'RGB':
                 img = img[(2, 1, 0), :, :]
         else:
             nimg = np.ndarray((crop_size, crop_size, 4), dtype=float)
             nimg.fill(0)
-            for i in range(len(img)):
-                for j in range(len(img[i])):
-                    for k in range(len(img[i][j])):
-                        nimg[i][j][k]=img[i][j][k]
+            for i, img_i in enumerate(img):
+                for j, img_j in enumerate(img_i):
+                    for k, img_k in enumerate(img_j):
+                        nimg[i][j][k] = img_k
             img = nimg
         #logging.info("After switch to bgra {}, type ={}".format(img, type(img[0][0][0])))
         #if need normalize
-        if need_normalize==True:
-            img=img/255
+        if need_normalize:
+            img = img/255
         logging.info("scale is {}".format(scale))
         logging.info("mean is {}".format(mean))
         logging.info("image is {}".format(img))
         logging.info("image shape is {}, mean shape is {}".format(img.shape, mean.shape))
-        if len(scale) == 1: 
+        if len(scale) == 1:
             img = (img - mean) * float(scale[0])
         elif len(scale) > 1:
-            img[0, : ,:] = (img[0, :, :] - mean[0, :, :])*float(scale[0])
-            img[1, : ,:] = (img[1, :, :] - mean[1, :, :])*float(scale[1])
-            img[2, : ,:] = (img[2, :, :] - mean[2, :, :])*float(scale[2])
+            img[0, :, :] = (img[0, :, :] - mean[0, :, :])*float(scale[0])
+            img[1, :, :] = (img[1, :, :] - mean[1, :, :])*float(scale[1])
+            img[2, :, :] = (img[2, :, :] - mean[2, :, :])*float(scale[2])
             logging.info("after img is {}".format(img))
         else:
             logging.error("scale = {} is invalid".format(scale))
-            exit()        
+            exit()
 
         # add batch size
         if forchw == 1:
@@ -204,53 +210,24 @@ class ImageProc(threading.Thread):
         ImageProc.ShowImageInChannels(img)
         logging.info("After Preprocessing in NCHW: {}".format(img.shape))
         return img, oshape
-
-        '''
-        img = skimage.img_as_float(skimage.io.imread(image_path)).astype(np.float32)
-        oshape = copy.deepcopy(img.shape)
-        img = ImageProc.Rescale(img, crop_size, crop_size)
-        # img = ImageProc.Rescale(img, img.shape[0], img.shape[1])
-        img = ImageProc.CropCenter(img, crop_size, crop_size)
-        if forchw == 1:
-            # switch to CHW
-            img = img.swapaxes(1, 2).swapaxes(0, 1)
-            # switch to BGR
-            img = img[(2, 1, 0), :, :]
-        else:
-            img = img[:, :, (2, 1, 0)]
-            nimg = np.ndarray((crop_size, crop_size, 4), dtype=float)
-            nimg.fill(0)
-            for i in range(len(img)):
-                for j in range(len(img[i])):
-                    for k in range(len(img[i][j])):
-                        nimg[i][j][k] = img[i][j][k]
-            img = nimg
-        logging.info("After switch to bgra {}, type ={}".format(img, type(img[0][0][0])))
-        # remove mean for better results
-        img = (img * 255 - mean) * scale
-
-        # add batch size
-        if forchw == 1:
-            img = img[np.newaxis, :, :, :].astype(np.float32)
-        else:
-            img = img[np.newaxis, :, :, :].astype(np.uint8)
-        ImageProc.ShowImageInChannels(img)
-        logging.info("After Preprocessing in NCHW: {}".format(img.shape))
-        return img, oshape
-        '''
 
     @staticmethod
     def PreprocessImages(img_paths, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format):
         imgs = []
         for i in img_paths:
-            img, oshape = ImageProc.PreprocessSingleImage(i, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
+            img, oshape = ImageProc.PreprocessSingleImage(
+                i, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
             imgs.append(img)
         logging.info("oshape={} ".format(oshape))
         return np.concatenate(imgs, 0), oshape
 
     @staticmethod
-    def PreprocessImagesByThreading(img_paths, crop_size, rescale_size,  mean, scale, forchw, need_normalize, color_format):
-        imgs, oshape = ImageProc.PreprocessImages(img_paths, crop_size,rescale_size,mean, scale, forchw, need_normalize, color_format)
+    def PreprocessImagesByThreading(img_paths, crop_size, rescale_size,
+                                    mean, scale, forchw, need_normalize, color_format):
+        """preprocess image using threading, not used now"""
+        imgs, oshape = ImageProc.PreprocessImages(
+            img_paths, crop_size, rescale_size,
+            mean, scale, forchw, need_normalize, color_format)
         if len(img_paths) <= (ImageProc.imgs_one_thread * 2):
             #logging.info("imgs = {0}".format(imgs))
             return imgs, oshape
@@ -261,7 +238,9 @@ class ImageProc(threading.Thread):
             if img_split is None:
                 logging.error("Failed to split image sequence")
                 return None
-            cur_thds.append(ImageProc.PopThread(img_split, crop_size, rescale_size,mean, scale, forchw, need_normalize, color_format))
+            cur_thds.append(ImageProc.PopThread(
+                                img_split, crop_size, rescale_size, mean,
+                                scale, forchw, need_normalize, color_format))
         if len(cur_thds) <= 0:
             logging.error("Failed to create threads in image processing")
             return None
@@ -271,7 +250,7 @@ class ImageProc(threading.Thread):
             continue
         timg = []
         for t in cur_thds:
-            ximg, xshape = t.result
+            ximg, _ = t.result
             timg.append(ximg)
         imgs = np.concatenate(timg, 0)
         #logging.info("imgs = {0}".format(imgs))
@@ -283,14 +262,15 @@ class ImageProc(threading.Thread):
 
     @staticmethod
     def BatchImages(images_path, batch_size, iterations):
+        """batch the dataset"""
         bs = batch_size
         images = []
         image = []
         fnames = []
         fname = []
-        it=iterations
-        for root, dirs, files in os.walk(images_path):
-            if it== 0:
+        it = iterations
+        for root, _, files in os.walk(images_path):
+            if it == 0:
                 break
             for fn in files:
                 fp = os.path.join(root, fn)
@@ -313,6 +293,7 @@ class ImageProc(threading.Thread):
 
 
 def ParsePossOutputs(outputs):
+    """parse the outputs"""
     total = 0
     parsed_outputs = []
     # logging.info("The output0 is {}".format(outputs[0])
@@ -341,6 +322,7 @@ def ParsePossOutputs(outputs):
 
 
 def ParsePossResults(results, labels, validation, fnames):
+    """parse the result to generate reports"""
     summary = []
     for result in results:
         index = result[0]
@@ -385,6 +367,7 @@ def ParsePossResults(results, labels, validation, fnames):
 
 
 def LoadLabels(label_file):
+    """load labels from file"""
     if not os.path.isfile(label_file):
         logging.error("Can not find lable file {}.".format(label_file))
         return None
@@ -398,13 +381,14 @@ def LoadLabels(label_file):
             result = result[result.index("/")+1:]
             if result in labels:
                 logging.warning("Repeated name {0} for code {1}in label file. Ignored!"
-                        .format(result,code))
+                                .format(result, code))
             else:
                 labels[result] = int(code.strip())
     return labels
 
 
 def LoadValidation(validation_file):
+    """load validation file"""
     if not os.path.isfile(validation_file):
         logging.error("Can not find validation file {}."
                       .format(validation_file))
@@ -427,6 +411,7 @@ def LoadValidation(validation_file):
 
 def SaveOutput(args, summary, accuracy, top5accuracy, total_time, total_image, img_time,
                model_loading_time):
+    """save output"""
     fname = args.output_file
     if not fname:
         return
@@ -456,6 +441,7 @@ def SaveOutput(args, summary, accuracy, top5accuracy, total_time, total_image, i
 
 
 def ParsePostOutputs(outputs):
+    """parse outputs"""
     total = 0
     parsed_outputs = []
     for i, output in enumerate(outputs):
@@ -466,6 +452,7 @@ def ParsePostOutputs(outputs):
 
 
 def SavePostImages(results, path, fnames):
+    """save post images"""
     if not os.path.isdir(path):
         return
     for res in results:
@@ -475,6 +462,7 @@ def SavePostImages(results, path, fnames):
 
 
 def FetchArrayByName(init_def, name):
+    """fetch array by name"""
     for index, op in enumerate(init_def.op):
         if op.output[0] != name:
             continue
@@ -499,6 +487,7 @@ def FetchArrayByName(init_def, name):
 
 
 def FeedArrayByName(init_def, name, array):
+    """feed array by name"""
     for op in init_def.op:
         if op.output[0] != name:
             continue
@@ -525,6 +514,7 @@ def FeedArrayByName(init_def, name, array):
 
 
 def FindInputName(predict_def, index, name):
+    """find input name from predict def"""
     for op in predict_def.op[index:]:
         for inp in op.input:
             if inp == name:
@@ -533,6 +523,7 @@ def FindInputName(predict_def, index, name):
 
 
 def UpdateInputName(predict_def, index, from_name, to_name):
+    """update inputname in the whole net"""
     if from_name == to_name:
         return
     for op in predict_def.op[index:]:
@@ -545,8 +536,10 @@ def UpdateInputName(predict_def, index, from_name, to_name):
 
 
 def UpdateDeviceOption(dev_opt, net_def):
+    """update device options in net_def"""
     # net_def.device_option.CopyFrom(dev_opt)
-    # gpufallbackop=['GenerateProposals', 'BoxWithNMSLimit', 'BBoxTransform', 'PackedInt8BGRANHWCToNCHWCStylizerPreprocess', 'BRGNCHWCToPackedInt8BGRAStylizerDeprocess']
+    # gpufallbackop=['GenerateProposals', 'BoxWithNMSLimit', 'BBoxTransform',
+    #     'PackedInt8BGRANHWCToNCHWCStylizerPreprocess', 'BRGNCHWCToPackedInt8BGRAStylizerDeprocess']
     gpufallbackop = ['GenerateProposals', 'BoxWithNMSLimit', 'BBoxTransform']
     # gpufallbackop=[]
     ideepfallbackop = []
@@ -563,6 +556,7 @@ def UpdateDeviceOption(dev_opt, net_def):
 
 
 def FillZeroParamsWithOne(net_def):
+    """fill zero parameter"""
     for eop in net_def.op:
         if eop.output[0] == 'im_info':
             for earg in eop.arg:
@@ -593,6 +587,7 @@ def FillZeroParamsWithOne(net_def):
 
 
 def UpdateImgInfo(shape, net_def, predict_def, crop_size):
+    """update image info specifically for fastrcnn"""
     im_info_name = 'NA'
     for eop in predict_def.op:
         if eop.type == 'GenerateProposals':
@@ -638,6 +633,7 @@ def UpdateImgInfo(shape, net_def, predict_def, crop_size):
 
 
 def CreateIMBlob(shape, predict_def, crop_size):
+    """generate im_info blob"""
     im_info_name = 'NA'
     for eop in predict_def.op:
         if eop.type == 'GenerateProposals':
@@ -698,30 +694,30 @@ def assert_allclose(x, y, atol=1e-5, rtol=1e-4, verbose=True):
             #raise AssertionError(f.getvalue())
             logging.warning(f.getvalue())
             return False
- 
+
 def assert_compare(x, y, atol=1e-5, method='ALL'):
     """method can be MSE, MAE and RMSE"""
-    mae=0
-    mse=0
-    rmse=0
-    result=0
-    if method=='MAE':
+    mae = 0
+    mse = 0
+    rmse = 0
+    result = 0
+    if method == 'MAE':
         mae = np.abs(x-y).mean()
-        result=mae
-    elif method=='RMSE':
-        rmse=np.sqrt(np.square(x - y).mean())
-        result=rmse
+        result = mae
+    elif method == 'RMSE':
+        rmse = np.sqrt(np.square(x - y).mean())
+        result = rmse
         #result=np.sqrt(((x - y) ** 2).mean())
-    elif method=='MSE':
+    elif method == 'MSE':
         mse = np.square(x - y).mean()
-        result=mse
+        result = mse
         #result=((x - y) ** 2).mean()
     else:
         mae = np.abs(x-y).mean()
-        rmse=np.sqrt(np.square(x - y).mean())
+        rmse = np.sqrt(np.square(x - y).mean())
         mse = np.square(x - y).mean()
 
-    if result > atol or (method =='ALL' and (mae > atol or rmse > atol or mse > atol) ):
+    if result > atol or (method == 'ALL' and (mae > atol or rmse > atol or mse > atol)):
         f = six.StringIO()
         f.write(
             'assert_compare failed: \n' +
@@ -731,7 +727,7 @@ def assert_compare(x, y, atol=1e-5, method='ALL'):
             '  MSE: {}\n'.format(mse) +
             '  RMSE: {}\n'.format(rmse) +
             '  shape: {} {}\n'.format(x.shape, y.shape) +
-            '  dtype: {} {}\n'.format(x.dtype, y.dtype)) 
+            '  dtype: {} {}\n'.format(x.dtype, y.dtype))
         if x.shape == y.shape:
             xx = x if x.ndim != 0 else x.reshape((1,))
             yy = y if y.ndim != 0 else y.reshape((1,))
@@ -793,7 +789,8 @@ def bbox_iou(bbox_a, bbox_b):
     area_b = np.prod(bbox_b[:, 2:] - bbox_b[:, :2], axis=1)
     return area_i / (area_a[:, None] + area_b - area_i)
 
-def prepare_and_compute_map_data(outputs,fnames,path):
+def prepare_and_compute_map_data(outputs, fnames, path):
+    """calculate ap for ssd"""
     return 1
 
 
@@ -945,10 +942,10 @@ def calc_detection_voc_prec_rec(
     match = defaultdict(list)
     for pred_bbox, pred_label, pred_score, gt_bbox, gt_label, gt_difficult in \
         six.moves.zip(
-            pred_bboxes, pred_labels, pred_scores,
-            gt_bboxes, gt_labels, gt_difficults):
-        print("the bbox is ",pred_bbox)
-        print("the gt bbox is ",gt_bbox)
+                pred_bboxes, pred_labels, pred_scores,
+                gt_bboxes, gt_labels, gt_difficults):
+        print("the bbox is ", pred_bbox)
+        print("the gt bbox is ", gt_bbox)
         if gt_difficult is None:
             gt_difficult = np.zeros(gt_bbox.shape[0], dtype=bool)
         #print(pred_label)
@@ -1129,12 +1126,14 @@ def AddTensor(init_net, name, blob):
 
 
 def AddTensors(workspace, init_net, blob_names):
+    """add tensors"""
     for blob_name in blob_names:
         blob = workspace.FetchBlob(str(blob_name))
         AddTensor(init_net, blob_name, blob)
 
 
 def AllBlobNamesInInit(init_net):
+    """collect all blob names in weight file"""
     from caffe2.proto import caffe2_pb2
     names = []
     if init_net is None or not isinstance(init_net, caffe2_pb2.NetDef):
@@ -1214,6 +1213,7 @@ def ExportModel(workspace, net, blobs):
 
 
 def SaveModel(init_file, init_net, predict_file, predict_net):
+    """save model in pb"""
     with open(init_file, "wb") as i:
         i.write(init_net.SerializeToString())
     with open(predict_file, "wb") as p:
@@ -1221,17 +1221,20 @@ def SaveModel(init_file, init_net, predict_file, predict_net):
 
 
 def SaveModelPtxt(predict_file, predict_net):
+    """save model in ptxt"""
     with open(predict_file, "wb") as p:
         p.write(str(predict_net))
 
 
 def SaveAsOnnxModel(init_net, predict_net, data_shape, onnx_file):
+    """save model in onnx format"""
     onnx_model = Caffe2ToOnnx(init_net, predict_net, data_shape)
     with open(onnx_file, "wb") as i:
         i.write(onnx_model.SerializeToString())
 
 
 def SetOpName(predict_def):
+    """set op name"""
     for i, op in enumerate(predict_def.op):
         if len(op.name) == 0:
             op.name = op.type.lower() + str(i)
@@ -1293,7 +1296,7 @@ def MergeScaleBiasInBN(predict_def):
         if bn_op.output[0] == add_op.output[0]:
             bn_op.output[0] = bn_op.output[0] + "_bn_" + str(index)
         UpdateInputName(predict_def, index + 3, add_op.output[0],
-                            bn_op.output[0])
+                        bn_op.output[0])
         # Delete Mul op
         del predict_def.op[index + 1]
         # Delete Add op
@@ -1304,6 +1307,7 @@ def MergeScaleBiasInBN(predict_def):
 
 
 def ApplyBnInPlace(init_def, predict_def, model_info):
+    """do bn inplace optimize"""
     bn_indexes = []
     for i, op in enumerate(predict_def.op):
         if op.type == "SpatialBN":
@@ -1321,13 +1325,14 @@ def ApplyBnInPlace(init_def, predict_def, model_info):
             logging.error("Found error in BN InPlace!")
             continue
         UpdateInputName(predict_def, index + 1, bn_op.output[0],
-                            bn_op.input[0])
+                        bn_op.input[0])
         bn_op.output[0] = bn_op.input[0]
         ip_cnt += 1
     logging.warning("[OPT] Enabled {} BN InPlace".format(ip_cnt))
 
 
 def ApplyBnFolding(init_def, predict_def, model_info):
+    """do bn folding optimize"""
     conv_index = -100
     conv_indexes = []
     for i, op in enumerate(predict_def.op):
@@ -1348,8 +1353,8 @@ def ApplyBnFolding(init_def, predict_def, model_info):
                 conv_op.output[0] != bn_op.input[0] or
                 len(bn_op.input) != 5 or
                 (
-                        conv_op.output[0] != bn_op.output[0] and
-                        FindInputName(predict_def, index + 2, conv_op.output[0])
+                    conv_op.output[0] != bn_op.output[0] and
+                    FindInputName(predict_def, index + 2, conv_op.output[0])
                 )
         ):
             logging.error("Inputs error in BN folding")
@@ -1375,8 +1380,8 @@ def ApplyBnFolding(init_def, predict_def, model_info):
                     bn_scale[1] != bn_mean[1] or
                     bn_scale[1] != bn_var[1] or
                     (
-                            conv_b is not None and
-                            bn_scale[1] != conv_b[1]
+                        conv_b is not None and
+                        bn_scale[1] != conv_b[1]
                     )
             ):
                 logging.error("Shape unmatch error in BN folding")
@@ -1410,7 +1415,7 @@ def ApplyBnFolding(init_def, predict_def, model_info):
                 bias_name = bn_op.input[2]
                 conv_op.input.append(bias_name)
             conv_bias = conv_bias + (
-                    bn_bias[2] - (bn_alpha * bn_momentum * bn_mean[2]))
+                bn_bias[2] - (bn_alpha * bn_momentum * bn_mean[2]))
             if not FeedArrayByName(init_def, bias_name, conv_bias):
                 logging.error("Failed to feed Conv bias")
                 continue
@@ -1424,7 +1429,7 @@ def ApplyBnFolding(init_def, predict_def, model_info):
             pass
         if conv_op.output[0] != bn_op.output[0]:
             UpdateInputName(predict_def, index + 2, bn_op.output[0],
-                                conv_op.output[0])
+                            conv_op.output[0])
         # Remove BN op
         del predict_def.op[index + 1]
         rm_cnt += 1
@@ -1443,6 +1448,7 @@ class FusionType(object):
 
 
 def ApplyFusionConvSum(init_def, predict_def, model_info):
+    """fuse conv and sum"""
     conv_index = -100
     conv_indexes = []
     for i, op in enumerate(predict_def.op):
@@ -1465,8 +1471,8 @@ def ApplyFusionConvSum(init_def, predict_def, model_info):
                 conv_op.type != "Conv" or
                 sum_op.type != "Sum" or
                 (
-                        conv_op.output[0] != sum_op.input[0] and
-                        conv_op.output[0] != sum_op.input[1]
+                    conv_op.output[0] != sum_op.input[0] and
+                    conv_op.output[0] != sum_op.input[1]
                 )
         ):
             logging.error("Inputs error in Conv Sum fusion")
@@ -1495,6 +1501,7 @@ def ApplyFusionConvSum(init_def, predict_def, model_info):
 
 
 def ApplyFusionConvReLU(init_def, predict_def, model_info):
+    """fuse conv and relu"""
     def IsConvOp(op):
         if op.type == "Conv":
             for arg in op.arg:
@@ -1527,8 +1534,8 @@ def ApplyFusionConvReLU(init_def, predict_def, model_info):
         relu_op = predict_def.op[index + 1]
         if (
                 (
-                        conv_op.type != "Conv" and
-                        conv_op.type != FusionType.OP_TYPE
+                    conv_op.type != "Conv" and
+                    conv_op.type != FusionType.OP_TYPE
                 ) or
                 relu_op.type != "Relu" or
                 conv_op.output[0] != relu_op.input[0]
@@ -1546,7 +1553,7 @@ def ApplyFusionConvReLU(init_def, predict_def, model_info):
                     arg.i = FusionType.CONV_SUM_RELU
                     break
             UpdateInputName(predict_def, index + 2, relu_op.output[0],
-                                conv_op.output[0])
+                            conv_op.output[0])
         else:
             fusion_arg = caffe2_pb2.Argument()
             fusion_arg.name = "fusion_type"
@@ -1561,6 +1568,7 @@ def ApplyFusionConvReLU(init_def, predict_def, model_info):
 
 
 def ApplyRemoveDropout(init_def, predict_def, model_info):
+    """remove dropout"""
     dropout_indexes = []
     for i, op in enumerate(predict_def.op):
         if op.type == "Dropout":
@@ -1571,7 +1579,7 @@ def ApplyRemoveDropout(init_def, predict_def, model_info):
         dropout_op = predict_def.op[index]
         if dropout_op.input[0] != dropout_op.output[0]:
             UpdateInputName(predict_def, index + 1, dropout_op.output[0],
-                                dropout_op.input[0])
+                            dropout_op.input[0])
         # Remove Dropout op
         del predict_def.op[index]
         rm_cnt += 1
@@ -1579,12 +1587,14 @@ def ApplyRemoveDropout(init_def, predict_def, model_info):
 
 
 def ApplyInt8Mode(init_def, predict_def, model_info):
+    """int8 mode"""
     pass
     # logging.warning("[OPT] Applied Int8 mode for {} ops".format(total))
 
 
 def ApplyOptimizations(init_def, predict_def, model_info, optimization):
-    if len(optimization) <= 0:
+    """do all optimization"""
+    if not optimization:
         return
     if ("all" in optimization) or ("bn_folding" in optimization):
         ApplyBnFolding(init_def, predict_def, model_info)
@@ -1600,7 +1610,7 @@ def ApplyOptimizations(init_def, predict_def, model_info, optimization):
         ApplyInt8Mode(init_def, predict_def, model_info)
 
 def Caffe2ToOnnx(init_def, predict_def, data_shape):
-    import onnx
+    """transfer caffe2 to onnx"""
     from caffe2.proto import caffe2_pb2
     from caffe2.python.onnx import frontend
     from caffe2.python import workspace
@@ -1630,11 +1640,13 @@ def Caffe2ToOnnx(init_def, predict_def, data_shape):
 
 
 def OnnxToCaffe2(model_file):
+    """transfer onnx to caffe2"""
     from caffe2.python.onnx import backend
     model = onnx.load(model_file)
     return backend.Caffe2Backend.onnx_graph_to_caffe2_net(model)
 
 def RemoveUselessExternalInput(predict_net):
+    """remove useless external input"""
     from caffe2.proto import caffe2_pb2
     if predict_net is None or not isinstance(predict_net, caffe2_pb2.NetDef):
         return
@@ -1649,13 +1661,16 @@ def RemoveUselessExternalInput(predict_net):
     predict_net.external_input.extend(external_input)
 
 def CalMAE(img, predict):
+    """calculate mae"""
     errors = np.absolute(img - predict)
     return np.sum(errors) / errors.size
 
 def CalMSE(img, predict):
+    """calculate mse"""
     return np.square(np.subtract(img, predict)).mean()
 
 def ConvertText2PB(pbtxt_file, to_save):
+    """convert model from txt to pb"""
     with open(pbtxt_file) as t:
         from caffe2.proto import caffe2_pb2
         import google.protobuf.text_format as ptxt
@@ -1664,6 +1679,7 @@ def ConvertText2PB(pbtxt_file, to_save):
             s.write(m.SerializeToString())
 
 def ConvertPB2Text(pb_file, to_save):
+    """convert model from pb to txt"""
     with open(pb_file) as p:
         from caffe2.proto import caffe2_pb2
         m = caffe2_pb2.NetDef()

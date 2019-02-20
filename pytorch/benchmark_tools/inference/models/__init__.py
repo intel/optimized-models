@@ -1,3 +1,4 @@
+"""parse model def"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -7,6 +8,7 @@ import os
 import logging
 
 class Models:
+    """def model class"""
     model_def = {}
     model_def_file = "__model_def"
 
@@ -36,7 +38,7 @@ class Models:
         if "[Predict Net Int8]" in defs:
             predict_net_int8 = os.path.join(path, defs[defs.index("[Predict Net Int8]") + 1])
         else:
-            predict_net_int8=''
+            predict_net_int8 = ''
         onnx_model = ''
         if "[Onnx Model]" in defs:
             onnx_model = os.path.join(path, defs[defs.index("[Onnx Model]") + 1])
@@ -66,7 +68,7 @@ class Models:
 
         if model_name in self.model_def:
             logging.warning("Already has model: {}. Ignored!"
-                    .format(model_name))
+                            .format(model_name))
         else:
             self.model_def[model_name] = {
                 "model_name" : model_name,
@@ -89,7 +91,7 @@ class Models:
 def ShowModels():
     models = Models()
     logging.critical("All supported models for inference:\n{}"
-            .format([str(s) for s in models.model_def.keys()]))
+                     .format([str(s) for s in models.model_def]))
 
 def IsSupported(model):
     models = Models()
@@ -98,4 +100,3 @@ def IsSupported(model):
 def GetModelInfo(model):
     models = Models()
     return models.model_def[model.lower()]
-
