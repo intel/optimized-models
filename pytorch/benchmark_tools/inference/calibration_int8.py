@@ -147,7 +147,7 @@ def Calibration(args, extra_args):
         tf.optimizeForMKLDNN(net)
     predict_def = net.Proto()
 
-    from caffe2.python.calibrator import Calibrator, KLCalib, AbsmaxCalib, EMACalib
+    from inference.calibrator import Calibrator, KLCalib, AbsmaxCalib, EMACalib
     algorithm = AbsmaxCalib()
     kind = os.environ.get('INT8CALIB')
     if args.calib_algo:

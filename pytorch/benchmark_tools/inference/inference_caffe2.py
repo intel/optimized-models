@@ -12,7 +12,7 @@ import timeit
 import logging
 import copy
 import numpy as np
-
+import onnx
 from caffe2.proto import caffe2_pb2
 from caffe2.python import core
 from caffe2.python import workspace as ws
