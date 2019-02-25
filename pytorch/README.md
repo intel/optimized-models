@@ -1,37 +1,35 @@
-#Guild to run resnet50 fp32 and int8 models.
+# Guild to run resnet50 fp32 and int8 models.
 
 
 
-##1. download resnet50 pytorch model
+## 1. download resnet50 pytorch model
 
 ```
 wget https://download.pytorch.org/models/resnet50-19c8e357.pth
 ```
 
-##2. install legacy pytorch for transferring model from pytorch to onnx
+## 2. install legacy pytorch for transferring model from pytorch to onnx
 
 ```
 pip install torchvision
 ```   
 
-##3. got pytoch source from github and merge pr
+## 3. got pytoch source from github and merge pr
 
 ```
 git clone https://github.com/pytorch/pytorch.git 
 git checkout 4ac91b2d64eeea5ca21083831db5950dc08441d6
 git submodule update --init --recursive
-wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/17464.diff
-git apply 17464.diff
-git submodule update --init --recursive
-
-make sure the third_party/ideep 
-
 cd third_party/ideep
 git log
 git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
+
+wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/17464.diff
+git apply 17464.diff
+git submodule update --init --recursive
 ```
 
-##4. transfer pytorch model to onnx model
+## 4. transfer pytorch model to onnx model
     below code is an example:
 ```
         import torch    
@@ -48,25 +46,25 @@ git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
                                        "resnet50.onnx",
                                        export_params=True)
 ```
-##5. copy onnx file to tools folder
+## 5. copy onnx file to tools folder
 
 ```
         cp resnet50.onnx inference/models/resnet50/
 ```
 
-##6. prepare dataset
+## 6. prepare dataset
 
 ```
         please download the imagenet and label file from the official site
 ```
 
-##7. prepare calibration dataset
+## 7. prepare calibration dataset
 
 ```
         copy ILSVRC2012_val_00033000.JPEG to ILSVRC2012_val_00033999.JPEG totally 1000 images from the downloaded imagenet dataset folder to calibration folder
 ```
 
-##8. run calibration
+## 8. run calibration
     if you just build pytorch from source, please use export PYTHONPATH to let the tools know the location of caffe2 build folder    
 
 ```
@@ -80,7 +78,7 @@ git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
          cp predict_net_int8.pb inference/models/resnet50/predict_onnx_int8.pb
 ```
 
-##9. run fp32 model
+## 9. run fp32 model
 
 ```
          export PYTHONPATH=/the/path/to/your/pytorch/src
@@ -90,7 +88,7 @@ git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
          ./run_caffe2.py -m $modelname -p imagenet_folder  -v label_file  -b "batchsize" -w 5  --onnx
 ```
 
-##10. run int8 model
+## 10. run int8 model
 
 ```
          export PYTHONPATH=/the/path/to/your/pytorch/src
@@ -100,7 +98,7 @@ git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
          ./run_caffe2.py -m $modelname -p calibration_folder  -v label_file  -b "batchsize"  -w 5  -int8
 ```
 
-##11. parse the result, the output of both fp32 and int8 model looks like below,
+## 11. parse the result, the output of both fp32 and int8 model looks like below,
 
 ```
         Images per second: 352.1690776042
