@@ -241,7 +241,7 @@ def Run(args, extra_args):
 
         net = core.Net(model_info["model_name"])
         net.Proto().CopyFrom(predict_def)
-        tf.optimizeForMKLDNN(net)
+        tf.optimizeForIDEEP(net)
         predict_def = net.Proto()
 
         cosim_ws_name = "__fp32_ws__"
@@ -252,7 +252,7 @@ def Run(args, extra_args):
 
         net = core.Net(model_info["model_name"])
         net.Proto().CopyFrom(cosim_predict_def)
-        tf.optimizeForMKLDNN(net)
+        tf.optimizeForIDEEP(net)
         cosim_predict_def = net.Proto()
     else:
         # ApplyOptimizations(init_def, predict_def, model_info, optimization)
@@ -267,7 +267,7 @@ def Run(args, extra_args):
         if args.device.lower() == 'ideep' and not args.noptimize:
             logging.warning('Optimizing module {} ....................'
                             .format(model_info["model_name"]))
-            tf.optimizeForMKLDNN(net)
+            tf.optimizeForIDEEP(net)
         predict_def = net.Proto()
 
         # ws.CreateNet(predict_def)
