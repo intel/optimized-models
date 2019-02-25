@@ -144,7 +144,7 @@ def Calibration(args, extra_args):
     if args.device.lower() == 'ideep' and not args.noptimize:
         logging.warning('Optimizing module {} ....................'
                         .format(model_info["model_name"]))
-        tf.optimizeForMKLDNN(net)
+        tf.optimizeForIDEEP(net)
     predict_def = net.Proto()
     if predict_def.op[-1].type == 'Accuracy':
         init_label = np.ones((batch_size), dtype=np.int32)
