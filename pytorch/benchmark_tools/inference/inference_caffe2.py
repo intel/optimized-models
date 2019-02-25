@@ -150,17 +150,19 @@ def Run(args, extra_args):
     if args.onnx_model:
         init_def, predict_def = cc2.OnnxToCaffe2(model_info["onnx_model"])
     else:
-        with open(model_info["init_net"]) as i:
+        if args.int8_model or args.int8_cosim:
+            init_file = model_info["init_net_int8"]
+            predict_file = model_info["predict_net_int8"]
+        else:
+            init_file = model_info["init_net"]
+            predict_file = model_info["predict_net"]
+        with open(init_file) as i:
             if model_info["model_type"] == "prototext" or model_info["init_net"].split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
                 init_def = ptxt.Parse(i.read(), caffe2_pb2.NetDef())
             else:
                 init_def = caffe2_pb2.NetDef()
                 init_def.ParseFromString(i.read())
-        if args.int8_model or args.int8_cosim:
-            predict_file = model_info["predict_net_int8"]
-        else:
-            predict_file = model_info["predict_net"]
         with open(predict_file) as p:
             if model_info["model_type"] == "prototext" or predict_file.split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
@@ -256,9 +258,7 @@ def Run(args, extra_args):
         # ApplyOptimizations(init_def, predict_def, model_info, optimization)
         ws.FeedBlob(str(predict_def.op[0].input[0]), init_data, device_opts)
 
-        #XXX: Set to 1 for debug
-        debug_mode = 0
-        if debug_mode:
+        if os.environ.get('DEBUGMODE') == "1":
             cc2.SetOpName(predict_def)
 
         ws.RunNetOnce(init_def)
@@ -277,7 +277,7 @@ def Run(args, extra_args):
             #ws.CreateNet(new_predict_def._net)
             predict_def = new_predict_def._net
 
-        if debug_mode:
+        if os.environ.get('DEBUGMODE') == "1":
             with open("{0}_opt_predict_net.pb".format(model_info["model_name"]), "w") as fid:
                 fid.write(predict_def.SerializeToString())
             with open("{}_opt_predict_net.pbtxt".format(model_info["model_name"]), "w") as fid:

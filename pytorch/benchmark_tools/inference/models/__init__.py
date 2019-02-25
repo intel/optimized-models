@@ -35,23 +35,23 @@ class Models:
         output_type = defs[defs.index("[Output Type]") + 1].lower()
         init_net = os.path.join(path, defs[defs.index("[Init Net]") + 1])
         predict_net = os.path.join(path, defs[defs.index("[Predict Net]") + 1])
+        init_net_int8 = None
+        if "[Init Net Int8]" in defs:
+            init_net_int8 = os.path.join(path, defs[defs.index("[Init Net Int8]") + 1])
+        predict_net_int8 = None
         if "[Predict Net Int8]" in defs:
             predict_net_int8 = os.path.join(path, defs[defs.index("[Predict Net Int8]") + 1])
-        else:
-            predict_net_int8 = ''
-        onnx_model = ''
+        onnx_model = None
         if "[Onnx Model]" in defs:
             onnx_model = os.path.join(path, defs[defs.index("[Onnx Model]") + 1])
         crop_size = defs[defs.index("[Crop Size]") + 1]
         image_mean = defs[defs.index("[Image Mean]") + 1]
+        scale = 1
         if "[Scale]" in defs:
             scale = defs[defs.index("[Scale]") +1]
-        else:
-            scale = 1
+        rescale_size = 256
         if "[ReScale Size]" in defs:
             rescale_size = defs[defs.index("[ReScale Size]") +1]
-        else:
-            rescale_size = 256
         if len(image_mean) > 0:
             image_mean = os.path.join(path, image_mean)
         else:
@@ -62,7 +62,7 @@ class Models:
             allow_device_override = defs[defs.index("[Allow Device Override]") +1].lower() in ('yes', 'true', 't', '1')
         if "[Need Normalize]" in defs:
             need_normalize = defs[defs.index("[Need Normalize]") +1].lower() in ('yes', 'true', 't', '1')
-        color_format = ''
+        color_format = None
         if "[Color Format]" in defs:
             color_format = defs[defs.index("[Color Format]") + 1]
 
@@ -76,6 +76,7 @@ class Models:
                 "output_type" : output_type,
                 "init_net" : init_net,
                 "predict_net" : predict_net,
+                "init_net_int8" : init_net_int8,
                 "predict_net_int8" : predict_net_int8,
                 "onnx_model" : onnx_model,
                 "crop_size" : crop_size,

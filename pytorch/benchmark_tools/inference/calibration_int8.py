@@ -146,6 +146,13 @@ def Calibration(args, extra_args):
                         .format(model_info["model_name"]))
         tf.optimizeForMKLDNN(net)
     predict_def = net.Proto()
+    if predict_def.op[-1].type == 'Accuracy':
+        init_label = np.ones((batch_size), dtype=np.int32)
+        label = net.AddExternalInput('label')
+        workspace.FeedBlob(label, init_label, device_opts)
+        for i, op in enumerate(predict_def.op):
+            if op.type == 'Accuracy':
+                workspace.FeedBlob(str(predict_def.op[i].output[0]), init_label, device_opts)
 
     from inference.calibrator import Calibrator, KLCalib, AbsmaxCalib, EMACalib
     algorithm = AbsmaxCalib()

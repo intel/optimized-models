@@ -1,6 +1,9 @@
 #! /usr/bin/python
 ## @package caffe2_tools
 # Module caffe2.tools.run_caffe2
+"""
+the main entry to run caffe2 model
+"""
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -14,13 +17,18 @@ import argparse
 
 LOG_FORMAT = "%(levelname)s:%(message)s"
 
-
 def ArgError(error):
+    """
+    print help if arg is error
+    """
     logging.error("Please set {}. "
                   "OR, refer to the help of this script (-h)"
                   .format(error))
 
 def Calibration(args, extr_args):
+    """
+    function to do calibration.
+    """
     if not args.model:
         ArgError("model to run (-m)")
         return
@@ -43,6 +51,9 @@ def Calibration(args, extr_args):
 
 
 def Inference(args, extra_args):
+    """
+    function to do inference.
+    """
     if not args.model:
         ArgError("model to run (-m)")
         return
@@ -64,30 +75,16 @@ def Inference(args, extra_args):
     inf.Run(args, extra_args)
 
 
-def Training(args, extra_args):
-    if args.print_net_def:
-        import training as tra
-        tra.PrintNetDef(args.model, args.print_net_def)
-        return
-    if (
-            not args.tr_images_path and
-            not "CAFFE2_TRA_IMG_PATH" in os.environ
-    ):
-        ArgError("the path of input images for training (-tp)")
-        return
-
-    if args.model == 'resnet50':
-        import training.training_resnet50 as tra_res
-        tra_res.Run_resnet50(args, extra_args)
-    else:
-        import training as tra
-        tra.Run(args, extra_args)
 
 
 def GetArgumentParser():
+    """
+    to parse the argument
+    """
     parser = argparse.ArgumentParser(description="The scripts to run Caffe2.\n"
                                                  "for example, to run alexnet inference:\n"
-                                                 "./run_caffe2.py -m alexnet -p /path/to/imput/image\n"
+                                                 "./run_caffe2.py -m alexnet\n"
+                                                 " -p /path/to/imput/image\n"
                                                  " -v /path/to/image/validate/index/file\n"
                                      )
     parser.add_argument(
@@ -263,15 +260,15 @@ def GetArgumentParser():
 
 if __name__ == '__main__':
     args, extra_args = GetArgumentParser().parse_known_args()
-    log_level_map = {
+    LOG_LEVEL_MAP = {
         "debug": logging.DEBUG,
         "info": logging.INFO,
         "warning": logging.WARNING,
         "error": logging.ERROR,
         "critical": logging.CRITICAL,
     }
-    if args.log_level.lower() in log_level_map:
-        log_level = log_level_map[args.log_level.lower()]
+    if args.log_level.lower() in LOG_LEVEL_MAP:
+        log_level = LOG_LEVEL_MAP[args.log_level.lower()]
     else:
         log_level = None
         logging.warning("Wrong log level {}. Ignored!".format(args.log_level))
@@ -290,7 +287,6 @@ if __name__ == '__main__':
     else:
         type_map = {
             "inference": Inference,
-            "training": Training,
             "calibration": Calibration,
         }
         if args.mode.lower() in type_map:

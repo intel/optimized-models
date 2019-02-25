@@ -11,6 +11,9 @@ Possibility
 Model definition for Caffe2
 
 [Init Net]
+init_net.pb
+
+[Init Net Int8]
 init_onnx_int8.pb
 
 [Predict Net]

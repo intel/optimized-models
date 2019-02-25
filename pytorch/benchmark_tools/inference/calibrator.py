@@ -57,6 +57,12 @@ class algorithm(object):
                 return i
         return None
 
+    def get_op_by_output(self, outp_name, net_def):
+        for op in net_def.op:
+            if outp_name == op.output[0]:
+                return op
+        return None
+
     def insert_op(self, index, new_op, predict_def):
         src_op = new_op
         cur_index = index
@@ -90,11 +96,37 @@ class algorithm(object):
     def remove_max(self, predict_def):
         for op in predict_def.op:
             for i in range(len(op.input)):
-                self.remove_arg(op, 'absmax_input'+ '_' + str(i))
+                self.remove_arg(op, "absmax_input"+ "_" + str(i))
             for j in range(len(op.output)):
-                self.remove_arg(op, 'absmax_output'+ '_' + str(j))
+                self.remove_arg(op, "absmax_output"+ "_" + str(j))
 
-    def get_max(self, op, blob, max_name, tensor_idx, tensor_name):
+    def has_weights(self, op):
+        return {
+            "FC"            : True,
+            "Conv"          : True,
+            "ConvFusion"    : True,
+        }.get(op.type, False)
+
+    def is_weights(self, op, inp_index):
+        return self.has_weights(op) and inp_index == 1
+
+    def has_bias(self, op):
+        inp_len = len(op.input)
+        if op.type == "ConvFusion" and inp_len == 3:
+            arg = self.get_arg(op, "fusion_type")
+            assert arg is not None
+            # Check if is ConvRelu fusion
+            return arg.i == 1
+        return {
+            "FC"            : inp_len == 3,
+            "Conv"          : inp_len == 3,
+            "ConvFusion"    : inp_len == 4,
+        }.get(op.type, False)
+
+    def is_bias(self, op, op_index):
+        return self.has_bias(op) and op_index == 3
+
+    def get_max(self, op, tensor, tensor_idx, tensor_name, max_name):
         raise Exception("Please add max value computation method!")
 
     def gather_max(self, predict_def):
@@ -105,7 +137,7 @@ class algorithm(object):
 
 
 class KLCalib(algorithm):
-    """clibrator of KL"""
+    """ KL calibrator """
     def __init__(self, kl_iter_num_for_range=100):
         self.kl_iter_num_for_range = kl_iter_num_for_range
 
@@ -113,14 +145,14 @@ class KLCalib(algorithm):
         global iteration_idx
         iteration_idx += 1
 
-    def get_max(self, op, blob, max_name, tensor_idx, tensor_name):
+    def get_max(self, op, tensor, tensor_idx, tensor_name, max_name):
         global iteration_idx
         name = max_name + "_" + str(tensor_idx)
         op_hist_name = tensor_name + "_" + max_name + "_" + str(tensor_idx)
 
         arg = self.get_arg(op, name)
         if iteration_idx < self.kl_iter_num_for_range:
-            max_min = np.array([np.max(blob), np.min(blob)]).astype(np.float32)
+            max_min = np.array([np.max(tensor), np.min(tensor)]).astype(np.float32)
             if arg is not None:
                 orig_max = arg.floats[0]
                 orig_min = arg.floats[1]
@@ -135,7 +167,7 @@ class KLCalib(algorithm):
             assert arg is not None
             max_val = arg.floats[0]
             min_val = arg.floats[1]
-            self.get_kl_hist(blob, min_val, max_val, op_hist_name)
+            self.get_kl_hist(tensor, min_val, max_val, op_hist_name)
 
     def update_max(self, op, max_name, tensor_idx, tensor_name):
         """update the max data of the collected data"""
@@ -154,8 +186,8 @@ class KLCalib(algorithm):
 
         hist_iter = hist[hist_name]
         hist_edges_iter = hist_edges[hist_name]
-        layer_max = self.get_optimal_scaling_factor(hist_iter,
-                                                    hist_edges_iter, P_sum, max_val, min_val)
+        layer_max = self.get_optimal_scaling_factor(hist_iter, hist_edges_iter,
+                                                    P_sum, max_val, min_val)
 
         self.remove_arg(op, name)
         max_arg = utils.MakeArgument(name, np.array([layer_max]).astype(np.float32))
@@ -165,12 +197,10 @@ class KLCalib(algorithm):
     def gather_max(self, predict_def):
         for op in predict_def.op[0:]:
             for j, input_name in enumerate(op.input):
-                max_name = 'absmax_input'
-                self.update_max(op, max_name, j, input_name)
+                self.update_max(op, "absmax_input", j, input_name)
 
             for m, output_name in enumerate(op.output):
-                max_name = 'absmax_output'
-                self.update_max(op, max_name, m, output_name)
+                self.update_max(op, "absmax_output", m, output_name)
 
     def get_kl_hist(self, data, min_val, max_val, name):
         hist_iter, hist_edges_iter = np.histogram(data, bins=2048,
@@ -206,11 +236,11 @@ class KLCalib(algorithm):
         return expanded_quantized_bins
 
     def safe_entropy(self, reference_distr_P, P_sum, candidate_distr_Q, Q_sum):
-        """safe entropy"""
+        """ safe entropy """
         assert len(reference_distr_P) == len(candidate_distr_Q)
         tmp_sum1 = 0
         tmp_sum2 = 0
-        for idx, _ in enumerate(reference_distr_P):
+        for idx in range(len(reference_distr_P)):  ##pylint: disable=consider-using-enumerate
             p_idx = reference_distr_P[idx]
             q_idx = candidate_distr_Q[idx]
             if p_idx == 0:
@@ -302,15 +332,16 @@ class KLCalib(algorithm):
 
 
 class AbsmaxCalib(algorithm):
-    """calibrator for AbsMax"""
-    def get_max(self, op, blob, max_name, tensor_idx, tensor_name):
+    """ AbsMax calibrator"""
+    def get_max(self, op, tensor, tensor_idx, tensor_name, max_name):
         name = max_name + "_" + str(tensor_idx)
-        arg = self.get_arg(op, name)
-        absmax = np.array([np.absolute(blob).max()]).astype(np.float32)
+        absmax = np.array([np.absolute(tensor).max()]).astype(np.float32)
 
+        arg = self.get_arg(op, name)
         if arg is not None:
-            orig_absmax = arg.floats[0]
-            absmax = np.array([np.absolute([orig_absmax, absmax]).max()]).astype(np.float32)
+            orig_absmax = np.array(arg.floats).astype(np.float32)
+            assert orig_absmax.shape == absmax.shape
+            absmax = np.maximum(absmax, orig_absmax).astype(np.float32)
             self.remove_arg(op, name)
 
         max_arg = utils.MakeArgument(name, absmax)
@@ -319,17 +350,18 @@ class AbsmaxCalib(algorithm):
 
 
 class EMACalib(algorithm):
-    """calibrator for moving average"""
+    """ Moving Average calibrator """
     def __init__(self, ema_alpha=0.5):
         self.ema_alpha = ema_alpha
 
-    def get_max(self, op, blob, max_name, tensor_idx, tensor_name):
+    def get_max(self, op, tensor, tensor_idx, tensor_name, max_name):
         name = max_name + "_" + str(tensor_idx)
-        arg = self.get_arg(op, name)
-        absmax = np.array([np.absolute(blob).max()]).astype(np.float32)
+        absmax = np.array([np.absolute(tensor).max()]).astype(np.float32)
 
+        arg = self.get_arg(op, name)
         if arg is not None:
-            orig_absmax = arg.floats[0]
+            orig_absmax = np.array(arg.floats).astype(np.float32)
+            assert orig_absmax.shape == absmax.shape
             absmax = np.array([self.ema_alpha * absmax + (1-self.ema_alpha) * orig_absmax]).astype(np.float32)
             self.remove_arg(op, name)
 
@@ -348,9 +380,10 @@ class Calibrator(object):
         """run calibrator in iteration"""
         for op in predict_def.op[0:]:
             for j, input_name in enumerate(op.input):
-                input_blob = ws.FetchBlob(input_name)
-                max_name = 'absmax_input'
-                self.algo.get_max(op, input_blob, max_name, j, input_name)
+                if self.algo.is_weights(op, j) or self.algo.is_bias(op, j):
+                    continue
+                inp = ws.FetchBlob(input_name)
+                self.algo.get_max(op, inp, j, input_name, "absmax_input")
 
             this_op = copy.deepcopy(op)
             if self.dev_opt is not None:
@@ -358,9 +391,8 @@ class Calibrator(object):
             ws.RunOperatorOnce(this_op)
 
             for m, output_name in enumerate(op.output):
-                output_blob = ws.FetchBlob(output_name)
-                max_name = 'absmax_output'
-                self.algo.get_max(op, output_blob, max_name, m, output_name)
+                outp = ws.FetchBlob(output_name)
+                self.algo.get_max(op, outp, m, output_name, "absmax_output")
 
         self.algo.update_status()
         return predict_def
@@ -373,6 +405,8 @@ class Calibrator(object):
         DATA_TYPE_S16 = 4
         DATA_TYPE_S8 = 5
         DATA_TYPE_U8 = 6
+
+        PER_CHANNEL_WEIGHTS = True
 
         def get_zero_point(data_type):
             return {
@@ -391,12 +425,13 @@ class Calibrator(object):
 
         def get_quantized_op_type(op_type):
             return {
-                "Conv"          : "Int8Conv",
-                "Relu"          : "Int8Relu",
-                "Sum"           : "Int8Sum",
-                "Add"           : "Int8Add",
-                "MaxPool"       : "Int8MaxPool",
-                "AveragePool"   : "Int8AveragePool",
+                "Conv"            : "Int8Conv",
+                "Relu"            : "Int8Relu",
+                "Sum"             : "Int8Sum",
+                "Add"             : "Int8Add",
+                "MaxPool"         : "Int8MaxPool",
+                "AveragePool"     : "Int8AveragePool",
+                "UpsampleNearest" : "Int8UpsampleNearest",
                 # Int8FC is not supported so far
                 #"FC"            : "Int8FC",
             }.get(op_type, None)
@@ -409,15 +444,17 @@ class Calibrator(object):
             }.get(fusion_type, None)
 
         def get_output_format(op_type):
-            if op_type.startswith("Conv"):
-                return "NCHW"
-            if op_type.startswith("Int8Conv"):
-                return "NHWC"
-            if op_type.endswith("FC"):
-                return "NC"
             return {
-                "NCHW2NHWC" :   "NHWC",
-                "NHWC2NCHW" :   "NCHW",
+                "FC"                : "NC",
+                "Int8FC"            : "NC",
+                "Conv"              : "NCHW",
+                "ConvFusion"        : "NCHW",
+                "NHWC2NCHW"         : "NCHW",
+                "NCHW2NHWC"         : "NHWC",
+                "Int8Conv"          : "NHWC",
+                "Int8ConvRelu"      : "NHWC",
+                "Int8ConvSum"       : "NHWC",
+                "Int8ConvSumRelu"   : "NHWC",
             }.get(op_type, None)
 
         def not_need_quantize(op_type):
@@ -446,28 +483,27 @@ class Calibrator(object):
         def is_data_type_changed(op_type):
             key_type_segment = ["Conv", "Sum", "FC", "Concat"]
             for key in key_type_segment:
-                if op_type.find(key) != -1:
-                    return True
+                return op_type.find(key) != -1
             return False
 
         def has_weights(op):
-            key_type_segment = ["Int8Conv", "Int8FC"]
-            for key in key_type_segment:
-                if op.type.startswith(key):
-                    return True
-            return False
+            return {
+                "Int8FC"            : True,
+                "Int8Conv"          : True,
+                "Int8ConvRelu"      : True,
+                "Int8ConvSum"       : True,
+                "Int8ConvSumRelu"   : True,
+            }.get(op.type, False)
 
         def has_bias(op):
-            if op.type.startswith("Int8Conv"):
-                if op.type.find("Sum") != -1:
-                    if len(op.input) == 4:
-                        return True
-                elif len(op.input) == 3:
-                    return True
-                return False
-            elif op.type.startswith("Int8FC") and len(op.input) == 3:
-                return True
-            return False
+            inp_len = len(op.input)
+            return {
+                "Int8FC"            : inp_len == 3,
+                "Int8Conv"          : inp_len == 3,
+                "Int8ConvRelu"      : inp_len == 3,
+                "Int8ConvSum"       : inp_len == 4,
+                "Int8ConvSumRelu"   : inp_len == 4,
+            }.get(op.type, False)
 
         def predict_output_format(predict_def, op_pos):
             if op_pos is None:
@@ -482,7 +518,7 @@ class Calibrator(object):
             return "NCHW"
 
         def update_op_type(predict_def):
-            for _, op in enumerate(predict_def.op):
+            for i, op in enumerate(predict_def.op):
                 op_type = get_quantized_op_type(op.type)
                 if op_type is not None:
                     op.type = op_type
@@ -617,6 +653,10 @@ class Calibrator(object):
                 op = predict_def.op[pos]
                 if not op.type.startswith("Int8"):
                     output_data_type.append(DATA_TYPE_FP32)
+                elif op.type == "Int8Quantize":
+                    output_data_type.append(DATA_TYPE_S8)
+                elif op.type == "Int8Dequantize":
+                    output_data_type.append(DATA_TYPE_FP32)
                 elif op.type.endswith("Relu"):
                     output_data_type.append(DATA_TYPE_U8)
                 elif is_data_type_changed(op.type):
@@ -643,11 +683,19 @@ class Calibrator(object):
                     input_index = self.algo.get_input_index(op.output[0], successor)
                     arg_name = "absmax_input" + "_" + str(input_index)
                     arg = self.algo.get_arg(successor, arg_name)
-                else:
+                    assert arg is not None
+                    output_scale = arg.floats[0] / get_abs_max(output_data_type[i])
+                elif is_data_type_changed(op.type):
                     arg_name = "absmax_output" + "_" + str(0)
                     arg = self.algo.get_arg(op, arg_name)
-                assert arg is not None
-                output_scale = arg.floats[0] / get_abs_max(output_data_type[i])
+                    assert arg is not None
+                    output_scale = arg.floats[0] / get_abs_max(output_data_type[i])
+                else:
+                    pre_op, _ = self.algo.get_predecessor_op(0, i, predict_def)
+                    assert pre_op is not None
+                    arg = self.algo.get_arg(pre_op, "Y_scale")
+                    assert arg is not None
+                    output_scale = arg.f
                 self.algo.remove_arg(op, "Y_scale")
                 op.arg.extend([utils.MakeArgument("Y_scale", output_scale)])
                 self.algo.remove_arg(op, "Y_zero_point")
@@ -657,13 +705,22 @@ class Calibrator(object):
         def quantize_weights(ws, op, init_def):
             assert len(op.input) >= 2
             weights = ws.FetchBlob(op.input[1]).astype(np.float32)
+            if PER_CHANNEL_WEIGHTS:
+                absmax = np.array([np.absolute(weights[i, ...]).max()
+                                   for i in range(weights.shape[0])]).astype(np.float32)
+            else:
+                absmax = np.array([np.absolute(weights).max()]).astype(np.float32)
+            output_scale = absmax / get_abs_max(DATA_TYPE_S8)
+            output_zero_point = get_zero_point(DATA_TYPE_S8)
             if len(weights.shape) == 4:
                 weights = np.transpose(weights, (0, 2, 3, 1)).astype(np.float32)
-            arg = self.algo.get_arg(op, "absmax_input" + "_" + str(1))
-            assert arg is not None
-            output_scale = arg.floats[0] / get_abs_max(DATA_TYPE_S8)
-            output_zero_point = get_zero_point(DATA_TYPE_S8)
-            values = np.rint((weights / output_scale)).astype(np.int8) + output_zero_point
+            if output_scale.shape[0] == weights.shape[0]:
+                assert len(output_scale.shape) == 1
+                values = np.rint([weights[i, ...] / output_scale[i]
+                                  for i in range(weights.shape[0])]).astype(np.int8) + output_zero_point
+            else:
+                assert output_scale.size == 1
+                values = np.rint((weights / output_scale[0])).astype(np.int8) + output_zero_point
             filler = core.CreateOperator(
                 "Int8GivenTensorFill",
                 [], [op.input[1]],
@@ -671,19 +728,25 @@ class Calibrator(object):
                     utils.MakeArgument("shape", weights.shape),
                     utils.MakeArgument("values", values.astype(np.uint8).tobytes()),
                     utils.MakeArgument("Y_zero_point", output_zero_point),
-                    utils.MakeArgument("Y_scale", output_scale)])
+                    utils.MakeArgument("Y_scale", output_scale)
+                    if output_scale.size == 1 else utils.MakeArgument("Y_scales", output_scale),
+                    ]
+            )
             init_def.op.extend([filler])
             return output_scale
 
-        def quantize_bias(ws, op, init_def, input_data_type, weights_scale):
+        def quantize_bias(ws, op, init_def, input_scale, weights_scale):
             assert len(op.input) >= 3
-            bias = ws.FetchBlob(op.input[2]).astype(np.float32)
-            arg = self.algo.get_arg(op, "absmax_input" + "_" + str(0))
-            assert arg is not None
-            input_scale = arg.floats[0] / get_abs_max(input_data_type)
-            output_scale = input_scale * weights_scale
+            output_scale = weights_scale * input_scale
             output_zero_point = get_zero_point(DATA_TYPE_S32)
-            values = np.rint(bias / output_scale).astype(np.int32)
+            bias = ws.FetchBlob(op.input[2]).astype(np.float32)
+            if output_scale.shape[0] == bias.shape[0]:
+                assert len(output_scale.shape) == 1
+                values = np.rint([bias[i] / output_scale[i]
+                                  for i in range(bias.shape[0])]).astype(np.int32)
+            else:
+                assert output_scale.size == 1
+                values = np.rint(bias / output_scale[0]).astype(np.int32)
             filler = core.CreateOperator(
                 "Int8GivenIntTensorFill",
                 [], [op.input[2]],
@@ -691,30 +754,48 @@ class Calibrator(object):
                     utils.MakeArgument("shape", bias.shape),
                     utils.MakeArgument("values", values),
                     utils.MakeArgument("Y_zero_point", output_zero_point),
-                    utils.MakeArgument("Y_scale", output_scale)])
+                    utils.MakeArgument("Y_scale", output_scale)
+                    if output_scale.size == 1 else utils.MakeArgument("Y_scales", output_scale),
+                    ]
+            )
             init_def.op.extend([filler])
 
-        def gen_quantized_init_def(ws, predict_def, output_data_type):
+        def gen_quantized_init_def(ws, predict_def):
             init_def = caffe2_pb2.NetDef()
             init_def.name = predict_def.name + "_weights_bias"
             for i, op in enumerate(predict_def.op):
                 if not op.type.startswith("Int8"):
                     continue
                 if has_weights(op):
-                    weights_scale = quantize_weights(ws, op, init_def)
+                    weights_filler = self.algo.get_op_by_output(op.input[1], init_def)
+                    if weights_filler is None:
+                        weights_scale = quantize_weights(ws, op, init_def)
                     if has_bias(op):
-                        _, pre_pos = self.algo.get_predecessor_op(0, i, predict_def)
-                        assert pre_pos is not None
-                        input_data_type = output_data_type[pre_pos]
-                        quantize_bias(ws, op, init_def, input_data_type, weights_scale)
+                        bias_filler = self.algo.get_op_by_output(op.input[2], init_def)
+                        if bias_filler is not None:
+                            continue
+                        if weights_filler is not None:
+                            arg = self.algo.get_arg(weights_filler, "Y_scale")
+                            if arg is not None:
+                                weights_scale = np.array([arg.f]).astype(np.float32)
+                            else:
+                                arg = self.algo.get_arg(weights_filler, "Y_scales")
+                                assert arg is not None
+                                weights_scale = np.array(arg.floats).astype(np.float32)
+                        pre_op, _ = self.algo.get_predecessor_op(0, i, predict_def)
+                        assert pre_op is not None
+                        arg = self.algo.get_arg(pre_op, "Y_scale")
+                        assert arg is not None
+                        assert weights_scale is not None
+                        quantize_bias(ws, op, init_def, arg.f, weights_scale)
             return init_def
 
         def organize_external_input(ws, predict_def, init_def):
             kTypeNameMapper = {
-                np.dtype('float32') : "GivenTensorFill",
-                np.dtype('int32')   : "GivenTensorIntFill",
-                np.dtype('int64')   : "GivenTensorInt64Fill",
-                np.dtype('uint8')   : "GivenTensorStringFill",
+                np.dtype("float32") : "GivenTensorFill",
+                np.dtype("int32")   : "GivenTensorIntFill",
+                np.dtype("int64")   : "GivenTensorInt64Fill",
+                np.dtype("uint8")   : "GivenTensorStringFill",
             }
             all_existing_inputs = []
             for op in init_def.op:
@@ -729,7 +810,7 @@ class Calibrator(object):
                 values = in_data
                 # pass array of uint8 as a string to save storage
                 # storing uint8_t has a large overhead for now
-                if in_data.dtype == np.dtype('uint8'):
+                if in_data.dtype == np.dtype("uint8"):
                     shape = [1]
                     values = [str(in_data.data)]
                 op = core.CreateOperator(
@@ -763,7 +844,7 @@ class Calibrator(object):
 
         add_storage_order(predict_quantized)
 
-        init_quantized = gen_quantized_init_def(ws, predict_quantized, output_data_type)
+        init_quantized = gen_quantized_init_def(ws, predict_quantized)
 
         self.algo.remove_max(predict_quantized)
 
