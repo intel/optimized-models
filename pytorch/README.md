@@ -19,6 +19,7 @@ pip install torchvision
 ```
 git clone https://github.com/pytorch/pytorch.git 
 git checkout 4ac91b2d64eeea5ca21083831db5950dc08441d6
+git submodule update --init --recursive
 wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/17464.diff
 git apply 17464.diff
 git submodule update --init --recursive
