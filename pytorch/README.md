@@ -2,19 +2,19 @@
 
 
 
-## 1. download resnet50 pytorch model
+## Download resnet50 pytorch model
 
 ```
 wget https://download.pytorch.org/models/resnet50-19c8e357.pth
 ```
 
-## 2. install legacy pytorch for transferring model from pytorch to onnx
+## Install legacy pytorch for transferring model from pytorch to onnx
 
 ```
 pip install torchvision
 ```   
 
-## 3. got pytoch source from github and merge pr
+## Get pytoch source from github, merge pr and build
 
 ```
 git clone https://github.com/pytorch/pytorch.git 
@@ -23,13 +23,13 @@ git submodule update --init --recursive
 cd third_party/ideep
 git log
 git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
-
+cd ../..
 wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/17464.diff
 git apply 17464.diff
-git submodule update --init --recursive
+python setup.py build
 ```
 
-## 4. transfer pytorch model to onnx model
+## Transfer pytorch model to onnx model
     below code is an example:
 ```
         import torch    
@@ -46,26 +46,31 @@ git submodule update --init --recursive
                                        "resnet50.onnx",
                                        export_params=True)
 ```
-## 5. copy onnx file to tools folder
+## Copy onnx file to tools folder
 
 ```
         cp resnet50.onnx inference/models/resnet50/
 ```
 
-## 6. prepare dataset
+## Prepare dataset
 
 ```
-        please download the imagenet and label file from the official site
+        Please download the imagenet and validation file from the official site
+        http://image-net.org/download.php
+        
+        Note:
+        - ImageNet does not own the copyright of the images. For researchers and educators who wish to use the images for non-commercial research and/or educational purposes, ImageNet can provide access through their site under certain conditions and terms. 
+                
 ```
 
-## 7. prepare calibration dataset
+## Prepare calibration dataset
 
 ```
-        copy ILSVRC2012_val_00033000.JPEG to ILSVRC2012_val_00033999.JPEG totally 1000 images from the downloaded imagenet dataset folder to calibration folder
+        Copy ILSVRC2012_val_00033000.JPEG to ILSVRC2012_val_00033999.JPEG totally 1000 images from the downloaded imagenet dataset folder to calibration folder
+        find /path/to/your/dataset -type f | grep -E 'ILSVRC2012_val_00033[0-9]*' | xargs -i cp {} /path/to/your/calibration_dataset
 ```
 
-## 8. run calibration
-    if you just build pytorch from source, please use export PYTHONPATH to let the tools know the location of caffe2 build folder    
+## Run calibration
 
 ```
          export PYTHONPATH=/the/path/to/your/pytorch/src
@@ -73,12 +78,12 @@ git submodule update --init --recursive
          export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
          ./run_caffe2.py -m $modelname -p calibration_folder  -v label_file  -b "batchsize"  -r calibration -o . --onnx
 
-    there will be two files generated under the folder, and copy them to inference/models/resnet50
+    There will be two files generated under the folder, and copy them to inference/models/resnet50
          cp init_net_int8.pb inference/models/resnet50/init_onnx_int8.pb
          cp predict_net_int8.pb inference/models/resnet50/predict_onnx_int8.pb
 ```
 
-## 9. run fp32 model
+## Run fp32 model
 
 ```
          export PYTHONPATH=/the/path/to/your/pytorch/src
@@ -88,7 +93,7 @@ git submodule update --init --recursive
          ./run_caffe2.py -m $modelname -p imagenet_folder  -v label_file  -b "batchsize" -w 5  --onnx
 ```
 
-## 10. run int8 model
+## Run int8 model
 
 ```
          export PYTHONPATH=/the/path/to/your/pytorch/src
@@ -98,16 +103,17 @@ git submodule update --init --recursive
          ./run_caffe2.py -m $modelname -p calibration_folder  -v label_file  -b "batchsize"  -w 5  -int8
 ```
 
-## 11. parse the result, the output of both fp32 and int8 model looks like below,
+## Parse the result, the output of both fp32 and int8 model looks like below,
 
 ```
-        Images per second: 352.1690776042
-        Total computing time: 3.6346178055 seconds
-        Total image processing time: 12.1027922630 seconds
-        Total model loading time: 5.2039198875 seconds
-        Total images: 1280
-        Accuracy: 76.64062%
-        Top5Accuracy: 93.04688%
+         Images per second: 345.5456113865
+         Total computing time: 144.6986978054 seconds
+         Total image processing time: 491.1261794567 seconds
+         Total model loading time: 4.4210910797 seconds
+         Total images: 50000
+         Accuracy: 75.36400%
+         Top5Accuracy: 92.54200%
+
 ```
-    just use Images per second as the throughput, Accuracy as the Top1 accuracy and Top5Accuracy as the Top5 Accuracy.
+    Just use 'Images per second' as the Throughput, 'Accuracy' as the Top1 accuracy and 'Top5Accuracy' as the Top5 Accuracy.
     
