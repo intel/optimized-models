@@ -58,8 +58,8 @@ python setup.py build
         Please download the imagenet and validation file from the official site
         http://image-net.org/download.php
         
-        Note:
-        - ImageNet does not own the copyright of the images. For researchers and educators who wish to use the images for non-commercial research and/or educational purposes, ImageNet can provide access through their site under certain conditions and terms. 
+Note:
+- ImageNet does not own the copyright of the images. For researchers and educators who wish to use the images for non-commercial research and/or educational purposes, ImageNet can provide access through their site under certain conditions and terms. 
                 
 ```
 
@@ -90,7 +90,7 @@ python setup.py build
          export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
          export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
 
-         ./run_caffe2.py -m $modelname -p imagenet_folder  -v label_file  -b "batchsize" -w 5  --onnx
+         ./run_caffe2.py -m $modelname -p imagenet_folder  -v validation_file  -b "batchsize" -w 5  --onnx
 ```
 
 ## Run int8 model
@@ -100,7 +100,7 @@ python setup.py build
          export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
          export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
  
-         ./run_caffe2.py -m $modelname -p calibration_folder  -v label_file  -b "batchsize"  -w 5  -int8
+         ./run_caffe2.py -m $modelname -p calibration_folder  -v validation_file  -b "batchsize"  -w 5  -int8
 ```
 
 ## Parse the result, the output of both fp32 and int8 model looks like below,
