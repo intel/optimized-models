@@ -76,7 +76,7 @@ Note:
          export PYTHONPATH=/the/path/to/your/pytorch/src
          export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
          export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
-         ./run_caffe2.py -m $modelname -p calibration_folder  -v label_file  -b "batchsize"  -r calibration -o . --onnx
+         ./run_caffe2.py -m $modelname -p calibration_folder  -v validation_file  -b "batchsize"  -r calibration -o . --onnx
 
     There will be two files generated under the folder, and copy them to inference/models/resnet50
          cp init_net_int8.pb inference/models/resnet50/init_onnx_int8.pb
