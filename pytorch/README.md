@@ -1,4 +1,4 @@
-# Guild to run resnet50 fp32 and int8 models.
+# Guide to run resnet50 fp32 and int8 models.
 
 
 
@@ -92,6 +92,14 @@ Note:
 
          ./run_caffe2.py -m $modelname -p imagenet_folder  -v validation_file  -b "batchsize" -w 5  --onnx
 ```
+    If you want to run dummy data, please use the blow command
+```
+         export PYTHONPATH=/the/path/to/your/pytorch/src
+         export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
+         export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
+
+         ./run_caffe2.py -m $modelname -b "batchsize" -w 5 -u -i 1000 --onnx
+```
 
 ## Run int8 model
 
@@ -100,8 +108,19 @@ Note:
          export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
          export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
  
-         ./run_caffe2.py -m $modelname -p calibration_folder  -v validation_file  -b "batchsize"  -w 5  -int8
+         ./run_caffe2.py -m $modelname -p imagenet_folder  -v validation_file  -b "batchsize"  -w 5  -int8
 ```
+    If you want to run dummy data, please use the blow command
+```
+         export PYTHONPATH=/the/path/to/your/pytorch/src
+         export LD_PRELOAD=the/location/of/libiomp5.so      #libiomp5.so can be found under you mkl folder
+         export OMP_NUM_THREADS=28  KMP_AFFINITY=proclist=[0-27],granularity=thread,explicit #28 is an example, it means cores of one socket of your cpu
+
+         ./run_caffe2.py -m $modelname -b "batchsize" -w 5 -u -i 1000 -int8
+```
+
+
+
 
 ## Parse the result, the output of both fp32 and int8 model looks like below,
 
