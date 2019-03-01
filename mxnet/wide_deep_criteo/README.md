@@ -11,3 +11,9 @@ How to build the MXNET for wide&deep:
 3. git apply --ignore-space-change --ignore-whitespace patch.diff
 4. Enter 3rdparty/mkldnn, and execute 'git checkout 08bd90cca77683dd5d1c98068cea8b92ed05784d'
 5. make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
+
+How to run the wide&deep:
+1. python train.py (If use the pre-trained model skip this step)
+2. python wd_gen_qsym_subgraph.py
+3. FP32: python inference.py --symbol-file=embedding-fuse.json --param-file=checkpoint-0000.params
+4. Int8: python inference.py --symbol-file=embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params

@@ -1,0 +1,576 @@
+{
+  "nodes": [
+    {
+      "op": "null", 
+      "name": "csr_data", 
+      "attrs": {"__storage_type__": "2"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "linear_weight", 
+      "attrs": {
+        "__init__": "[\"normal\", {\"sigma\": 0.01}]", 
+        "__shape__": "(26000, 256)", 
+        "__storage_type__": "1"
+      }, 
+      "inputs": []
+    }, 
+    {
+      "op": "dot", 
+      "name": "dot0", 
+      "inputs": [[0, 0, 0], [1, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "linear_bias", 
+      "attrs": {"__shape__": "(256,)"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "broadcast_add", 
+      "name": "broadcast_add0", 
+      "inputs": [[2, 0, 0], [3, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "dns_data", 
+      "inputs": []
+    }, 
+    {
+      "op": "slice", 
+      "name": "slice1", 
+      "attrs": {
+        "begin": "(0, 26)", 
+        "end": "(None, 39)"
+      }, 
+      "inputs": [[5, 0, 0]]
+    }, 
+    {
+      "op": "slice", 
+      "name": "slice0", 
+      "attrs": {
+        "begin": "(0, 0)", 
+        "end": "(None, 26)"
+      }, 
+      "inputs": [[5, 0, 0]]
+    }, 
+    {
+      "op": "SliceChannel", 
+      "name": "split0", 
+      "attrs": {
+        "num_outputs": "26", 
+        "squeeze_axis": "1"
+      }, 
+      "inputs": [[7, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_0_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_1_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_2_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_3_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_4_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_5_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_6_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_7_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_8_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_9_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_10_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_11_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_12_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_13_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_14_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_15_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_16_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_17_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_18_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_19_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_20_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_21_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_22_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_23_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_24_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "embed_25_weight", 
+      "attrs": {"__storage_type__": "1"}, 
+      "inputs": []
+    }, 
+    {
+      "op": "SliceSplitEmbeddingConcatFuse",
+      "name": "SliceSplitEmbeddingConcatFuse_0",
+      "attrs": {
+        "cont_begin": "(0, 26)",
+        "cont_end": "(None, 39)",
+        "embed_begin": "(0, 0)",
+        "embed_end": "(None, 26)",
+        "num_outputs": "26",
+        "squeeze_axis": "1",
+        "concat_dim": "1",
+        "input_dims": "[1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000,1000]",
+        "output_dims": "[32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32,32]"
+
+      }, 
+      "inputs": [
+        [5, 0, 0],
+        [9, 0, 0],
+        [10, 0, 0],
+        [11, 0, 0],
+        [12, 0, 0],
+        [13, 0, 0],
+        [14, 0, 0],
+        [15, 0, 0],
+        [16, 0, 0],
+        [17, 0, 0],
+        [18, 0, 0],
+        [19, 0, 0],
+        [20, 0, 0],
+        [21, 0, 0],
+        [22, 0, 0],
+        [23, 0, 0],
+        [24, 0, 0],
+        [25, 0, 0],
+        [26, 0, 0],
+        [27, 0, 0],
+        [28, 0, 0],
+        [29, 0, 0],
+        [30, 0, 0],
+        [31, 0, 0],
+        [32, 0, 0],
+        [33, 0, 0],
+        [34, 0, 0]
+      ]
+    }, 
+    {
+      "op": "Concat", 
+      "name": "concat0", 
+      "attrs": {
+        "dim": "1", 
+        "num_args": "27"
+      }, 
+      "inputs": [
+        [6, 0, 0], 
+        [35, 0, 0], 
+        [35, 1, 0], 
+        [35, 2, 0], 
+        [35, 3, 0], 
+        [35, 4, 0], 
+        [35, 5, 0], 
+        [35, 6, 0], 
+        [35, 7, 0], 
+        [35, 8, 0], 
+        [35, 9, 0], 
+        [35, 10, 0], 
+        [35, 11, 0], 
+        [35, 12, 0], 
+        [35, 13, 0], 
+        [35, 14, 0], 
+        [35, 15, 0], 
+        [35, 16, 0], 
+        [35, 17, 0], 
+        [35, 18, 0], 
+        [35, 19, 0], 
+        [35, 20, 0], 
+        [35, 21, 0], 
+        [35, 22, 0], 
+        [35, 23, 0], 
+        [35, 24, 0], 
+        [35, 25, 0]
+      ]
+    }, 
+    {
+      "op": "_contrib_quantize", 
+      "name": "concat0_quantize", 
+      "attrs": {
+        "out_type": "uint8", 
+        "th_max": "1.000000", 
+        "th_min": "-0.591496", 
+        "threshold_enabled": "True"
+      }, 
+      "inputs": [[35, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected0_weight_quantize", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected0_bias_quantize", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected0_weight_quantize_min", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected0_weight_quantize_max", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected0_bias_quantize_min", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected0_bias_quantize_max", 
+      "inputs": []
+    }, 
+    {
+      "op": "_contrib_quantized_fully_connected", 
+      "name": "quantized_fullyconnected0", 
+      "attrs": {
+        "num_hidden": "1024", 
+        "out_enable_calib_range": "True", 
+        "out_max_calib_range": "3.316461", 
+        "out_min_calib_range": "-4.509306", 
+        "output_type": "uint8"
+      }, 
+      "inputs": [[37, 0, 0], [38, 0, 0], [39, 0, 0], [37, 1, 0], [37, 2, 0], [40, 0, 0], [41, 0, 0], [42, 0, 0], [43, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected1_weight_quantize", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected1_bias_quantize", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected1_weight_quantize_min", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected1_weight_quantize_max", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected1_bias_quantize_min", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected1_bias_quantize_max", 
+      "inputs": []
+    }, 
+    {
+      "op": "_contrib_quantized_fully_connected", 
+      "name": "quantized_fullyconnected1", 
+      "attrs": {
+        "num_hidden": "512", 
+        "out_enable_calib_range": "True", 
+        "out_max_calib_range": "28.068199", 
+        "out_min_calib_range": "-21.577808", 
+        "output_type": "uint8"
+      }, 
+      "inputs": [[44, 0, 0], [45, 0, 0], [46, 0, 0], [44, 1, 0], [44, 2, 0], [47, 0, 0], [48, 0, 0], [49, 0, 0], [50, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected2_weight_quantize", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected2_bias_quantize", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected2_weight_quantize_min", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected2_weight_quantize_max", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected2_bias_quantize_min", 
+      "inputs": []
+    }, 
+    {
+      "op": "null", 
+      "name": "fullyconnected2_bias_quantize_max", 
+      "inputs": []
+    }, 
+    {
+      "op": "_contrib_quantized_fully_connected", 
+      "name": "quantized_fullyconnected2", 
+      "attrs": {
+        "num_hidden": "256", 
+        "out_enable_calib_range": "True", 
+        "out_max_calib_range": "35.294266", 
+        "out_min_calib_range": "-195.254196", 
+        "output_type": "fp32"
+      }, 
+      "inputs": [[51, 0, 0], [52, 0, 0], [53, 0, 0], [51, 1, 0], [51, 2, 0], [54, 0, 0], [55, 0, 0], [56, 0, 0], [57, 0, 0]]
+    }, 
+    {
+      "op": "elemwise_add", 
+      "name": "_plus0", 
+      "inputs": [[4, 0, 0], [58, 0, 0]]
+    }, 
+    {
+      "op": "null", 
+      "name": "softmax_label", 
+      "inputs": []
+    }, 
+    {
+      "op": "SoftmaxOutput", 
+      "name": "model", 
+      "inputs": [[59, 0, 0], [60, 0, 0]]
+    }
+  ], 
+  "arg_nodes": [
+    0, 
+    1, 
+    3, 
+    5, 
+    9, 
+    10, 
+    11, 
+    12, 
+    13, 
+    14, 
+    15, 
+    16, 
+    17, 
+    18, 
+    19, 
+    20, 
+    21, 
+    22, 
+    23, 
+    24, 
+    25, 
+    26, 
+    27, 
+    28, 
+    29, 
+    30, 
+    31, 
+    32, 
+    33, 
+    34, 
+    38, 
+    39, 
+    40, 
+    41, 
+    42, 
+    43, 
+    45, 
+    46, 
+    47, 
+    48, 
+    49, 
+    50, 
+    52, 
+    53, 
+    54, 
+    55, 
+    56, 
+    57, 
+    60
+  ], 
+  "node_row_ptr": [
+    0, 
+    1, 
+    2, 
+    3, 
+    4, 
+    5, 
+    6, 
+    7, 
+    8, 
+    34, 
+    35, 
+    36, 
+    37, 
+    38, 
+    39, 
+    40, 
+    41, 
+    42, 
+    43, 
+    44, 
+    45, 
+    46, 
+    47, 
+    48, 
+    49, 
+    50, 
+    51, 
+    52, 
+    53, 
+    54, 
+    55, 
+    56, 
+    57, 
+    58, 
+    59, 
+    60, 
+    86, 
+    87, 
+    90, 
+    91, 
+    92, 
+    93, 
+    94, 
+    95, 
+    96, 
+    99, 
+    100, 
+    101, 
+    102, 
+    103, 
+    104, 
+    105, 
+    108, 
+    109, 
+    110, 
+    111, 
+    112, 
+    113, 
+    114, 
+    115, 
+    116, 
+    117, 
+    118
+  ], 
+  "heads": [[61, 0, 0]], 
+  "attrs": {"mxnet_version": ["int", 10400]}
+}

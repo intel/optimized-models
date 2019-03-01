@@ -2435,10 +2435,10 @@ index e20bc17..8a90cef 100644
  }
  
 diff --git a/src/operator/quantization/mkldnn/mkldnn_quantize-inl.h b/src/operator/quantization/mkldnn/mkldnn_quantize-inl.h
-index 7a00f62..344768f 100644
+index 7a00f62..1099ea1 100644
 --- a/src/operator/quantization/mkldnn/mkldnn_quantize-inl.h
 +++ b/src/operator/quantization/mkldnn/mkldnn_quantize-inl.h
-@@ -26,40 +26,256 @@
+@@ -26,40 +26,259 @@
  #ifndef MXNET_OPERATOR_QUANTIZATION_MKLDNN_MKLDNN_QUANTIZE_INL_H_
  #define MXNET_OPERATOR_QUANTIZATION_MKLDNN_MKLDNN_QUANTIZE_INL_H_
  #if MXNET_USE_MKLDNN == 1
@@ -2590,14 +2590,17 @@ index 7a00f62..344768f 100644
 +	float * _amin_cache;
 +	TShape _ishape;
 +	float _amin;
++    quantize_ws_cache_buf_t(const quantize_ws_cache_buf_t &obj){}
++    quantize_ws_cache_buf_t& operator=(const quantize_ws_cache_buf_t &s){ return *this; }
 +public:
 +	quantize_ws_cache_buf_t(const TShape& ishape)
-+		:_amin_cache(nullptr), _ishape(ishape){}
++		: _amin_cache(NULL), _ishape(ishape){}
++    
 +	float* get_amin_buffer(float amin)
 +	{
 +		if (_ishape.ndim() != 2)
-+			return nullptr;
-+		if (_amin_cache == nullptr)
++			return NULL;
++		if (!_amin_cache)
 +		{
 +			int size = _ishape[1];
 +			_amin_cache = new float[size];
@@ -2615,9 +2618,9 @@ index 7a00f62..344768f 100644
 +	}
 +	~quantize_ws_cache_buf_t()
 +	{
-+		if (_amin_cache != nullptr) {
++		if (_amin_cache) {
 +			delete[] _amin_cache;
-+			_amin_cache = nullptr;
++			_amin_cache = NULL;
 +		}
 +	}
 +};
@@ -2710,7 +2713,7 @@ index 7a00f62..344768f 100644
    primitive_attr attr;
    const int mask = 0;
    std::vector<float> scales = {scale};
-@@ -72,27 +288,14 @@ static void MKLDNNQuantizeComputeKer(const std::vector<NDArray>& inputs,
+@@ -72,27 +291,14 @@ static void MKLDNNQuantizeComputeKer(const std::vector<NDArray>& inputs,
      in_buffer = inputs[0].Reorder2Default();
  
    auto i_mem = in_buffer.GetMKLDNNData();
@@ -2746,7 +2749,7 @@ index 7a00f62..344768f 100644
    MKLDNNStream::Get()->Submit();
  }
  
-@@ -101,6 +304,9 @@ static void MKLDNNQuantizeCompute(const nnvm::NodeAttrs& attrs, const OpContext
+@@ -101,6 +307,9 @@ static void MKLDNNQuantizeCompute(const nnvm::NodeAttrs& attrs, const OpContext
                                    const std::vector<OpReqType> &req,
                                    const std::vector<NDArray> &outputs) {
    const QuantizeParam& param = nnvm::get<QuantizeParam>(attrs.parsed);
@@ -2758,10 +2761,10 @@ index 7a00f62..344768f 100644
    } else if (param.out_type == mshadow::kInt8) {
 diff --git a/src/operator/quantization/mkldnn/mkldnn_quantized_fully_connected.cc b/src/operator/quantization/mkldnn/mkldnn_quantized_fully_connected.cc
 new file mode 100644
-index 0000000..af4e75d
+index 0000000..0fd9b2e
 --- /dev/null
 +++ b/src/operator/quantization/mkldnn/mkldnn_quantized_fully_connected.cc
-@@ -0,0 +1,540 @@
+@@ -0,0 +1,544 @@
 +/*
 +* Licensed to the Apache Software Foundation (ASF) under one
 +* or more contributor license agreements.  See the NOTICE file
@@ -2819,17 +2822,19 @@ index 0000000..af4e75d
 +    TShape _ishape;
 +    NDArray* _bias_buf;
 +    int32_t * _weight_shift;
++    shift_buf_t(const shift_buf_t &obj){}
++    shift_buf_t& operator=(const shift_buf_t &s){ return *this; }
 +public:
 +    const static int INT8_SHIFT_CONST = 128;
 +    shift_buf_t(TShape& oshape, TShape& ishape) 
-+        :_obuf(nullptr), _shift_buf(nullptr), _bias_buf(nullptr), _weight_shift(nullptr)
++        :_obuf(NULL), _shift_buf(NULL), _bias_buf(NULL), _weight_shift(NULL)
 +    {
 +        _oshape = oshape;
 +        _ishape = ishape;
 +    }
 +    int32_t* get_obuffer()
 +    {
-+        if (_obuf == nullptr)
++        if (!_obuf)
 +        {
 +            int size = _oshape.Size();
 +            _obuf = new int32_t[size];
@@ -2863,21 +2868,23 @@ index 0000000..af4e75d
 +    }
 +    ~shift_buf_t()
 +    {
-+        if (_obuf != nullptr) {
++        if (_obuf) {
 +            delete[] _obuf;
-+            _obuf = nullptr;
++            _obuf = NULL;
 +        }
-+        if (_shift_buf != nullptr) {
++        if (_shift_buf) {
 +            delete[] _shift_buf;
-+            _shift_buf = nullptr;
++            _shift_buf = NULL;
 +        }
 +
-+        if (_bias_buf != nullptr)
++        if (_bias_buf) {
 +            delete _bias_buf;
++            _bias_buf = NULL;
++        }
 +
-+        if (_weight_shift != nullptr) {
++        if (_weight_shift) {
 +            delete[] _weight_shift;
-+            _weight_shift = nullptr;
++            _weight_shift = NULL;
 +        }
 +    }
 +};
@@ -2938,13 +2945,13 @@ index 0000000..af4e75d
 +    bool IsBiasCached() { return _bias_cached; }
 +    void SetNewMem(const mkldnn::memory &data, const mkldnn::memory *weight,
 +        const mkldnn::memory *bias, const mkldnn::memory &output) {
-+        if (this->data == nullptr)
++        if (!this->data)
 +            this->data = std::shared_ptr<mkldnn::memory>(new mkldnn::memory(
 +                ipFwd_pd.src_primitive_desc(), data.get_data_handle()));
 +        else
 +            this->data->set_data_handle(data.get_data_handle());
-+        if (weight != nullptr) {
-+            if (this->weight == nullptr)
++        if (weight) {
++            if (!this->weight)
 +                this->weight = std::shared_ptr<mkldnn::memory>(new mkldnn::memory(
 +                    ipFwd_pd.weights_primitive_desc(), weight->get_data_handle()));
 +            else
@@ -2952,19 +2959,19 @@ index 0000000..af4e75d
 +            _weight_cached = true;
 +        }
 +        else {
-+            if (this->weight == nullptr) {
++            if (!this->weight) {
 +                LOG(FATAL) << "MKLDNNQuantFullyConnectForward Weight not initialized";
 +            }
 +        }
-+        if (this->out == nullptr)
++        if (!this->out)
 +            this->out = std::shared_ptr<mkldnn::memory>(new mkldnn::memory(
 +                ipFwd_pd.dst_primitive_desc(), output.get_data_handle()));
 +        else
 +            this->out->set_data_handle(output.get_data_handle());
 +
-+        if ((bias != nullptr && !_bias_cached) || (this->bias != nullptr && _bias_cached)) {
++        if ((bias && !_bias_cached) || (this->bias && _bias_cached)) {
 +            if (!_bias_cached) {
-+                if (this->bias == nullptr) {
++                if (!this->bias) {
 +                    auto bias_desc = ipFwd_pd.bias_primitive_desc();
 +                    this->bias = std::shared_ptr<mkldnn::memory>(new mkldnn::memory(bias_desc));
 +                    int bias_buf_size = bias_desc.get_size();
@@ -2974,14 +2981,14 @@ index 0000000..af4e75d
 +                }
 +                _bias_cached = true;
 +            }
-+            if (this->ipFwd == nullptr)
++            if (!this->ipFwd)
 +                this->ipFwd = std::shared_ptr<mkldnn::inner_product_forward>(
 +                    new mkldnn::inner_product_forward(
 +                        ipFwd_pd, mkldnn::primitive::at(*this->data),
 +                        mkldnn::primitive::at(*this->weight),
 +                        mkldnn::primitive::at(*this->bias), *this->out));
 +        }
-+        else if (this->ipFwd == nullptr) {
++        else if (!this->ipFwd) {
 +            this->ipFwd = std::shared_ptr<mkldnn::inner_product_forward>(
 +                new mkldnn::inner_product_forward(
 +                    ipFwd_pd, mkldnn::primitive::at(*this->data),
