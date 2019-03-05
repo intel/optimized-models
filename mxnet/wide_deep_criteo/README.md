@@ -1,19 +1,74 @@
-TERMS OF USE:
+##TERMS OF USE:
 PLEASE NOTE THAT YOUR USE OF AND ACCESS TO KAGGLE'S SERVICES ARE SUBJECT TO THE TERMS. IF YOU DO NOT AGREE TO ALL OF THEM, YOU MAY NOT USE OR ACCESS THE SERVICES IN ANY MANNER. DETAILS SEE THE LINK: https://www.kaggle.com/terms
 
 How to get dataset:
-1. Goto the link: https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version to start download criteo large dataset, and it might take a long time.
-2. Create one DIR named large_version, and save the train.csv and eval.csv in ./large_version/.
+Goto the link: https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version to start download criteo large dataset, and it might take a long time.
+```
+mkdir large_version
+#Downloading the training dataset...
+wget -P ./large_version https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version/train.csv
+#Downloading the validation dataset...
+wget -P ./large_version https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version/eval.csv
+```
 
-How to build the MXNET for wide&deep:
-1. git clone --recursive https://github.com/apache/incubator-mxnet.git
-2. git checkout f1de8e51999ce3acaa95538d21a91fe43a0286ec
-3. git apply --ignore-space-change --ignore-whitespace patch.diff
-4. Enter 3rdparty/mkldnn, and execute 'git checkout 08bd90cca77683dd5d1c98068cea8b92ed05784d'
-5. make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
+##Install MXNet from source code
+```
+git clone --recursive https://github.com/apache/incubator-mxnet.git
+cd incubator-mxnet
+git submodule update --recursive
+git checkout f1de8e51999ce3acaa95538d21a91fe43a0286ec
+git apply --ignore-space-change --ignore-whitespace patch.diff
+cd 3rdparty/mkldnn
+git checkout 08bd90cca77683dd5d1c98068cea8b92ed05784d
+cd ../..
+make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
+cd python
+python setup.py install [--user]
+```
+### Test MXNet
+```
+$ python
+>>> import mxnet as mx
+>>> mx.__version__
+'1.5.0'
+>>> a = mx.nd.ones((2, 3))
+>>> b = a * 2 + 1
+>>> b.asnumpy()
+array([[ 3., 3., 3.],
+ [ 3., 3., 3.]], dtype=float32)
+```
 
-How to run the wide&deep:
-1. python train.py
-2. python wd_gen_qsym_subgraph.py
-3. FP32: python inference.py --symbol-file=./model/embedding-fuse.json --param-file=checkpoint-0000.params
-4. Int8: python inference.py --symbol-file=./model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params
+##Run the wide&deep:
+### Take 8180 cpu as an example (2 sockets; 28 cores/socket)
+```
+cd optimized-models/mxnet/wide_deep_criteo/
+python train.py
+python wd_gen_qsym_subgraph.py
+export KMP_AFFINITY=granularity=fine,noduplicates,compact,1,0
+export OMP_NUM_THREADS=28
+# FP32
+numactl --physcpubind=0-27 --membind=0 python inference.py --symbol-file=./model/embedding-fuse.json --param-file=checkpoint-0000.params
+# Int8
+numactl --physcpubind=0-27 --membind= python inference.py --symbol-file=./model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params
+```
+
+##FP32 Outputs
+```
+INFO:logger:Performance Mode
+INFO:logger:batch size = 1024 for inference
+INFO:logger:label_name = softmax_label
+INFO:logger:Loading symbol from file dl_framework-optimized-models/mxnet/wide_deep_criteo/embedding-fuse.json
+INFO:logger:Loading params from file dl_framework-optimized-models/mxnet/wide_deep_criteo/checkpoint-0000.params
+INFO:logger:Running model embedding-fuse.json for inference
+INFO:logger:Run [7812] Batchs   Speed: 454459.70 samples/sec
+```
+##Int8 Outputs
+```
+INFO:logger:Performance Mode
+INFO:logger:batch size = 1024 for inference
+INFO:logger:label_name = softmax_label
+INFO:logger:Loading symbol from file dl_framework-optimized-models/mxnet/wide_deep_criteo/embedding_fuse-quantized-1953batches-naive-symbol.json
+INFO:logger:Loading params from file dl_framework-optimized-models/mxnet/wide_deep_criteo/WD-quantized-0000.params
+INFO:logger:Running model embedding_fuse-quantized-1953batches-naive-symbol.json for inference
+INFO:logger:Run [7812] Batchs   Speed: 953098.73 samples/sec
+```
