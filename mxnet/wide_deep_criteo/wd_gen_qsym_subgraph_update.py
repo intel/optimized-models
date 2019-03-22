@@ -132,7 +132,8 @@ if __name__ == '__main__':
 
     calib_layer = lambda name: (name.find('fullyconnected') != -1 or \
                                 name.find('FullyConnected') != -1 or \
-                                name.find('fully_connected') != -1)
+                                name.find('fully_connected') != -1
+                                name.find('concat0_output') != -1)
     sym = sym.get_backend_symbol('MKLDNN_FC')
     excluded_sym_names = ['concat0']
     cqsym, qarg_params, aux_params = quantize_model(sym=sym, arg_params=arg_params, aux_params=aux_params,

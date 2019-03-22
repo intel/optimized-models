@@ -240,7 +240,11 @@
     {
       "op": "_contrib_quantize_v2", 
       "name": "concat0_output_quantize", 
-      "attrs": {"out_type": "uint8"}, 
+      "attrs": {
+        "max_calib_range": "11.039369", 
+        "min_calib_range": "-0.355414", 
+        "out_type": "uint8"
+      }, 
       "inputs": [[32, 0, 0]]
     }, 
     {
@@ -277,7 +281,7 @@
       "op": "_sg_mkldnn_fully_connected", 
       "name": "quantized_sg_mkldnn_fully_connected_relu_0", 
       "attrs": {
-        "max_calib_range": "7.964523", 
+        "max_calib_range": "5.822273", 
         "min_calib_range": "-0.000000", 
         "quantized": "True", 
         "with_relu": "True"
@@ -354,7 +358,7 @@
       "op": "_sg_mkldnn_fully_connected", 
       "name": "quantized_sg_mkldnn_fully_connected_relu_1", 
       "attrs": {
-        "max_calib_range": "38.827766", 
+        "max_calib_range": "31.440962", 
         "min_calib_range": "-0.000000", 
         "quantized": "True", 
         "with_relu": "True"
