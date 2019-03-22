@@ -1,0 +1,2106 @@
+diff --git a/src/operator/nn/concat.cc b/src/operator/nn/concat.cc
+index fa441c4..4308fb0 100644
+--- a/src/operator/nn/concat.cc
++++ b/src/operator/nn/concat.cc
+@@ -32,48 +32,50 @@
+ namespace mxnet {
+ namespace op {
+ 
+-static bool ConcatShape(const nnvm::NodeAttrs& attrs,
+-                        mxnet::ShapeVector *in_shape,
+-                        mxnet::ShapeVector *out_shape) {
+-  using namespace mshadow;
+-  const ConcatParam& param_ = nnvm::get<ConcatParam>(attrs.parsed);
+-  CHECK_EQ(in_shape->size(), static_cast<size_t>(param_.num_args));
+-  mxnet::TShape dshape;
++bool ConcatSetShape(std::vector<TShape>* in_shape,
++                    std::vector<TShape>* out_shape, int num_args, int dim) {
++  CHECK_EQ(in_shape->size(), static_cast<size_t>(num_args));
++  TShape dshape;
+   index_t size = 0;
+   bool has_zero = false;
+   int axis = -1;
+-  for (int i = 0; i < param_.num_args; ++i) {
+-    mxnet::TShape tmp = (*in_shape)[i];
++  for (int i = 0; i < num_args; ++i) {
++    TShape tmp = (*in_shape)[i];
+     if (tmp.ndim()) {
+-      axis = CheckAxis(param_.dim, tmp.ndim());
++      axis = CheckAxis(dim, tmp.ndim());
+       has_zero = tmp[axis] == 0 || has_zero;
+       size += tmp[axis];
+       tmp[axis] = 0;
+       shape_assign(&dshape, tmp);
+     }
+   }
+-
+-  mxnet::TShape tmp = (*out_shape)[0];
++  TShape tmp = (*out_shape)[0];
+   if (tmp.ndim()) {
+-    axis = CheckAxis(param_.dim, tmp.ndim());
++    axis = CheckAxis(dim, tmp.ndim());
+     tmp[axis] = 0;
+     shape_assign(&dshape, tmp);
+   }
+-
+   if (dshape.ndim() == 0) return false;
+-
+-  for (int i = 0; i < param_.num_args; ++i) {
++  for (int i = 0; i < num_args; ++i) {
+     CHECK(shape_assign(&(*in_shape)[i], dshape))
+-        << "Incompatible input shape: expected " << dshape << ", got " << (*in_shape)[i];
++        << "Incompatible input shape: expected " << dshape << ", got "
++        << (*in_shape)[i];
+   }
+-
+   if (!has_zero) dshape[axis] = size;
+   CHECK(shape_assign(&(*out_shape)[0], dshape))
+-      << "Incompatible output shape: expected " << dshape << ", got " << (*out_shape)[0];
+-
++      << "Incompatible output shape: expected " << dshape << ", got "
++      << (*out_shape)[0];
+   return dshape.Size() != 0;
+ }
+ 
++static bool ConcatShape(const nnvm::NodeAttrs& attrs,
++                        mxnet::ShapeVector *in_shape,
++                        mxnet::ShapeVector *out_shape) {
++  using namespace mshadow;
++  const ConcatParam& param_ = nnvm::get<ConcatParam>(attrs.parsed);
++  return ConcatSetShape(in_shape, out_shape, param_.num_args, param_.dim);
++}
++
+ // Concat for RNN param deals with the reverse shape inference from output
+ // for the special case of concatenating RNN parameters.
+ // The first (and sometimes the second) input may be unknown on the target axis.
+diff --git a/src/operator/slice_channel-inl.h b/src/operator/slice_channel-inl.h
+index 6125782..332f142 100644
+--- a/src/operator/slice_channel-inl.h
++++ b/src/operator/slice_channel-inl.h
+@@ -143,10 +143,74 @@ class SliceChannelOp : public Operator {
+   int axis_;
+ };  // class SliceChannelOp
+ 
+-
+-template<typename xpu>
++template <typename xpu>
+ Operator *CreateOp(SliceChannelParam param, int dtype);
+-
++inline bool SliceChannelInferShape(std::vector<TShape> *in_shape,
++                                   std::vector<TShape> *out_shape,
++                                   std::vector<TShape> *aux_shape,
++                                   int num_outputs, int axis,
++                                   bool squeeze_axis) {
++  using namespace mshadow;
++  CHECK_EQ(in_shape->size(), 1U);
++  TShape dshape = in_shape->at(slice_enum::kData);
++  TShape ishape = in_shape->at(slice_enum::kData);
++  if (dshape.ndim() == 0) return false;
++  if (axis >= 0) {
++    CHECK_LT(static_cast<size_t>(axis), dshape.ndim());
++  } else {
++    CHECK_LT(axis + dshape.ndim(), dshape.ndim());
++  }
++  int real_axis = axis;
++  if (real_axis < 0) {
++    real_axis += dshape.ndim();
++  }
++  CHECK_EQ(dshape[real_axis] % num_outputs, 0U)
++      << "You are trying to split the " << real_axis
++      << "-th axis of input tensor with shape " << dshape
++      << " into num_outputs=" << num_outputs
++      << " evenly sized chunks, but this is not possible because "
++      << num_outputs << " does not evenly divide " << dshape[real_axis];
++  if (squeeze_axis && ishape[real_axis] != 0) {
++    CHECK_EQ(ishape[real_axis], static_cast<size_t>(num_outputs))
++        << "If squeeze axis is True, the size of the sliced axis must be the "
++           "same as num_outputs."
++        << " Input shape=" << ishape << ", axis=" << real_axis
++        << ", num_outputs=" << num_outputs << ".";
++  }
++  dshape[real_axis] /= num_outputs;
++  if (squeeze_axis && (dshape[real_axis] == 1 || ishape[real_axis] == 0)) {
++    for (int d = real_axis; d < static_cast<int>(dshape.ndim()) - 1; ++d) {
++      dshape[d] = dshape[d + 1];
++    }
++    dshape = TShape(&dshape[0], &dshape[dshape.ndim() - 1]);
++  }
++  CHECK_EQ(static_cast<int>((*out_shape).size()), num_outputs)
++      << "Size of output shape mismatch!";
++  for (int i = 0; i < num_outputs; ++i) {
++    SHAPE_ASSIGN_CHECK(*out_shape, i, dshape);
++    // Perform incomplete shape inference.
++    // We can back-calculate the inshape based on the out_shape.
++    TShape back_calculate_dshape = ishape;
++    if (squeeze_axis && (dshape.ndim() == ishape.ndim() - 1)) {
++      for (int d = 0; d < real_axis; ++d) {
++        back_calculate_dshape[d] = (*out_shape)[i][d];
++      }
++      back_calculate_dshape[real_axis] = num_outputs;
++      for (int d = real_axis + 1; d < static_cast<int>(ishape.ndim()); ++d) {
++        back_calculate_dshape[d] = (*out_shape)[i][d - 1];
++      }
++    } else {
++      for (int d = 0; d < static_cast<int>(ishape.ndim()); ++d) {
++        back_calculate_dshape[d] = (*out_shape)[i][d];
++        if (d == real_axis) {
++          back_calculate_dshape[d] *= num_outputs;
++        }
++      }
++    }
++    SHAPE_ASSIGN_CHECK(*in_shape, slice_enum::kData, back_calculate_dshape);
++  }
++  return true;
++}
+ 
+ #if DMLC_USE_CXX11
+ class SliceChannelProp : public OperatorProperty {
+@@ -188,70 +252,11 @@ class SliceChannelProp : public OperatorProperty {
+     return true;
+   }
+ 
+-  bool InferShape(mxnet::ShapeVector *in_shape,
+-                  mxnet::ShapeVector *out_shape,
+-                  mxnet::ShapeVector *aux_shape) const override {
+-    using namespace mshadow;
+-    CHECK_EQ(in_shape->size(), 1U);
+-    mxnet::TShape dshape = in_shape->at(slice_enum::kData);
+-    mxnet::TShape ishape = in_shape->at(slice_enum::kData);
+-    if (dshape.ndim() == 0) return false;
+-    if (param_.axis >= 0) {
+-      CHECK_LT(static_cast<size_t>(param_.axis), dshape.ndim());
+-    } else {
+-      CHECK_LT(param_.axis + dshape.ndim(), dshape.ndim());
+-    }
+-    int real_axis = param_.axis;
+-    if (real_axis < 0) {
+-      real_axis += dshape.ndim();
+-    }
+-    CHECK_EQ(dshape[real_axis] % param_.num_outputs, 0U)
+-      << "You are trying to split the " << real_axis
+-      << "-th axis of input tensor with shape " << dshape
+-      << " into num_outputs=" << param_.num_outputs
+-      << " evenly sized chunks, but this is not possible because "
+-      << param_.num_outputs << " does not evenly divide "
+-      << dshape[real_axis];
+-    if (param_.squeeze_axis && ishape[real_axis] != 0) {
+-      CHECK_EQ(ishape[real_axis], static_cast<size_t>(param_.num_outputs))
+-        << "If squeeze axis is True, the size of the sliced axis must be the same as num_outputs."
+-        << " Input shape=" << ishape << ", axis=" << real_axis
+-        << ", num_outputs=" << param_.num_outputs << ".";
+-    }
+-    dshape[real_axis] /= param_.num_outputs;
+-    if (param_.squeeze_axis && (dshape[real_axis] == 1 || ishape[real_axis] == 0)) {
+-      for (int d = real_axis; d < static_cast<int>(dshape.ndim()) - 1; ++d) {
+-        dshape[d] = dshape[d+1];
+-      }
+-      dshape = mxnet::TShape(&dshape[0], &dshape[dshape.ndim()-1]);
+-    }
+-    CHECK_EQ(static_cast<int>((*out_shape).size()), param_.num_outputs)
+-      << "Size of output shape mismatch!";
+-    for (int i = 0; i < param_.num_outputs; ++i) {
+-      SHAPE_ASSIGN_CHECK(*out_shape, i, dshape);
+-      // Perform incomplete shape inference.
+-      // We can back-calculate the inshape based on the out_shape.
+-      mxnet::TShape back_calculate_dshape = ishape;
+-      if (param_.squeeze_axis && (dshape.ndim() == ishape.ndim() - 1)) {
+-        for (int d = 0; d < real_axis; ++d) {
+-          back_calculate_dshape[d] = (*out_shape)[i][d];
+-        }
+-        back_calculate_dshape[real_axis] = param_.num_outputs;
+-        for (int d = real_axis + 1; d < static_cast<int>(ishape.ndim()); ++d) {
+-          back_calculate_dshape[d] = (*out_shape)[i][d - 1];
+-        }
+-      } else {
+-        for (int d = 0; d < static_cast<int>(ishape.ndim()); ++d) {
+-          back_calculate_dshape[d] = (*out_shape)[i][d];
+-          if (d == real_axis) {
+-            back_calculate_dshape[d] *= param_.num_outputs;
+-          }
+-        }
+-      }
+-      SHAPE_ASSIGN_CHECK(*in_shape, slice_enum::kData, back_calculate_dshape);
+-    }
+-    return true;
+-  }
++bool InferShape(mxnet::ShapeVector* in_shape, mxnet::ShapeVector* out_shape,
++                mxnet::ShapeVector* aux_shape) const override {
++  return SliceChannelInferShape(
++      in_shape, out_shape, aux_shape, param_.num_outputs, param_.axis, param_.squeeze_axis);
++}
+ 
+   OperatorProperty* Copy() const override {
+     auto ptr = new SliceChannelProp();
+diff --git a/src/operator/subgraph/mkldnn/mkldnn_fc.cc b/src/operator/subgraph/mkldnn/mkldnn_fc.cc
+index 8829404..2f99fee 100644
+--- a/src/operator/subgraph/mkldnn/mkldnn_fc.cc
++++ b/src/operator/subgraph/mkldnn/mkldnn_fc.cc
+@@ -71,6 +71,8 @@ class SgMKLDNNFCOp {
+   float cached_max_weight_;
+   float cached_min_bias_;
+   float cached_max_bias_;
++  float cached_min_output_;
++  float cached_max_output_;
+ };
+ 
+ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+@@ -91,8 +93,6 @@ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+   float max_weight = 0.0;
+   float min_bias = 0.0;
+   float max_bias = 0.0;
+-  float *min_output_ptr = nullptr;
+-  float *max_output_ptr = nullptr;
+ 
+   if (mkldnn_param.quantized) {
+     total_num_inputs = base_num_inputs * 3;
+@@ -106,8 +106,6 @@ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+     }
+     if (!mkldnn_param.enable_float_output) {
+       total_num_outputs = base_num_outputs * 3;
+-      min_output_ptr = out_data[1].data().dptr<float>();
+-      max_output_ptr = out_data[2].data().dptr<float>();
+     }
+   }
+   CHECK_EQ(in_data.size(), total_num_inputs);
+@@ -135,6 +133,8 @@ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+     cached_max_weight_ = max_weight;
+     if (has_bias) {
+       cached_bias_ = in_data[fullc::kBias];
++      cached_min_bias_ = min_bias;
++      cached_max_bias_ = max_bias;
+     } else {
+       cached_bias_ = NDArray();
+     }
+@@ -149,7 +149,7 @@ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+       if (has_bias) {
+         NDArray bias = in_data[fullc::kBias];
+         float bias_int32_rescale = data_scale * weight_scale *
+-            MaxAbs(min_bias, max_bias) / kInt8Range;
++            MaxAbs(cached_min_bias_, cached_max_bias_) / kInt8Range;
+ 
+         cached_bias_ = NDArray(bias.storage_type(), bias.shape(),
+                                bias.ctx(), true, mshadow::kInt32);
+@@ -168,15 +168,16 @@ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+       } else if (mkldnn_param.min_calib_range.has_value() &&
+                  mkldnn_param.max_calib_range.has_value()) {
+         full_param_.output_scales.resize(0);
+-        *min_output_ptr = mkldnn_param.min_calib_range.value();
+-        *max_output_ptr = mkldnn_param.max_calib_range.value();
++        cached_min_output_ = mkldnn_param.min_calib_range.value();
++        cached_max_output_ = mkldnn_param.max_calib_range.value();
+ 
+         full_param_.requantize_scales[0] = quantized_out_range /
+-          MaxAbs(*min_output_ptr, *max_output_ptr) / data_scale / weight_scale;
++          MaxAbs(cached_min_output_, cached_max_output_) / data_scale / weight_scale;
+       } else {
+         Stream<cpu> *s = ctx.get_stream<cpu>();
+-        mxnet_op::Kernel<QuantizationRangeForMultiplicationStruct, cpu>::Launch(s, 1,
+-          min_output_ptr, max_output_ptr, &min_data, &max_data, &min_weight, &max_weight);
++        mxnet_op::Kernel<QuantizationRangeForMultiplicationStruct, cpu>::Launch(
++          s, 1, &cached_min_output_, &cached_max_output_,
++          &min_data, &max_data, &min_weight, &max_weight);
+       }
+     }
+ 
+@@ -195,6 +196,13 @@ void SgMKLDNNFCOp::Forward(const OpContext &ctx,
+   }
+ 
+   MKLDNNFCForwardFullFeature(full_param_, ctx, fwd_.get(), new_inputs, new_req, out_data);
++
++  if (mkldnn_param.quantized && !mkldnn_param.enable_float_output) {
++    float *min_output_ptr = out_data[1].data().dptr<float>();
++    float *max_output_ptr = out_data[2].data().dptr<float>();
++    *min_output_ptr = cached_min_output_;
++    *max_output_ptr = cached_max_output_;
++  }
+ }
+ 
+ static void SgMKLDNNFCParamParser(nnvm::NodeAttrs *attrs) {
+diff --git a/src/operator/tensor/mkldnn/mkldnn_parallel_embedding.cc b/src/operator/tensor/mkldnn/mkldnn_parallel_embedding.cc
+new file mode 100644
+index 0000000..0929156
+--- /dev/null
++++ b/src/operator/tensor/mkldnn/mkldnn_parallel_embedding.cc
+@@ -0,0 +1,255 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied.  See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++/*!
++ * Copyright (c) 2017 by Contributors
++ * \file mkldnn_parallel_embedding.cc
++ * \brief CPU implementation of parallel embedding
++ * \author Lingyan Guo
++*/
++
++#include "mkldnn_parallel_embedding.h"
++namespace mxnet {
++namespace op {
++
++static EmbeddingParam GetEmbeddedParam(const ParallelEmbeddingParam& param_,
++                                       int i) {
++  EmbeddingParam embedding_param;
++  embedding_param.input_dim = param_.input_dims[i];
++  embedding_param.output_dim = param_.output_dims[i];
++  embedding_param.dtype = param_.dtypes[i];
++  embedding_param.sparse_grad = param_.sparse_grads[i];
++  return embedding_param;
++}
++// storage type inference function for Embedding
++inline bool ParallelEmbeddingOpForwardStorageType(const nnvm::NodeAttrs& attrs,
++                                                  const int dev_mask,
++                                                  DispatchMode* dispatch_mode,
++                                                  std::vector<int>* in_attrs,
++                                                  std::vector<int>* out_attrs) {
++  const ParallelEmbeddingParam& param_ =
++      nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++  bool ret = true;
++  for (int i = 0; i < param_.num_args; i++) {
++    nnvm::NodeAttrs attrs;
++    attrs.parsed = GetEmbeddedParam(param_, i);
++    std::vector<int> e_in;
++    std::vector<int> e_out;
++    int& d = (*in_attrs)[i * 2];
++    int& w = (*in_attrs)[i * 2 + 1];
++    e_in.push_back(d);
++    e_in.push_back(w);
++    int& o = (*out_attrs)[i];
++    e_out.push_back(o);
++    ret &= EmbeddingOpForwardStorageType(attrs, dev_mask, dispatch_mode, &e_in,
++                                         &e_out);
++    o = e_out[0];
++    w = e_in[1];
++  }
++  return ret;
++}
++
++static bool ParallelEmbeddingOpShape(const nnvm::NodeAttrs& attrs,
++                                     std::vector<TShape>* in_shape,
++                                     std::vector<TShape>* out_shape) {
++  const ParallelEmbeddingParam& param_ =
++      nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++  bool ret = true;
++  for (int i = 0; i < param_.num_args; i++) {
++    nnvm::NodeAttrs attrs;
++    attrs.parsed = GetEmbeddedParam(param_, i);
++    std::vector<TShape> e_in;
++    std::vector<TShape> e_out;
++    TShape& d = (*in_shape)[i * 2];
++    TShape& w = (*in_shape)[i * 2 + 1];
++    e_in.push_back(d);
++    e_in.push_back(w);
++    TShape& o = (*out_shape)[i];
++    e_out.push_back(o);
++    ret &= EmbeddingOpShape<EmbeddingParam>(attrs, &e_in, &e_out);
++    o = e_out[0];
++    w = e_in[1];
++  }
++  return ret;
++}
++
++inline bool ParallelEmbeddingOpType(const nnvm::NodeAttrs& attrs,
++                                    std::vector<int>* in_type,
++                                    std::vector<int>* out_type) {
++  const ParallelEmbeddingParam& param_ =
++      nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++  bool ret = true;
++  for (int i = 0; i < param_.num_args; i++) {
++    nnvm::NodeAttrs attrs;
++    attrs.parsed = GetEmbeddedParam(param_, i);
++    std::vector<int> e_in;
++    std::vector<int> e_out;
++    int& d = (*in_type)[i * 2];
++    int& w = (*in_type)[i * 2 + 1];
++    e_in.push_back(d);
++    e_in.push_back(w);
++    int& o = (*out_type)[i];
++    e_out.push_back(o);
++    ret &= EmbeddingOpType<EmbeddingParam>(attrs, &e_in, &e_out);
++    o = e_out[0];
++    w = e_in[1];
++  }
++  return ret;
++}
++template <typename xpu>
++void ParallelEmbeddingOpForward(const nnvm::NodeAttrs& attrs,
++                                const OpContext& ctx,
++                                const std::vector<TBlob>& inputs,
++                                const std::vector<OpReqType>& req,
++                                const std::vector<TBlob>& outputs) {
++  const ParallelEmbeddingParam& param_ =
++      nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++#pragma omp parallel for num_threads(param_.num_args)
++  for (int i = 0; i < param_.num_args; i++) {
++    nnvm::NodeAttrs attrs;
++    attrs.parsed = GetEmbeddedParam(param_, i);
++    std::vector<TBlob> e_in;
++    std::vector<TBlob> e_out;
++    const TBlob& d = (inputs)[i * 2];
++    const TBlob& w = (inputs)[i * 2 + 1];
++    e_in.push_back(d);
++    e_in.push_back(w);
++    const TBlob& o = (outputs)[i];
++    e_out.push_back(o);
++    EmbeddingOpForward<cpu>(attrs, ctx, e_in, req, e_out);
++  }
++}
++template <typename IType, typename DType>
++struct TakeCPUInfo {
++  DType* out_data;
++  DType* in_data;
++  IType* idx;
++  int N;
++  size_t M;
++  int64_t K;
++};
++
++template <typename xpu>
++void ParallelSparseEmbeddingOpForwardEx(const nnvm::NodeAttrs& attrs,
++                                        const OpContext& ctx,
++                                        const std::vector<NDArray>& inputs,
++                                        const std::vector<OpReqType>& req,
++                                        const std::vector<NDArray>& outputs) {
++  const ParallelEmbeddingParam& param_ =
++      nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++  using namespace mxnet_op;
++  using namespace rowsparse;
++
++  typedef float IType;
++  typedef float DType;
++  const int omp_threads = engine::OpenMP::Get()->GetRecommendedOMPThreadCount();
++  // mshadow::Stream<cpu> *s = ctx.get_stream<cpu>();
++  TakeCPUInfo<IType, DType>* takecpu_info =
++      new TakeCPUInfo<IType, DType>[param_.num_args];
++  for (int em = 0; em < param_.num_args; em++) {
++    const NDArray& d = (inputs)[em * 2];
++    const NDArray& w = (inputs)[em * 2 + 1];
++    const NDArray& o = (outputs)[em];
++    // const TShape& ishape = d.shape();
++    const TShape& oshape = o.shape();
++    const TShape& wshape = w.shape();
++    takecpu_info[em].N = oshape.Size() / wshape[1];
++    takecpu_info[em].out_data = o.data().dptr<DType>();
++    takecpu_info[em].in_data = w.data().dptr<DType>();
++    takecpu_info[em].idx = d.data().dptr<IType>();
++    takecpu_info[em].M = wshape[1];
++    takecpu_info[em].K = wshape[0];
++  }
++
++  bool clip = true;
++  int em = 0;
++  int i = 0;
++  int N = takecpu_info[0].N;  // TODO: limitation, need to use collapse
++#pragma omp parallel for num_threads(omp_threads) collapse(2)
++  for (em = 0; em < param_.num_args; em++)
++    for (i = 0; i < N; ++i) {
++      int64_t j = static_cast<int64_t>(takecpu_info[em].idx[i]);
++      if (clip) {
++        if (j <= 0)
++          j = 0;
++        else if (j >= takecpu_info[em].K)
++          j = takecpu_info[em].K - 1;
++      } else {
++        j = j % takecpu_info[em].K;
++        j += (j < 0) ? takecpu_info[em].K : 0;
++      }
++      std::memcpy(takecpu_info[em].out_data + i * takecpu_info[em].M,
++                  takecpu_info[em].in_data + j * takecpu_info[em].M,
++                  takecpu_info[em].M * sizeof(DType));
++    }
++
++  delete[] takecpu_info;
++}
++
++DMLC_REGISTER_PARAMETER(ParallelEmbeddingParam);
++
++NNVM_REGISTER_OP(ParallelEmbedding)
++.describe(R"code( Parallel exec embedding in Mulit-core CPU
++
++)code" ADD_FILELINE)
++.set_num_inputs([](const NodeAttrs& attrs) {
++    const ParallelEmbeddingParam& params = nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++    return params.num_args*2;
++})
++.set_num_outputs([](const NodeAttrs& attrs) {
++    const ParallelEmbeddingParam& params = nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++    return params.num_args;
++})
++.set_attr_parser(ParamParser<ParallelEmbeddingParam>)
++.set_attr<nnvm::FListInputNames>("FListInputNames",
++    [](const NodeAttrs& attrs) {
++    const ParallelEmbeddingParam& params = nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++    std::vector<std::string> ret;
++    for (int i = 0; i < params.num_args; ++i) {
++        ret.push_back(std::string("arg_") + std::to_string(i));
++        ret.push_back(std::string("embed_") + std::to_string(i) + std::string("_weight"));
++    }
++    return ret;
++})
++.set_attr<nnvm::FListInputNames>("FListOutputNames",
++    [](const NodeAttrs& attrs) {
++    const ParallelEmbeddingParam& params = nnvm::get<ParallelEmbeddingParam>(attrs.parsed);
++    std::vector<std::string> ret;
++    for (int i = 0; i < params.num_args; ++i) {
++        ret.push_back(std::string("out_") + std::to_string(i));
++    }
++    return ret;
++})
++.set_attr<std::string>("key_var_num_args", "num_args")
++.set_attr<mxnet::FInferShape>("FInferShape", ParallelEmbeddingOpShape)
++.set_attr<nnvm::FInferType>("FInferType", ParallelEmbeddingOpType)
++.set_attr<FInferStorageType>("FInferStorageType", ParallelEmbeddingOpForwardStorageType)
++.set_attr<FResourceRequest>("FResourceRequest",
++    [](const NodeAttrs& attrs) {
++    return std::vector<ResourceRequest>{ResourceRequest::kTempSpace};
++})
++.set_attr<FCompute>("FCompute<cpu>", ParallelEmbeddingOpForward<cpu>)
++.set_attr<FComputeEx>("FComputeEx<cpu>", ParallelSparseEmbeddingOpForwardEx<cpu>)
++
++//.add_argument("data", "NDArray-or-Symbol[]", "List of arrays to embedding")
++.add_argument("data_weight", "NDArray-or-Symbol[]", "List of arrays (data/weight) to embedding weight.")
++.add_arguments(ParallelEmbeddingParam::__FIELDS__());
++
++}  // namespace op
++}  // namespace mxnet
+diff --git a/src/operator/tensor/mkldnn/mkldnn_parallel_embedding.h b/src/operator/tensor/mkldnn/mkldnn_parallel_embedding.h
+new file mode 100644
+index 0000000..99eb27d
+--- /dev/null
++++ b/src/operator/tensor/mkldnn/mkldnn_parallel_embedding.h
+@@ -0,0 +1,50 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied.  See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++#ifndef MXNET_OPERATOR_TENSOR_MKLDNN_MKLDNN_SLICE_SPLIT_EMBEDDING_H_
++#define MXNET_OPERATOR_TENSOR_MKLDNN_MKLDNN_SLICE_SPLIT_EMBEDDING_H_
++#include "../indexing_op.h"
++namespace mxnet {
++namespace op {
++
++struct ParallelEmbeddingParam : public dmlc::Parameter<ParallelEmbeddingParam> {
++  nnvm::Tuple<int> input_dims;
++  nnvm::Tuple<int> output_dims;
++  nnvm::Tuple<int> dtypes;
++  nnvm::Tuple<bool> sparse_grads;
++  int num_args;
++  DMLC_DECLARE_PARAMETER(ParallelEmbeddingParam) {
++    DMLC_DECLARE_FIELD(input_dims)
++        .describe("Vocabulary size of the input indices.");
++    DMLC_DECLARE_FIELD(output_dims)
++        .describe("Dimension of the embedding vectors.");
++    DMLC_DECLARE_FIELD(num_args).set_lower_bound(1).set_default(1).describe(
++        "Number of inputs to be concated.");
++    DMLC_DECLARE_FIELD(dtypes).describe("Data type of weight.");
++    DMLC_DECLARE_FIELD(sparse_grads)
++        .describe(
++            "Compute row sparse gradient in the backward calculation. If set "
++            "to True, "
++            "the grad's storage type is row_sparse.");
++  }
++};
++
++}  // namespace op
++}  // namespace mxnet
++#endif  // MXNET_OPERATOR_TENSOR_MKLDNN_MKLDNN_SLICE_SPLIT_EMBEDDING_H_
+\ No newline at end of file
+diff --git a/src/operator/tensor/mkldnn/mkldnn_slice_split_embedding.cc b/src/operator/tensor/mkldnn/mkldnn_slice_split_embedding.cc
+new file mode 100644
+index 0000000..f5577de
+--- /dev/null
++++ b/src/operator/tensor/mkldnn/mkldnn_slice_split_embedding.cc
+@@ -0,0 +1,327 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied.  See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++#include "../../slice_channel-inl.h"
++#include "../indexing_op.h"
++#include "../matrix_op-inl.h"
++#include "mkldnn_slice_split_embedding.h"
++
++namespace mxnet {
++namespace op {
++bool ConcatSetShape(std::vector<TShape>* in_shape,
++                    std::vector<TShape>* out_shape, int num_args, int dim);
++// call from SliceOpShape
++static void get_slice_output_shape(
++    const nnvm::Tuple<dmlc::optional<int>>& _pbegin,
++    const nnvm::Tuple<dmlc::optional<int>>& _pend,
++    const nnvm::Tuple<dmlc::optional<int>>& _pstep, TShape& oshape,
++    TShape& dshape) {
++  MXNET_NDIM_SWITCH(dshape.ndim(), ndim, {
++    common::StaticArray<long int, ndim> begin, end, step;
++    GetIndexRange(dshape, _pbegin, _pend, _pstep, &begin, &end, &step);
++    for (index_t i = 0; i < _pbegin.ndim(); ++i) {
++      const int b = begin[i], e = end[i], s = step[i];
++      SetSliceOpOutputDimSize(i, b, e, s, &oshape);
++    }
++  });
++}
++
++static EmbeddingParam GetEmbeddedParam(
++    const SliceSplitEmbeddingConcatFuseParam& param_, int i) {
++  EmbeddingParam embedding_param;
++  embedding_param.input_dim = param_.input_dims[i];
++  embedding_param.output_dim = param_.output_dims[i];
++  embedding_param.dtype = mshadow::kFloat32;
++  embedding_param.sparse_grad = false;
++  return embedding_param;
++}
++static bool SliceSplitEmbeddingConcatOpShape(const nnvm::NodeAttrs& attrs,
++                                             std::vector<TShape>* in_shape,
++                                             std::vector<TShape>* out_shape) {
++  const SliceSplitEmbeddingConcatFuseParam& param_ =
++      nnvm::get<SliceSplitEmbeddingConcatFuseParam>(attrs.parsed);
++  bool ret = true;
++  TShape& dshape = (*in_shape)[0];
++
++  nnvm::Tuple<dmlc::optional<int>> param_step;
++  TShape cont_slice_oshape = dshape;
++  get_slice_output_shape(param_.cont_begin, param_.cont_end, param_step,
++                         cont_slice_oshape, dshape);
++  TShape split_slice_oshape = dshape;
++  get_slice_output_shape(param_.embed_begin, param_.embed_end, param_step,
++                         split_slice_oshape, dshape);
++  std::vector<TShape> split_in_shapes;
++  split_in_shapes.push_back(split_slice_oshape);
++  std::vector<TShape> split_out_shapes;
++  split_out_shapes.resize(param_.num_outputs);
++  std::vector<TShape> split_aux_shapes;
++  SliceChannelInferShape(&split_in_shapes, &split_out_shapes, &split_aux_shapes,
++                         param_.num_outputs, 1, param_.squeeze_axis);
++  std::vector<TShape> embed_out_shapes;
++
++  for (int i = 0; i < param_.num_outputs; i++) {
++    nnvm::NodeAttrs em_attrs;
++    em_attrs.parsed = GetEmbeddedParam(param_, i);
++    std::vector<TShape> e_in;
++    std::vector<TShape> e_out;
++    e_in.push_back(split_out_shapes[i]);
++    e_in.push_back((*in_shape)[1 + i]);
++    e_out.resize(1);
++    EmbeddingOpShape<EmbeddingParam>(em_attrs, &e_in, &e_out);
++    SHAPE_ASSIGN_CHECK(*in_shape, i + 1, e_in[1]);
++    embed_out_shapes.push_back(e_out[0]);
++  }
++  embed_out_shapes.push_back(cont_slice_oshape);
++  ConcatSetShape(&embed_out_shapes, out_shape, param_.num_outputs + 1,
++                 param_.concat_dim);
++  return ret;
++}
++inline bool SliceSplitEmbeddingConcatOpType(const nnvm::NodeAttrs& attrs,
++                                            std::vector<int>* in_type,
++                                            std::vector<int>* out_type) {
++  bool ret = true;
++  (*out_type)[0] = (*in_type)[0];
++  int in_size = (*in_type).size();
++  for (int i = 1; i < in_size; i++) (*in_type)[i] = (*out_type)[0];
++  return ret;
++}
++inline bool SliceSplitEmbeddingConcatOpStorageType(
++    const nnvm::NodeAttrs& attrs, const int dev_mask,
++    DispatchMode* dispatch_mode, std::vector<int>* in_attrs,
++    std::vector<int>* out_attrs) {
++  bool dispatched = false;
++  auto& out_stype = out_attrs->at(0);
++
++  dispatched = storage_type_assign(&out_stype, kDefaultStorage, dispatch_mode,
++                                   DispatchMode::kFComputeEx);
++
++  return dispatched;
++}
++template <int ndim, int req, typename xpu>
++struct slice_forward_window;
++template <int ndim, int req>
++struct slice_forward_window<ndim, req, cpu> {
++  // i is the i-th row after flattening out into 2D tensor
++  template <typename DType>
++  MSHADOW_XINLINE static void Map(
++      int i, DType* out, const DType* data, const mshadow::Shape<ndim> dshape,
++      const mshadow::Shape<ndim> oshape,
++      const common::StaticArray<long int, ndim> begin,
++      const common::StaticArray<long int, ndim> step, int out_count_per_row) {
++    const int data_last_dim_size = dshape[ndim - 1];
++    const int out_last_dim_size = oshape[ndim - 1];
++    const int step_last_dim = step[ndim - 1];
++    const int begin_last_dim = begin[ndim - 1];
++    int out_offset = i * out_last_dim_size;
++    for (int j = 0; j < out_count_per_row;
++         ++j) {      // The only difference is out_count_per_row
++      int irow = 0;  // row id of flattend 2D data
++      int stride = 1;
++      int idx = i;
++#pragma unroll
++      for (int k = ndim - 2; k >= 0; --k) {
++        irow += stride * ((idx % oshape[k]) * step[k] + begin[k]);
++        idx /= oshape[k];
++        stride *= dshape[k];
++      }
++      KERNEL_ASSIGN(
++          out[out_offset++], req,
++          data[irow * data_last_dim_size + j * step_last_dim + begin_last_dim]);
++    }
++  }
++};
++template <typename IType, typename DType>
++struct TakeCPUInfoWindow {
++  DType* in_data;
++  int idx_offset;
++  int out_offset;
++
++  size_t M;
++  int64_t K;
++};
++template <typename xpu>
++void SliceSplitEmbeddingConcatOpForward(const nnvm::NodeAttrs& attrs,
++                                        const OpContext& ctx,
++                                        const std::vector<TBlob>& inputs,
++                                        const std::vector<OpReqType>& req,
++                                        const std::vector<TBlob>& outputs) {
++  const SliceSplitEmbeddingConcatFuseParam& param_ =
++      nnvm::get<SliceSplitEmbeddingConcatFuseParam>(attrs.parsed);
++  // by default Cont_features is in the first
++  TShape dshape = inputs[0].shape_;
++  TShape oshape = outputs[0].shape_;
++
++  // For Cont feature
++  using namespace mshadow;
++  Stream<xpu>* s = ctx.get_stream<xpu>();
++  const TBlob& data = inputs[0];
++  const TBlob& out = outputs[0];
++  nnvm::Tuple<dmlc::optional<int>> param_step;
++  TShape cont_slice_oshape = dshape;
++  get_slice_output_shape(param_.cont_begin, param_.cont_end, param_step,
++                         cont_slice_oshape, dshape);
++  MXNET_NDIM_SWITCH(data.ndim(), ndim, {
++    common::StaticArray<long int, ndim> begin, end, step;
++    GetIndexRange(data.shape_, param_.cont_begin, param_.cont_end, param_step,
++                  &begin, &end, &step);
++    MSHADOW_TYPE_SWITCH(
++        out.type_flag_, DType, {MXNET_ASSIGN_REQ_SWITCH(req[0], Req, {
++          int num_threads = out.shape_.FlatTo2D()[0];
++          if (std::is_same<xpu, gpu>::value) {
++            num_threads *= out.shape_.get<ndim>()[ndim - 1];
++          }
++          mxnet_op::Kernel<slice_forward_window<ndim, Req, xpu>, xpu>::Launch(
++              s, num_threads, out.dptr<DType>(), data.dptr<DType>(),
++              data.shape_.get<ndim>(), out.shape_.get<ndim>(), begin, step,
++              cont_slice_oshape[ndim - 1]);
++        })})
++  })
++  // Here make assumption steps is 1
++
++  using namespace mxnet_op;
++  using namespace rowsparse;
++
++  typedef float IType;
++  typedef float DType;
++
++  int ndim = data.ndim();
++  int cont_slice_last_dim_size = cont_slice_oshape[ndim - 1];
++  int data_last_dim_size = dshape[ndim - 1];
++  int out_last_dim_size = oshape[ndim - 1];
++  int emb_in_last_dim_size =
++      (data_last_dim_size - cont_slice_last_dim_size) / param_.num_outputs;
++  int emb_out_last_dim_size =
++      (out_last_dim_size - cont_slice_last_dim_size) / param_.num_outputs;
++  int batch_size = dshape.Size() / data_last_dim_size;  // Flatten to 2D
++  const int omp_threads = engine::OpenMP::Get()->GetRecommendedOMPThreadCount();
++
++  TakeCPUInfoWindow<IType, DType>* takecpu_info =
++      new TakeCPUInfoWindow<IType, DType>[param_.num_outputs];
++  DType* out_data = out.dptr<DType>();
++  IType* idx = data.dptr<IType>();
++  for (int em = 0; em < param_.num_outputs; em++) {
++    const TBlob& w = (inputs)[em + 1];
++    const TShape& wshape = w.shape_;
++    takecpu_info[em].idx_offset = em * emb_in_last_dim_size;
++    takecpu_info[em].out_offset =
++        cont_slice_last_dim_size + em * emb_out_last_dim_size;
++    takecpu_info[em].in_data = w.dptr<DType>();
++    takecpu_info[em].M = wshape[1];
++    takecpu_info[em].K = wshape[0];
++  }
++  bool clip = true;
++  int em = 0;
++  int i = 0;
++  int N = batch_size;  // TODO: limitation, need to use collapse
++
++#pragma omp parallel for num_threads(omp_threads) collapse(2)
++  for (em = 0; em < param_.num_outputs; em++)
++    for (i = 0; i < N; ++i) {
++      int64_t j = static_cast<int64_t>(
++          *(idx + takecpu_info[em].idx_offset + i * data_last_dim_size));
++      if (clip) {
++        if (j <= 0)
++          j = 0;
++        else if (j >= takecpu_info[em].K)
++          j = takecpu_info[em].K - 1;
++      } else {
++        j = j % takecpu_info[em].K;
++        j += (j < 0) ? takecpu_info[em].K : 0;
++      }
++      std::memcpy(
++          out_data + takecpu_info[em].out_offset + i * out_last_dim_size,
++          takecpu_info[em].in_data + j * takecpu_info[em].M,
++          takecpu_info[em].M * sizeof(DType));
++    }
++
++  delete[] takecpu_info;
++  return;
++}
++static void MxnetFallBackCompute(FCompute fn, const nnvm::NodeAttrs& attrs,
++                                 const OpContext& ctx,
++                                 const std::vector<NDArray>& inputs,
++                                 const std::vector<OpReqType>& req,
++                                 const std::vector<NDArray>& outputs) {
++  std::vector<TBlob> in_blobs(inputs.size());
++  std::vector<NDArray> in_bufs;
++  for (size_t i = 0; i < in_blobs.size(); i++) {
++    in_blobs[i] = inputs[i].data();
++  }
++
++  std::vector<TBlob> out_blobs(outputs.size());
++  for (size_t i = 0; i < out_blobs.size(); i++) {
++    NDArray output = outputs[i];
++    out_blobs[i] = output.data();
++  }
++
++  fn(attrs, ctx, in_blobs, req, out_blobs);
++}
++
++template <typename xpu>
++void SliceSplitEmbeddingConcatOpForwardEx(const nnvm::NodeAttrs& attrs,
++                                          const OpContext& ctx,
++                                          const std::vector<NDArray>& inputs,
++                                          const std::vector<OpReqType>& req,
++                                          const std::vector<NDArray>& outputs) {
++  MxnetFallBackCompute(SliceSplitEmbeddingConcatOpForward<cpu>, attrs, ctx,
++                       inputs, req, outputs);
++}
++DMLC_REGISTER_PARAMETER(SliceSplitEmbeddingConcatFuseParam);
++
++NNVM_REGISTER_OP(SliceSplitEmbeddingConcatFuse)
++.describe(R"code( Fuse Slice Split Embedding Concat for Wide & Deep Model
++)code" ADD_FILELINE)
++.set_num_inputs([](const NodeAttrs& attrs) {
++	const SliceSplitEmbeddingConcatFuseParam& params = nnvm::get<SliceSplitEmbeddingConcatFuseParam>(attrs.parsed);
++	return 1 + params.num_outputs; //data + weights
++})
++.set_num_outputs([](const NodeAttrs& attrs) {
++	return 1;
++})
++.set_attr_parser(ParamParser<SliceSplitEmbeddingConcatFuseParam>)
++.set_attr<nnvm::FListInputNames>("FListInputNames",
++	[](const NodeAttrs& attrs) {
++	const SliceSplitEmbeddingConcatFuseParam& params = nnvm::get<SliceSplitEmbeddingConcatFuseParam>(attrs.parsed);
++	std::vector<std::string> ret;
++	ret.push_back(std::string("dns_data"));
++	for (int i = 0; i < params.num_outputs; ++i) {
++		ret.push_back(std::string("embed_") + std::to_string(i) + std::string("_weight"));
++	}
++	return ret;
++})
++.set_attr<nnvm::FListInputNames>("FListOutputNames",
++	[](const NodeAttrs& attrs) {
++	std::vector<std::string> ret = { "out_data" };
++	return ret;
++})
++.set_attr<std::string>("key_var_num_args", "num_outputs")
++.set_attr<mxnet::FInferShape>("FInferShape", SliceSplitEmbeddingConcatOpShape)
++.set_attr<nnvm::FInferType>("FInferType", SliceSplitEmbeddingConcatOpType)
++.set_attr<FInferStorageType>("FInferStorageType", SliceSplitEmbeddingConcatOpStorageType)
++.set_attr<FResourceRequest>("FResourceRequest",
++	[](const NodeAttrs& attrs) {
++	return std::vector<ResourceRequest>{ResourceRequest::kTempSpace};
++})
++.set_attr<FCompute>("FCompute<cpu>", SliceSplitEmbeddingConcatOpForward<cpu>)
++.set_attr<FComputeEx>("FComputeEx<cpu>", SliceSplitEmbeddingConcatOpForwardEx<cpu>)
++.add_argument("data_weight", "NDArray-or-Symbol[]", "List of arrays (data/weight) to embedding weight.")
++.add_arguments(SliceSplitEmbeddingConcatFuseParam::__FIELDS__());
++
++}  // namespace op
++}  // namespace mxnet
+diff --git a/src/operator/tensor/mkldnn/mkldnn_slice_split_embedding.h b/src/operator/tensor/mkldnn/mkldnn_slice_split_embedding.h
+new file mode 100644
+index 0000000..d636cf5
+--- /dev/null
++++ b/src/operator/tensor/mkldnn/mkldnn_slice_split_embedding.h
+@@ -0,0 +1,73 @@
++/*
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *   http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing,
++ * software distributed under the License is distributed on an
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++ * KIND, either express or implied.  See the License for the
++ * specific language governing permissions and limitations
++ * under the License.
++ */
++
++#ifndef MXNET_OPERATOR_TENSOR_MKLDNN_MKLDNN_PARALLEL_EMBEDDING_H_
++#define MXNET_OPERATOR_TENSOR_MKLDNN_MKLDNN_PARALLEL_EMBEDDING_H_
++
++#include <mxnet/operator_util.h>
++#include <algorithm>
++#include <utility>
++#include <vector>
++namespace mxnet {
++namespace op {
++
++struct SliceSplitEmbeddingConcatFuseParam
++    : public dmlc::Parameter<SliceSplitEmbeddingConcatFuseParam> {
++  // From SliceParam, do not support step
++  // Only support kWriteTo
++  nnvm::Tuple<dmlc::optional<int>> cont_begin, cont_end;
++  nnvm::Tuple<dmlc::optional<int>> embed_begin, embed_end;
++  // From SliceChannelParam, do not support Axis
++  int num_outputs;
++  bool squeeze_axis;
++  // From Embedding, do not support sparse_grads, dtypes is for float
++  nnvm::Tuple<int> input_dims;
++  nnvm::Tuple<int> output_dims;
++  // concat Dim
++  int concat_dim;
++  DMLC_DECLARE_PARAMETER(SliceSplitEmbeddingConcatFuseParam) {
++    DMLC_DECLARE_FIELD(cont_begin)
++        .describe(
++            "starting indices for the slice operation, just copy to final "
++            "buffer");
++    DMLC_DECLARE_FIELD(cont_end).describe(
++        "ending indices for the slice operation, just copy to final buffer");
++    DMLC_DECLARE_FIELD(embed_begin)
++        .describe("starting indices for the slice operation, input to split");
++    DMLC_DECLARE_FIELD(embed_end).describe(
++        "ending indices for the slice operation, input to split");
++    DMLC_DECLARE_FIELD(num_outputs)
++        .set_lower_bound(1)
++        .describe(
++            "Number of splits. Note that this should evenly divide the length "
++            "of the `axis`.");
++    DMLC_DECLARE_FIELD(squeeze_axis).set_default(0);
++    DMLC_DECLARE_FIELD(input_dims)
++        .describe("Vocabulary size of the input indices.");
++    DMLC_DECLARE_FIELD(output_dims)
++        .describe("Dimension of the embedding vectors.");
++    DMLC_DECLARE_FIELD(concat_dim)
++        .set_default(1)
++        .describe("the dimension to be concated.");
++  }
++};
++}  // namespace op
++}  // namespace mxnet
++
++#endif  // MXNET_OPERATOR_TENSOR_MKLDNN_MKLDNN_PARALLEL_EMBEDDING_H_
+diff --git a/tests/python/unittest/test_gluon.py b/tests/python/unittest/test_gluon.py
+index 6af7a5f..dbb69af 100644
+--- a/tests/python/unittest/test_gluon.py
++++ b/tests/python/unittest/test_gluon.py
+@@ -1373,6 +1373,1053 @@ def test_summary():
+     net.hybridize()
+     assert_raises(AssertionError, net.summary, mx.nd.ones((32, 3, 224, 224)))
+ 
++def check_layer_forward_withinput(net, x):
++    x_hybrid = x.copy()
++    x.attach_grad()
++    x_hybrid.attach_grad()
++    net.collect_params().initialize()
++    with mx.autograd.record():
++        out1 = net(x)
++    out1.backward()
++    net.hybridize()
++    with mx.autograd.record():
++        out2 = net(x_hybrid)
++    out2.backward()
++    mx.test_utils.assert_almost_equal(x.grad.asnumpy(), x_hybrid.grad.asnumpy(), rtol=1e-5, atol=1e-6)
++    mx.test_utils.assert_almost_equal(out1.asnumpy(), out2.asnumpy(), rtol=1e-5, atol=1e-6)
++
++@with_seed()
++def test_conv2d_16c():
++    chn_list = [16, 32, 64, 128, 256, 512, 1024]
++    kernel_list = [1, 3, 5, 7, 11]
++    kernel_list.append(224)
++    batch_size = 32
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     chn_num,
++                     kernel,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = gluon.nn.Conv2D(chn_num, (kernel, kernel))
++
++        def hybrid_forward(self, F, x):
++            out = self.conv0(x)
++            return out
++
++    x = mx.nd.random.uniform(-1.0, 1.0, shape=(batch_size, 3, 224, 224))
++    for i in range(len(chn_list)):
++        for j in range(len(kernel_list)):
++            net = Net(chn_list[i], kernel_list[j])
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_group_conv2d_16c():
++    grp_list = [16, 32, 64, 128, 256, 512, 1024]
++    input_size_list = np.random.randint(low=1, high=225, size=10).tolist()
++    kernel_list = [1, 3]
++    batch_size = 32
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     chn_num,
++                     kernel,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = gluon.nn.Conv2D(chn_num, (1, 1))
++                self.conv1 = gluon.nn.Conv2D(chn_num, (kernel, kernel), groups=chn_num)
++
++        def hybrid_forward(self, F, x):
++            y = self.conv0(x)
++            out = self.conv1(y)
++            return out
++
++    for i in range(len(input_size_list)):
++        x = mx.nd.random.uniform(-1.0, 1.0, shape=(batch_size, 3, input_size_list[i], input_size_list[i]))
++        for j in range(len(grp_list)):
++            for k in range(len(kernel_list)):
++                net = Net(grp_list[j], kernel_list[k])
++                check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_deconv2d_16c():
++    in_chn_list = [1024, 512, 256, 128, 64, 32, 16]
++    out_chn_list = [512, 256, 128, 64, 32, 16, 3]
++    kernel_list = [1, 3, 5, 7]
++    in_shape = [4, 8, 16, 32, 64, 224]
++    batch_size = 32
++    class Net(gluon.HybridBlock):
++        def __init__(self, chn_num, kernel, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.deconv0 = gluon.nn.Conv2DTranspose(chn_num, (kernel, kernel))
++
++        def hybrid_forward(self, F, x):
++            out = self.deconv0(x)
++            return out
++    for i in range(len(in_shape)):
++        x = mx.nd.random.uniform(-1.0, 1.0, shape=(batch_size, in_chn_list[i], in_shape[i], in_shape[i]))
++        for j in range(len(kernel_list)):
++            net = Net(out_chn_list[i], kernel_list[j])
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_batchnorm_16c():
++    chn_list = [16, 32, 64, 128, 256, 512, 1024]
++    shape = np.random.randint(low=1, high=300, size=10)
++    shape_list = []
++    for i in range(len(shape)):
++        shape_list.append((shape[i], shape[i]))
++    batch_size = 32
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     chn_num,
++                     kernel,
++                     axis,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = gluon.nn.Conv2D(chn_num, (kernel, kernel))
++                self.bn0   = gluon.nn.BatchNorm(axis=axis)
++
++        def hybrid_forward(self, F, x):
++            conv = self.conv0(x)
++            out = self.bn0(conv)
++            return out
++
++    for i in range(len(chn_list)):
++        for j in range(len(shape_list)):
++            shape = (batch_size, ) + (3,) + shape_list[j]
++            x = mx.nd.random.uniform(-1.0, 1.0, shape=shape)
++            net = Net(chn_list[i], 1, 1)
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_concat():
++    chn_list = [16, 32, 64, 128, 256, 512, 1024]
++    shapes = [224, 64, 32, 27, 16, 7, 3]
++    input_num = np.random.randint(low=2, high=11)
++    shape_list = []
++    for i in range(len(shapes)):
++        shape_list.append((shapes[i], shapes[i]))
++    batch_size = 32
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     check_dim,
++                     input_num,
++                     chn_num,
++                     kernel,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                from mxnet.gluon.contrib.nn import HybridConcurrent
++                self.concat = HybridConcurrent(axis=check_dim)
++                for i in range(input_num):
++                    self.concat.add(gluon.nn.Conv2D(chn_num, (kernel, kernel)))
++
++        def hybrid_forward(self, F, x):
++            return self.concat(x)
++
++    for i in range(len(chn_list)):
++        shape = (batch_size,) + (3,) + shape_list[i]
++        x = mx.nd.random.uniform(-1.0, 1.0, shape=shape)
++        for axis in range(4):
++            net = Net(axis, input_num, chn_list[i], 1)
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_conv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(64, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape((0, 0, 448, 112))
++            out = self.conv0(x_reshape)
++            return out
++    x = mx.nd.random.uniform(shape=(32, 3, 224, 224))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_reshape_conv_reshape_conv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(64, (3, 3))
++                self.conv1 = nn.Conv2D(256, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape((0, 0, 448, 112))
++            y = self.conv0(x_reshape)
++            y_reshape = y.reshape((0, 0, 223, 220))
++            out = self.conv1(y_reshape)
++            return out
++    x = mx.nd.random.uniform(shape=(32, 3, 224, 224))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_conv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(64, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=(0, 2, 0, 0), end=(32, 5, 224, 224))
++            out = self.conv0(x_slice)
++            return out
++    x = mx.nd.random.uniform(shape=(32, 6, 224, 224))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_conv_slice_conv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(64, (3, 3))
++                self.conv1 = nn.Conv2D(256, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=(0, 2, 0, 0), end=(32, 5, 224, 224))
++            y = self.conv0(x_slice)
++            y_slice = y.slice(begin=(0, 32, 0, 0), end=(32, 64, 222, 222))
++            out = self.conv1(y_slice)
++            return out
++    x = mx.nd.random.uniform(shape=(32, 6, 224, 224))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_slice_conv_reshape_conv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(64, (3, 3))
++                self.conv1 = nn.Conv2D(256, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=(0, 0, 1, 1), end=(32, 3, 225, 225))
++            y = self.conv0(x_slice)
++            y_reshape = y.reshape((0, 0, 444, 111))
++            out = self.conv1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(32, 3, 299, 299))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_reshape_conv_slice_conv():
++    """
++    This test will test gluon Conv2d computation with ndarray reshape and slice
++    """
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(64, (3, 3))
++                self.conv1 = nn.Conv2D(256, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape((0, 0, 448, 112))
++            y = self.conv0(x_reshape)
++            y_slice = y.slice(begin=(0, 32, 0, 0), end=(32, 64, 446, 110))
++            out = self.conv1(y_slice)
++            return out
++    x = mx.nd.random.uniform(shape=(32, 6, 224, 224))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_dense():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                channel0 = np.random.randint(1, 129)
++                self.dense0 = nn.Dense(channel0)
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape((8, 64, 600, -1))
++            out = self.dense0(x_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 300, 300))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_dense():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                channel0 = np.random.randint(1, 129)
++                self.dense0 = nn.Dense(channel0)
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=tuple(self.slice[0]),
++                              end=tuple(self.slice[1]))
++            out = self.dense0(x_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 300, 300))
++    slice = [[0, 64, 50, 0], [8, 128, 300, 300]]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_slice_dense_slice_dense():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                channel0 = 50
++                channel1 = np.random.randint(1, 129)
++                self.dense0 = nn.Dense(channel0)
++                self.dense1 = nn.Dense(channel1)
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=tuple(self.slice[0]), end=tuple(self.slice[1]))
++            y = self.dense0(x_slice)
++            y_slice = y.slice(begin=(4, 0), end=(-1, 10))
++            out = self.dense1(y_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 300, 300))
++    slice = [[0, 64, 50, 0], [8, 128, 300, 300]]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_reshape_dense_reshape_dense():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                channel0 = np.random.randint(1, 129)
++                channel1 = np.random.randint(1, 129)
++                self.dense0 = nn.Dense(channel0)
++                self.dense1 = nn.Dense(channel1)
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape((8, 64, 600, -1))
++            y = self.dense0(x_reshape)
++            y_reshape = y.reshape((1, -1))
++            out = self.dense1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 300, 300))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_dense_reshape_dense():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                channel0 = np.random.randint(1, 129)
++                channel1 = np.random.randint(1, 129)
++                self.dense0 = nn.Dense(channel0)
++                self.dense1 = nn.Dense(channel1)
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=tuple(self.slice[0]), end=tuple(self.slice[1]))
++            y = self.dense0(x_slice)
++            y_reshape = y.reshape((1, -1))
++            out = self.dense1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 300, 300))
++    slice = [[0, 64, 50, 0], [8, 128, 300, 300]]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_dense_slice_dense():
++    class Net(gluon.HybridBlock):
++        def __init__(self, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                channel0 = 128
++                channel1 = np.random.randint(1, 129)
++                self.dense0 = nn.Dense(channel0)
++                self.dense1 = nn.Dense(channel1)
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape((8, 64, 600, -1))
++            y = self.dense0(x_reshape)
++            y_slice = y.slice(begin=(0, 64), end=(8, 128))
++            out = self.dense1(y_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 300, 300))
++    net = Net()
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_reshape_batchnorm():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(128, (1, 1))
++                self.bn0 = nn.BatchNorm()
++                self.reshape = shape
++
++        def hybrid_forward(self, F, x):
++            x_in = self.conv0(x)
++            x_reshape = x_in.reshape(self.reshape)
++            out = self.bn0(x_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    shape = (32, 512, 128, -1)
++    net = Net(shape)
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_batchnorm():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(128, (1, 1))
++                self.bn0 = nn.BatchNorm(3)
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_in = self.conv0(x)
++            x_slice = x_in.slice(begin=tuple(self.slice[0]),
++                              end=tuple(self.slice[1]))
++            out = self.bn0(x_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [[0, 64, 50, 0], [8, 128, 256, 256]]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_batchnorm_slice_batchnorm():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(128, (1, 1))
++                self.bn0 = nn.BatchNorm(3)
++                self.bn1 = nn.BatchNorm(1)
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_in = self.conv0(x)
++            x_slice = x_in.slice(begin=tuple(self.slice[0][0]), end=tuple(self.slice[0][1]))
++            y = self.bn0(x_slice)
++            y_slice = y.slice(begin=tuple(self.slice[1][0]), end=tuple(self.slice[1][1]))
++            out = self.bn1(y_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [[[0, 64, 50, 0], [8, 128, 200, 256]], [[4, 50, 0, 128], [7, -1, -1, -1]]]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_batchnorm_reshape_batchnorm():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(128, (1, 1))
++                self.bn0 = nn.BatchNorm(0)
++                self.bn1 = nn.BatchNorm(2)
++                self.reshape = shape
++
++        def hybrid_forward(self, F, x):
++            x_in = self.conv0(x)
++            x_reshape = x_in.reshape(self.reshape[0])
++            y = self.bn0(x_reshape)
++            y_reshape = y.reshape(self.reshape[1])
++            out = self.bn1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 512))
++    shape = [(8, 256, 128, -1), (32, 128, 512, -1)]
++    net = Net(shape)
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_batchnorm_reshape_batchnorm():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(128, (1, 1))
++                self.bn0 = nn.BatchNorm(0)
++                self.bn1 = nn.BatchNorm(2)
++                self.reshape = shape
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_in = self.conv0(x)
++            x_slice = x_in.slice(begin=tuple(self.slice[0]), end=tuple(self.slice[1]))
++            y = self.bn0(x_slice)
++            y_reshape = y.reshape(self.reshape)
++            out = self.bn1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [[0, 64, 50, 0], [8, 128, 200, 256]]
++    shape = (1, 128, 256, -1)
++    net = Net(shape, slice)
++    check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_batchnorm_slice_batchnorm():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.conv0 = nn.Conv2D(128, (1, 1))
++                self.bn0 = nn.BatchNorm(2)
++                self.bn1 = nn.BatchNorm(0)
++                self.reshape = shape
++                self.slice = slice
++
++        def hybrid_forward(self, F, x):
++            x_in = self.conv0(x)
++            x_reshape = x_in.reshape(self.reshape)
++            y = self.bn0(x_reshape)
++            y_slice = y.slice(begin=tuple(self.slice[0]), end=tuple(self.slice[1]))
++            out = self.bn1(y_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [[0, 0, 50, 0], [8, 1, -1, 100]]
++    shape = (128, 1, 256, -1)
++    net = Net(shape, slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_reshape_pooling2d():
++    max_pooling = nn.MaxPool2D(strides=(2, 3), padding=(1, 1))
++    avg_pooling = nn.AvgPool2D(strides=(2, 2), padding=(1, 1))
++    global_maxpooling = nn.GlobalMaxPool2D()
++    global_avgpooling = nn.GlobalAvgPool2D()
++    pooling_layers = [max_pooling, avg_pooling, global_maxpooling, global_avgpooling]
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     shape,
++                     pooling_layer,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.pool0 = pooling_layer
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape)
++            out = self.pool0(x_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    shape = (128, 256, 256, -1)
++    for i in range(len(pooling_layers)):
++        net = Net(shape, pooling_layers[i])
++        check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_slice_pooling2d():
++    max_pooling = nn.MaxPool2D(strides=(2, 3), padding=(1, 1))
++    avg_pooling = nn.AvgPool2D(strides=(2, 2), padding=(1, 1))
++    global_maxpooling = nn.GlobalMaxPool2D()
++    global_avgpooling = nn.GlobalAvgPool2D()
++    pooling_layers = [max_pooling, avg_pooling, global_maxpooling, global_avgpooling]
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     slice,
++                     pooling_layer,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.slice = slice
++                self.pool0 = pooling_layer
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0], end=self.slice[1])
++            out = self.pool0(x_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [(12, 0, 128, 64), (16, 16, 256, 256)]
++    for i in range(len(pooling_layers)):
++        net = Net(slice, pooling_layers[i])
++        check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_reshape_pooling2d_reshape_pooling2d():
++    max_pooling = nn.MaxPool2D(strides=(2, 2), padding=(1, 1))
++    avg_pooling = nn.AvgPool2D(strides=(2, 2), padding=(1, 1))
++    global_maxpooling = nn.GlobalMaxPool2D()
++    global_avgpooling = nn.GlobalAvgPool2D()
++    pooling_layers = [max_pooling, avg_pooling, global_maxpooling, global_avgpooling]
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     shape,
++                     pooling_layer1,
++                     pooling_layer2,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.pool0 = pooling_layer1
++                self.pool1 = pooling_layer2
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape[0])
++            y = self.pool0(x_reshape)
++            y_reshape = y.reshape(self.reshape[1])
++            out = self.pool1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    shape = [(128, 256, 64, -1), (128, 256, 11, -1)]
++    for i in range(len(pooling_layers)):
++        for j in range(len(pooling_layers)):
++            if isinstance(pooling_layers[i], (nn.GlobalMaxPool2D, nn.GlobalAvgPool2D)):
++                shape[1] = (256, 128, 1, 1)
++            net = Net(shape, pooling_layers[i], pooling_layers[j])
++            check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_slice_pooling2d_slice_pooling2d():
++    max_pooling = nn.MaxPool2D(strides=(2, 3), padding=(1, 1))
++    avg_pooling = nn.AvgPool2D(strides=(2, 2), padding=(1, 1))
++    global_maxpooling = nn.GlobalMaxPool2D()
++    global_avgpooling = nn.GlobalAvgPool2D()
++    pooling_layers = [max_pooling, avg_pooling, global_maxpooling, global_avgpooling]
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     slice,
++                     pooling_layer1,
++                     pooling_layer2,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.slice = slice
++                self.pool0 = pooling_layer1
++                self.pool1 = pooling_layer2
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0][0], end=self.slice[0][1])
++            y = self.pool0(x_slice)
++            y_slice = y.slice(begin=self.slice[1][0], end=self.slice[1][1])
++            out = self.pool1(y_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [[(8, 0, 100, 50), (16, -1, -1, -1)], [(0, 64, 0, 50), (2, -1, -1, -1)]]
++    for i in range(len(pooling_layers)):
++        for j in range(len(pooling_layers)):
++            if isinstance(pooling_layers[i], (nn.GlobalMaxPool2D, nn.GlobalAvgPool2D)):
++                slice[1] = [(0, 64, 0, 0), (2, -1, 1, 1)]
++            net = Net(slice, pooling_layers[i], pooling_layers[j])
++            check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_slice_pooling2d_reshape_pooling2d():
++    max_pooling = nn.MaxPool2D(strides=(2, 3), padding=(1, 1))
++    avg_pooling = nn.AvgPool2D(strides=(2, 2), padding=(1, 1))
++    global_maxpooling = nn.GlobalMaxPool2D()
++    global_avgpooling = nn.GlobalAvgPool2D()
++    pooling_layers = [max_pooling, avg_pooling, global_maxpooling, global_avgpooling]
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     shape,
++                     slice,
++                     pooling_layer1,
++                     pooling_layer2,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.slice = slice
++                self.pool0 = pooling_layer1
++                self.pool1 = pooling_layer2
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0], end=self.slice[1])
++            y = self.pool0(x_slice)
++            y_reshape = y.reshape(self.reshape)
++            out = self.pool1(y_reshape)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    slice = [(8, 0, 100, 50), (16, 128, 256, 256)]
++    shape = (32, -1, 0, 0)
++    for i in range(len(pooling_layers)):
++        for j in range(len(pooling_layers)):
++            net = Net(shape, slice, pooling_layers[i], pooling_layers[j])
++            check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_reshape_pooling2d_slice_pooling2d():
++    max_pooling = nn.MaxPool2D(strides=(2, 3), padding=(1, 1))
++    avg_pooling = nn.AvgPool2D(strides=(2, 2), padding=(1, 1))
++    global_maxpooling = nn.GlobalMaxPool2D()
++    global_avgpooling = nn.GlobalAvgPool2D()
++    pooling_layers = [max_pooling, avg_pooling, global_maxpooling, global_avgpooling]
++    class Net(gluon.HybridBlock):
++        def __init__(self,
++                     shape,
++                     slice,
++                     pooling_layer1,
++                     pooling_layer2,
++                     **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.slice = slice
++                self.pool0 = pooling_layer1
++                self.pool1 = pooling_layer2
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape)
++            y = self.pool0(x_reshape)
++            y_slice = y.slice(begin=self.slice[0], end=self.slice[1])
++            out = self.pool1(y_slice)
++            return out
++
++    x = mx.nd.random.uniform(shape=(16, 128, 256, 256))
++    shape = (0, 512, 64, -1)
++    slice = [(8, 256, 10, 20), (-1, -1, -1, 70)]
++    for i in range(len(pooling_layers)):
++        for j in range(len(pooling_layers)):
++            if isinstance(pooling_layers[i], (nn.GlobalMaxPool2D, nn.GlobalAvgPool2D)):
++                slice = [(8, 256, 0, 0), (-1, -1, 1, 1)]
++            net = Net(shape, slice, pooling_layers[i], pooling_layers[j])
++            check_layer_forward_withinput(net, x)
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_reshape_deconv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.conv0 = nn.Conv2DTranspose(64, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape)
++            out = self.conv0(x_reshape)
++            return out
++    x = mx.nd.random.uniform(shape=(64, 2, 256, 256))
++    shape = (8, 16, 64, -1)
++    net = Net(shape)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_slice_deconv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.slice = slice
++                self.conv0 = nn.Conv2DTranspose(64, (3, 3))
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0], end=self.slice[1])
++            out = self.conv0(x_slice)
++            return out
++    x = mx.nd.random.uniform(shape=(128, 32, 500, 500))
++    slice = [(0, 16, 0, 0), (1, 32, 256, 256)]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_reshape_deconv_reshape_deconv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.conv0 = nn.Conv2DTranspose(64, (3, 3))
++                self.conv1 = nn.Conv2DTranspose(128, (2, 3), strides=(2, 2))
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape[0])
++            y = self.conv0(x_reshape)
++            y_reshape = y.reshape(self.reshape[1])
++            out = self.conv1(y_reshape)
++            return out
++    x = mx.nd.random.uniform(shape=(16, 32, 256, 512))
++    shape = [(32, 0, 256, -1), (64, 32, 129, -1)]
++    net = Net(shape)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_slice_deconv_slice_deconv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.slice = slice
++                self.conv0 = nn.Conv2DTranspose(64, (3, 3))
++                self.conv1 = nn.Conv2DTranspose(128, (2, 3), strides=(2, 2))
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0][0], end=self.slice[0][1])
++            y = self.conv0(x_slice)
++            y_slice = y.slice(begin=self.slice[1][0], end=self.slice[1][1])
++            out = self.conv1(y_slice)
++            return out
++    x = mx.nd.random.uniform(shape=(128, 32, 500, 500))
++    slice = [[(0, 16, 0, 0), (8, 32, 128, 128)], [(4, 0, 2, 0), (8, 32, 130, 128)]]
++    net = Net(slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_reshape_deconv_slice_deconv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.slice = slice
++                self.conv0 = nn.Conv2DTranspose(64, (3, 3))
++                self.conv1 = nn.Conv2DTranspose(128, (2, 3), strides=(2, 2))
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape)
++            y = self.conv0(x_reshape)
++            y_slice = y.slice(begin=self.slice[0], end=self.slice[1])
++            out = self.conv1(y_slice)
++            return out
++    x = mx.nd.random.uniform(shape=(16, 4, 500, 500))
++    shape = (32, 16, 125, -1)
++    slice = [(4, 32, 0, 0), (20, 64, 64, 224)]
++    net = Net(shape, slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++@unittest.skip('skippping temporarily, tracked by MXNET-519')
++def test_slice_deconv_reshape_deconv():
++    class Net(gluon.HybridBlock):
++        def __init__(self, shape, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.slice = slice
++                self.conv0 = nn.Conv2DTranspose(64, (3, 3))
++                self.conv1 = nn.Conv2DTranspose(128, (2, 3), strides=(2, 2))
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0], end=self.slice[1])
++            y = self.conv0(x_slice)
++            y_reshape = y.reshape(self.reshape)
++            out = self.conv1(y_reshape)
++            return out
++    x = mx.nd.random.uniform(shape=(16, 32, 256, 512))
++    shape = (24, 16, 452, -1)
++    slice = [(4, 0, 0, 0), (16, 32, 224, 224)]
++    net = Net(shape, slice)
++    check_layer_forward_withinput(net, x)
++
++@with_seed()
++def test_reshape_activation():
++    class Net(gluon.HybridBlock):
++        def __init__(self, act, shape, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.act = nn.Activation(act)
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape)
++            out = self.act(x_reshape)
++            return out
++    acts = ["relu", "sigmoid", "tanh", "softrelu"]
++    for act in acts:
++        x = mx.nd.random.uniform(-1, 1, shape=(16, 32, 256, 512))
++        shape = (64, 8, 128, -1)
++        net = Net(act, shape)
++        check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_activation():
++    class Net(gluon.HybridBlock):
++        def __init__(self, act, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.slice = slice
++                self.act = nn.Activation(act)
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0], end=self.slice[1])
++            out = self.act(x_slice)
++            return out
++
++    acts = ["relu", "sigmoid", "tanh", "softrelu"]
++    for act in acts:
++        x = mx.nd.random.uniform(-1, 1, shape=(16, 32, 256, 512))
++        slice = [(8, 16, 0, 0), (16, 32, 100, 100)]
++        net = Net(act, slice)
++        check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_activation_reshape_activation():
++    class Net(gluon.HybridBlock):
++        def __init__(self, act0, act1, shape, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.act0 = nn.Activation(act0)
++                self.act1 = nn.Activation(act1)
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape[0])
++            y = self.act0(x_reshape)
++            y_reshape = y.reshape(self.reshape[1])
++            out = self.act1(y_reshape)
++            return out
++    acts = ["relu", "sigmoid", "tanh", "softrelu"]
++    for idx0, act0 in enumerate(acts):
++        for idx1, act1 in enumerate(acts):
++            if idx1 == idx0:
++                continue
++            x = mx.nd.random.uniform(-1, 1, shape=(16, 32, 256, 512))
++            shape = [(64, 8, 128, -1), (16, 64, 128, -1)]
++            net = Net(act0, act1, shape)
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_activation_slice_activation():
++    class Net(gluon.HybridBlock):
++        def __init__(self, act0, act1, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.slice = slice
++                self.act0 = nn.Activation(act0)
++                self.act1 = nn.Activation(act1)
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0][0], end=self.slice[0][1])
++            y = self.act0(x_slice)
++            y_slice = y.slice(begin=self.slice[1][0], end=self.slice[1][1])
++            out = self.act1(y_slice)
++            return out
++    acts = ["relu", "sigmoid", "tanh", "softrelu"]
++    for idx0, act0 in enumerate(acts):
++        for idx1, act1 in enumerate(acts):
++            if idx1 == idx0:
++                continue
++            x = mx.nd.random.uniform(-1, 1, shape=(16, 32, 256, 512))
++            slice = [[(0, 0, 100, 100), (8, 16, 256, 512)], [(2, 4, 0, 0), (8, 10, 128, 128)]]
++            net = Net(act0, act1, slice)
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_reshape_activation_slice_activation():
++    class Net(gluon.HybridBlock):
++        def __init__(self, act0, act1, shape, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.slice = slice
++                self.act0 = nn.Activation(act0)
++                self.act1 = nn.Activation(act1)
++
++        def hybrid_forward(self, F, x):
++            x_reshape = x.reshape(self.reshape)
++            y = self.act0(x_reshape)
++            y_slice = y.slice(begin=self.slice[0], end=self.slice[1])
++            out = self.act1(y_slice)
++            return out
++    acts = ["relu", "sigmoid", "tanh", "softrelu"]
++    for idx0, act0 in enumerate(acts):
++        for idx1, act1 in enumerate(acts):
++            if idx1 == idx0:
++                continue
++            x = mx.nd.random.uniform(-1, 1, shape=(16, 32, 256, 512))
++            shape = (64, 16, 128, -1)
++            slice = [(0, 0, 0, 100), (8, 16, 64, 228)]
++            net = Net(act0, act1, shape, slice)
++            check_layer_forward_withinput(net, x)
++
++
++@with_seed()
++def test_slice_activation_reshape_activation():
++    class Net(gluon.HybridBlock):
++        def __init__(self, act0, act1, shape, slice, **kwargs):
++            super(Net, self).__init__(**kwargs)
++            with self.name_scope():
++                self.reshape = shape
++                self.slice = slice
++                self.act0 = nn.Activation(act0)
++                self.act1 = nn.Activation(act1)
++
++        def hybrid_forward(self, F, x):
++            x_slice = x.slice(begin=self.slice[0], end=self.slice[1])
++            y = self.act0(x_slice)
++            y_reshape = y.reshape(self.reshape)
++            out = self.act1(y_reshape)
++            return out
++    acts = ["relu", "sigmoid", "tanh", "softrelu"]
++    for idx0, act0 in enumerate(acts):
++        for idx1, act1 in enumerate(acts):
++            if idx1 == idx0:
++                continue
++            x = mx.nd.random.uniform(-1, 1, shape=(16, 32, 256, 512))
++            slice = [(0, 0, 0, 100), (8, 16, 64, 228)]
++            shape = (64, 16, 64, -1)
++            net = Net(act0, act1, shape, slice)
++            check_layer_forward_withinput(net, x)
+ 
+ @with_seed()
+ def test_legacy_save_params():
