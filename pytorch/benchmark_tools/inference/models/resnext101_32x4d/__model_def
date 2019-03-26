@@ -1,0 +1,48 @@
+[Model Name]
+ResNeXt101_32x4d
+
+[Model Type]
+Normal
+
+[Output Type]
+Possibility
+
+[Model Description]
+Model definition for Caffe2
+
+[Init Net]
+init_net.pb
+
+[Init Net Int8]
+init_onnx_int8.pb
+
+[Predict Net]
+predict_net.pb
+
+[Predict Net Int8]
+predict_onnx_int8.pb
+
+[Onnx Model]
+resnext101_32x4d.onnx
+
+[Crop Size]
+224
+
+[Image Mean]
+0.485 0.456 0.406
+
+[Scale]
+4.3668 4.4643 4.4444
+
+[Need Normalize]
+true
+
+[Color Format]
+RGB
+
+[Train Proto]
+
+
+[Deploy Proto]
+
+

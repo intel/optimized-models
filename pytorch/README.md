@@ -6,6 +6,7 @@
 
 ```
 wget https://download.pytorch.org/models/resnet50-19c8e357.pth
+wget http://data.lip6.fr/cadene/pretrainedmodels/resnext101_32x4d-29e315fa.pth
 ```
 
 ## Install legacy pytorch for transferring model from pytorch to onnx
@@ -30,7 +31,7 @@ python setup.py build
 ```
 
 ## Transfer pytorch model to onnx model
-    below code is an example:
+    below code is an example for resnet50:
 ```
         import torch    
         import torchvision.models as models
@@ -50,6 +51,8 @@ python setup.py build
 
 ```
         cp resnet50.onnx inference/models/resnet50/
+
+        cp resnext101_32x4d.onnx inference/models/resnext101_32x4d/
 ```
 
 ## Prepare dataset
@@ -81,6 +84,7 @@ Note:
     There will be two files generated under the folder, and copy them to inference/models/resnet50
          cp init_net_int8.pb inference/models/resnet50/init_onnx_int8.pb
          cp predict_net_int8.pb inference/models/resnet50/predict_onnx_int8.pb
+
 ```
 
 ## Run fp32 model
