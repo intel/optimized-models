@@ -38,12 +38,14 @@ numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=WD-quan
 git clone --recursive https://github.com/apache/incubator-mxnet.git
 cd incubator-mxnet
 git submodule update --recursive
-git checkout f98820c366db09dadfeb6d497833f2d173a32cf4
+git checkout 5d2a4510c2c226c6921a8a213d04461f68ca7173
 git apply --ignore-space-change --ignore-whitespace patch/patch.update
 make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
 ```
+> Note: The patch.update are under review, [PR#14491](https://github.com/apache/incubator-mxnet/pull/14491), [PR14492](https://github.com/apache/incubator-mxnet/pull/14492). After merged into master, no more patchs are needed.
+
 ### Run the wide&deep:
 ```
 cd optimized-models/mxnet/wide_deep_criteo/

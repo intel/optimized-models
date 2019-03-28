@@ -134,7 +134,7 @@ if __name__ == '__main__':
                                 name.find('FullyConnected') != -1 or \
                                 name.find('fully_connected') != -1 or \
                                 name.find('concat0_output') != -1)
-    sym = sym.get_backend_symbol('MKLDNN_FC')
+    sym = sym.get_backend_symbol('MKLDNN')
     excluded_sym_names = ['concat0']
     cqsym, qarg_params, aux_params = quantize_model(sym=sym, arg_params=arg_params, aux_params=aux_params,
                                                     data_names=['csr_data', 'dns_data'],
@@ -153,7 +153,8 @@ if __name__ == '__main__':
                          % calib_mode)
     prefix = 'WD'
     sym_name = '%s-symbol.json' % (prefix + suffix)
-    cqsym = cqsym.get_backend_symbol('MKLDNN_POST_FC_QUANTIZE')
+    cqsym = cqsym.get_backend_symbol('MKLDNN_POST_QUANTIZE')
+    cqsym = cqsym.get_backend_symbol('MKLDNN_WIDE_AND_DEEP_INPUT_FUSE')
     save_symbol(sym_name, cqsym, logger)
     param_name = '%s-%04d.params' % (prefix + '-quantized', 0)
     save_params(param_name, qarg_params, aux_params, logger)

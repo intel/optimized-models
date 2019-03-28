@@ -241,8 +241,8 @@
       "op": "_contrib_quantize_v2", 
       "name": "concat0_output_quantize", 
       "attrs": {
-        "max_calib_range": "11.039369", 
-        "min_calib_range": "-0.355414", 
+        "max_calib_range": "1.000000", 
+        "min_calib_range": "-0.454139", 
         "out_type": "uint8"
       }, 
       "inputs": [[32, 0, 0]]
