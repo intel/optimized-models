@@ -51,6 +51,18 @@ python setup.py build
 
 ```
         cp resnet50.onnx inference/models/resnet50/
+```
+
+## Prepare dataset
+
+```
+        Please download the imagenet and validation file from the official site
+        http://image-net.org/download.php
+        
+Note:
+- ImageNet does not own the copyright of the images. For researchers and educators who wish to use the images for non-commercial research and/or educational purposes, ImageNet can provide access through their site under certain conditions and terms. 
+                
+```
 
         cp resnext101_32x4d.onnx inference/models/resnext101_32x4d/
 ```
@@ -74,6 +86,7 @@ Note:
 ```
 
 ## Run calibration
+
 
 ```
          export PYTHONPATH=/the/path/to/your/pytorch/src
