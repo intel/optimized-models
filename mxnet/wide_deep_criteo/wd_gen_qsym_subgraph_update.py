@@ -154,7 +154,6 @@ if __name__ == '__main__':
     prefix = 'WD'
     sym_name = '%s-symbol.json' % (prefix + suffix)
     cqsym = cqsym.get_backend_symbol('MKLDNN_POST_QUANTIZE')
-    cqsym = cqsym.get_backend_symbol('MKLDNN_WIDE_AND_DEEP_INPUT_FUSE')
     save_symbol(sym_name, cqsym, logger)
     param_name = '%s-%04d.params' % (prefix + '-quantized', 0)
     save_params(param_name, qarg_params, aux_params, logger)

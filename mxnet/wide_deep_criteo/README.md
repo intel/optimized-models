@@ -59,7 +59,7 @@ numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./updat
 numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./update_model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params
 ```
 
-## 3. Steps to reproduce performance with internal MXNet [Best so far]
+## 3. Steps to reproduce performance with OOB MXNet and all internal optimization patch [Best so far]
 ```
 git clone --recursive https://github.com/apache/incubator-mxnet.git
 cd incubator-mxnet
