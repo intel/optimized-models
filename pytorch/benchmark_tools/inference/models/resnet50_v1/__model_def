@@ -1,0 +1,42 @@
+[Model Name]
+ResNet50_v1
+
+[Model Type]
+Caffe legacy
+
+[Output Type]
+Possibility
+
+[Model Description]
+Model definition for Caffe2
+
+[Init Net]
+init_net.pb
+
+[Init Net]
+init_net_int8.pb
+
+[Predict Net]
+predict_net.pb
+
+[Predict Net Int8]
+predict_net_int8.pb
+
+[Onnx Model]
+resnet50_onnx.pb
+
+[Crop Size]
+224
+
+[Image Mean]
+104 117 123
+
+[Scale]
+0.0078125
+
+[Train Proto]
+
+
+[Deploy Proto]
+
+

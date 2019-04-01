@@ -4,6 +4,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import copy
 import math
 import numpy as np
@@ -34,11 +35,14 @@ class algorithm(object):
 
     def get_successor_ops(self, op_pos, predict_def):
         """ get successor op from the net"""
-        if op_pos < 0 or op_pos >= (len(predict_def.op) - 1):
+        if op_pos < -1 or op_pos >= (len(predict_def.op) - 1):
             return []
         successors = []
         pos = op_pos + 1
-        output = predict_def.op[op_pos].output[0]
+        if op_pos == -1:
+            output = predict_def.op[0].input[0]
+        else:
+            output = predict_def.op[op_pos].output[0]
         while pos < len(predict_def.op):
             op = predict_def.op[pos]
             for inp in op.input:
@@ -197,6 +201,8 @@ class KLCalib(algorithm):
     def gather_max(self, predict_def):
         for op in predict_def.op[0:]:
             for j, input_name in enumerate(op.input):
+                if self.is_weights(op, j) or self.is_bias(op, j):
+                    continue
                 self.update_max(op, "absmax_input", j, input_name)
 
             for m, output_name in enumerate(op.output):
@@ -433,7 +439,7 @@ class Calibrator(object):
                 "AveragePool"     : "Int8AveragePool",
                 "UpsampleNearest" : "Int8UpsampleNearest",
                 # Int8FC is not supported so far
-                #"FC"            : "Int8FC",
+                "FC"            : "Int8FC",
             }.get(op_type, None)
 
         def get_quantized_op_type_by_fusion_type(fusion_type):
@@ -545,6 +551,31 @@ class Calibrator(object):
             order_sw_op = core.CreateOperator(op_type, [data_in], [data_out])
             self.algo.insert_op(insert_pos, order_sw_op, predict_def)
 
+        def reset_arg(op, name, value):
+            for i in range(len(op.arg)):
+                if op.arg[i].name == name:
+                    op.arg[i].i = value;
+
+        def reset_conv_algorithm(predict_def):
+            cur_pos = 0
+            op_len = len(predict_def.op)
+            while cur_pos < op_len:
+                cur_op = predict_def.op[cur_pos]
+                if not cur_op.type.startswith("Int8Conv"):
+                    cur_pos += 1
+                    continue
+                is_neg_input = True
+                pre_op, pre_pos = self.algo.get_predecessor_op(0, cur_pos, predict_def)
+                Y_zero_point = self.algo.get_arg(pre_op, "Y_zero_point")
+                if pre_op and Y_zero_point.i == 0:
+                    is_neg_input = False
+                conv_algo = self.algo.get_arg(cur_op, "conv_algorithm")
+                if is_neg_input and conv_algo and conv_algo.i == 1:
+                    # MKL-DNN only supports int8 winograd conv for the input in u8 datatype.
+                    # If the input is in s8 datatype, we reset the conv algorithm as direct conv.
+                    reset_arg(cur_op, "conv_algorithm", 0)
+                cur_pos += 1
+
         def insert_quantize(predict_def):
             cur_pos = 0
             op_len = len(predict_def.op)
@@ -575,6 +606,12 @@ class Calibrator(object):
                         add_order_swtich(predict_def, new_pos)
                         op_len += 1
                         new_pos += 1
+                    if pre_op is None:
+                        qua_data = predict_def.op[new_pos].output[0]
+                        successors = self.algo.get_successor_ops(-1, predict_def)
+                        for op in successors:
+                            if op.type.startswith("Int8") and op.input[0] != qua_data:
+                                op.input[0] = qua_data
                     op_len += 1
                     new_pos += 1
                     inp_index += 1
@@ -825,6 +862,11 @@ class Calibrator(object):
 
         predict_quantized = copy.deepcopy(predict_def)
 
+        if os.environ.get('DEBUGMODE') == "1":
+            for i, op in enumerate(predict_quantized.op):
+                if len(op.name) == 0:
+                    op.name = op.type.lower() + str(i)
+
         self.algo.gather_max(predict_quantized)
 
         self.algo.update_status()
@@ -837,6 +879,12 @@ class Calibrator(object):
 
         refine_module_outputs(predict_quantized)
 
+        if os.environ.get('DEBUGMODE') == "1":
+            with open("{0}_opt_predict_net.pb".format(predict_quantized.name), "w") as fid:
+                fid.write(predict_quantized.SerializeToString())
+            with open("{}_opt_predict_net.pbtxt".format(predict_quantized.name), "w") as fid:
+                fid.write(str(predict_quantized))
+
         # DO NOT change the operator order of the module after below line
         output_data_type = predict_output_data_type(predict_quantized)
 
@@ -847,6 +895,8 @@ class Calibrator(object):
         init_quantized = gen_quantized_init_def(ws, predict_quantized)
 
         self.algo.remove_max(predict_quantized)
+
+        reset_conv_algorithm(predict_quantized)
 
         for op in predict_quantized.op:
             if op.type.startswith("Int8"):

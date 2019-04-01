@@ -515,11 +515,17 @@ def Run(args, extra_args):
                 ws.FeedBlob(str(predict_def.op[0].input[0]), imgs, device_opts)
             if predict_def.op[-1].type == 'Accuracy':
                 if args.device.lower() == 'gpu':
-                    ws.FeedBlob(str(predict_def.op[-1].input[1]), init_label, device_opts)
-                    ws.FeedBlob(str(predict_def.op[-2].input[1]), init_label, device_opts)
+                    ws.FeedBlob(str(predict_def.op[-1].input[1]), init_label, device_opts)    
+                    if predict_def.op[-2].type == 'Accuracy':
+                        ws.FeedBlob(str(predict_def.op[-2].input[1]), init_label, device_opts)
+                    elif predict_def.op[-3].type == 'Accuracy':
+                        ws.FeedBlob(str(predict_def.op[-3].input[1]), init_label, device_opts)
                 else:
                     ws.FeedBlob(str(predict_def.op[-1].input[1]), init_label, device_opts_cpu)
-                    ws.FeedBlob(str(predict_def.op[-2].input[1]), init_label, device_opts_cpu)
+                    if predict_def.op[-2].type == 'Accuracy':
+                        ws.FeedBlob(str(predict_def.op[-2].input[1]), init_label, device_opts_cpu)
+                    elif predict_def.op[-3].type == 'Accuracy':
+                        ws.FeedBlob(str(predict_def.op[-3].input[1]), init_label, device_opts_cpu)
 
             comp_start_time = timeit.default_timer()
             #if args.profile or predict_def.op[-1].type == 'Accuracy':
@@ -529,8 +535,10 @@ def Run(args, extra_args):
             comp_elapsed_time = timeit.default_timer() - comp_start_time
             comp_time += comp_elapsed_time
             output = ws.FetchBlob(str(predict_def.op[-1].output[0]))
-            if predict_def.op[-1].type == 'Accuracy':
+            if predict_def.op[-2].type == 'Accuracy':
                 output2 = ws.FetchBlob(str(predict_def.op[-2].output[0]))
+            elif predict_def.op[-3].type == 'Accuracy':
+                output2 = ws.FetchBlob(str(predict_def.op[-3].output[0]))
             elif  predict_def.op[-1].type == 'BoxWithNMSLimit':
                 output2 = ws.FetchBlob(str(predict_def.op[-1].output[1]))
                 output3 = ws.FetchBlob(str(predict_def.op[-1].output[2]))
@@ -542,7 +550,6 @@ def Run(args, extra_args):
                 outputs.append([output, output2, output3])
             elif predict_def.op[-1].type != 'Accuracy':
                 outputs.append(output)
-                #logging.info(output)
             else:
                 accuracy_top1.append(output2)
                 accuracy_top5.append(output)

@@ -1,6 +1,6 @@
 # Guide to run resnet50 fp32 and int8 models.
 
-
+- For resnet50_v1 guide, please see [`RESNET50V1.md`](RESNET50V1.md).
 
 ## Download resnet50 pytorch model
 
