@@ -1,4 +1,4 @@
-# Guide to run resnet50 fp32 and int8 models.
+# Guide to run resnet50 fp32 and int8 models. please use release v1.0.0.
 
 - For resnet50_v1 guide, please see [`RESNET50V1.md`](RESNET50V1.md).
 

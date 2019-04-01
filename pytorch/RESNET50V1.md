@@ -1,6 +1,6 @@
 # Guide to Run Pytorch/caffe2 resnet50 v1 model 
 
-
+- please use v1.0.5
 
 ## Download caffe resnet50 v1 model
 
