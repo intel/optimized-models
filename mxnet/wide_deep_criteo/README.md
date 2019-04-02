@@ -11,7 +11,7 @@ wget -P ./large_version https://storage.googleapis.com/dataset-uploader/criteo-k
 wget -P ./large_version https://storage.googleapis.com/dataset-uploader/criteo-kaggle/large_version/eval.csv
 ```
 
-## 1. Steps to reproduce performance with OOB MXNet
+# 1. Steps to reproduce performance with OOB MXNet
 ```
 git clone --recursive https://github.com/apache/incubator-mxnet.git
 cd incubator-mxnet
@@ -20,20 +20,30 @@ make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
 ```
-### Run the wide&deep:
+## Run the wide&deep:
 ```
 cd optimized-models/mxnet/wide_deep_criteo/
 python train.py
 python wd_gen_qsym_subgraph_update.py
 export KMP_AFFINITY=granularity=fine,noduplicates,compact,1,0
 export OMP_NUM_THREADS=24
+```
+### performance
+```
 # FP32
 numactl --physcpubind=0-23 --membind=0 python inference.py
 # Int8
 numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=WD-quantized-162batches-naive-symbol.json --param-file=WD-quantized-0000.params
 ```
+### Accuracy
+```
+# FP32
+numactl --physcpubind=0-23 --membind=0 python inference.py --accuracy True
+# Int8
+numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=WD-quantized-162batches-naive-symbol.json --param-file=WD-quantized-0000.params --accuracy True
+```
 
-## 2. Steps to reproduce performance with OOB MXNet and optimization patch
+# 2. Steps to reproduce performance with OOB MXNet and optimization patch
 ```
 git clone --recursive https://github.com/apache/incubator-mxnet.git
 cd incubator-mxnet
@@ -44,22 +54,32 @@ make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
 ```
-> Note: The patch.update are under review, [PR#14491](https://github.com/apache/incubator-mxnet/pull/14491), [PR14492](https://github.com/apache/incubator-mxnet/pull/14492). After merged into master, no more patchs are needed.
+> Note: The patch.update are under review, [PR#14491](https://github.com/apache/incubator-mxnet/pull/14491), [PR#14492](https://github.com/apache/incubator-mxnet/pull/14492). After merged into master, no more patchs are needed.
 
-### Run the wide&deep:
+## Run the wide&deep:
 ```
 cd optimized-models/mxnet/wide_deep_criteo/
 python train.py
 python wd_gen_qsym_subgraph_update.py
 export KMP_AFFINITY=granularity=fine,noduplicates,compact,1,0
 export OMP_NUM_THREADS=24
+```
+### Performance
+```
 # FP32
 numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./update_model/embedding-fuse.json --param-file=checkpoint-0000.params
 # Int8
 numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./update_model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params
 ```
+### Accuracy
+```
+# FP32
+numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./update_model/embedding-fuse.json --param-file=checkpoint-0000.params --accuracy True
+# Int8
+numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./update_model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params --accuracy True
+```
 
-## 3. Steps to reproduce performance with OOB MXNet and all internal optimization patch [Best so far]
+# 3. Steps to reproduce performance with OOB MXNet and all internal optimization patch [Best so far]
 ```
 git clone --recursive https://github.com/apache/incubator-mxnet.git
 cd incubator-mxnet
@@ -73,19 +93,28 @@ make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
 ```
-### Run the wide&deep:
+## Run the wide&deep:
 ```
 cd optimized-models/mxnet/wide_deep_criteo/
 python train.py
 python wd_gen_qsym_subgraph.py
 export KMP_AFFINITY=granularity=fine,noduplicates,compact,1,0
 export OMP_NUM_THREADS=24
+```
+### Performance
+```
 # FP32
 numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./model/embedding-fuse.json --param-file=checkpoint-0000.params
 # Int8
 numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params
 ```
-
+### Accuracy
+```
+# FP32
+numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./model/embedding-fuse.json --param-file=checkpoint-0000.params --accuracy True
+# Int8
+numactl --physcpubind=0-23 --membind=0 python inference.py --symbol-file=./model/embedding_fuse-quantized-1953batches-naive-symbol.json --param-file=WD-quantized-0000.params --accuracy True
+```
 
 # FP32 Outputs
 ```
