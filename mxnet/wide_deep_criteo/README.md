@@ -19,6 +19,8 @@ git submodule update --recursive
 make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
+export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=$PWD/python:$PYTHONPATH
 ```
 ## Run the wide&deep:
 ```
@@ -53,6 +55,8 @@ git apply --ignore-space-change --ignore-whitespace patch/patch.update
 make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
+export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=$PWD/python:$PYTHONPATH
 ```
 > Note: The patch.update are under review, [PR#14491](https://github.com/apache/incubator-mxnet/pull/14491), [PR#14492](https://github.com/apache/incubator-mxnet/pull/14492). After merged into master, no more patchs are needed.
 
@@ -92,6 +96,8 @@ cd ../..
 make -j USE_MKLDNN=1 USE_BLAS=mkl USE_OPENCV=1
 cd python
 python setup.py install [--user]
+export LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH
+export PYTHONPATH=$PWD/python:$PYTHONPATH
 ```
 ## Run the wide&deep:
 ```
