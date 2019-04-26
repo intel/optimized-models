@@ -1,6 +1,7 @@
 #!/bin/bash
 pip install --pre mxnet-mkl
 git clone https://github.com/apache/incubator-mxnet
+cd incubator-mxnet
 git checkout 8c2a25fa7058f06945d2befd3030e834a8b76d27
 export KMP_AFFINITY=granularity=fine,noduplicates,compact,1,0
 export vCPUs=`cat /proc/cpuinfo | grep processor | wc -l`
