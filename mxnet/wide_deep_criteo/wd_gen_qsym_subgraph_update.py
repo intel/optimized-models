@@ -135,7 +135,7 @@ if __name__ == '__main__':
                                 name.find('fully_connected') != -1 or \
                                 name.find('concat0_output') != -1)
     sym = sym.get_backend_symbol('MKLDNN')
-    excluded_sym_names = ['concat0']
+    excluded_sym_names = ['concat0', '_plus0']
     cqsym, qarg_params, aux_params = quantize_model(sym=sym, arg_params=arg_params, aux_params=aux_params,
                                                     data_names=['csr_data', 'dns_data'],
                                                     label_names=['softmax_label', ],
