@@ -1,5 +1,5 @@
 #!/bin/bash
-pip install --pre mxnet-mkl
+pip install --pre mxnet-mkl==1.5.0b20190623
 git clone https://github.com/apache/incubator-mxnet
 cd incubator-mxnet
 git checkout f44f6cfbe752fd8b8036307cecf6a30a30ad8557
