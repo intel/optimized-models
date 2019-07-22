@@ -114,6 +114,8 @@ def Run(args, extra_args):
                         args.model,
                         {str(k): str(v) for k, v in model_info.items()}
                     ))
+
+    
     crop_size = int(model_info["crop_size"])
     if args.crop_size:
         crop_size = args.crop_size
@@ -123,19 +125,30 @@ def Run(args, extra_args):
         need_normalize = True
 
     mean = 128
-    if str(model_info["image_mean"]) != 'None':
-        mean_tmp = ((model_info["image_mean"]).split('/')[-1]).split(' ')
+    image_mean = str(model_info["image_mean"])
+    if str(model_info["image_mean"]) != 'None' and image_mean.split('.')[-1] == "binaryproto":
+        from inference.caffe.proto import caffe_pb2
+        from inference import caffe
+        from inference.caffe import io
+        blob = caffe_pb2.BlobProto()
+        data = open(image_mean, 'rb' ).read()
+        blob.ParseFromString(data)
+        mean = np.array(io.blobproto_to_array(blob))
+
+
+    mean_tmp = ((model_info["image_mean"]).split('/')[-1]).split(' ')
+    if str(model_info["image_mean"]) != 'None' and len(mean_tmp) == 3:
         if need_normalize:
             mean = np.zeros([3, crop_size, crop_size], dtype=np.float)
             mean[0, :, :] = float(mean_tmp[0])  # 104
             mean[1, :, :] = float(mean_tmp[1])  # 117
             mean[2, :, :] = float(mean_tmp[2])  # 124
-
         else:
             mean = np.zeros([3, crop_size, crop_size], dtype=np.int32)
             mean[0, :, :] = int(mean_tmp[0])  # 104
             mean[1, :, :] = int(mean_tmp[1])  # 117
             mean[2, :, :] = int(mean_tmp[2])  # 124
+
     scale = [1]
     if str(model_info["scale"]) != '':
         scale = (model_info["scale"]).split(' ')
@@ -156,14 +169,16 @@ def Run(args, extra_args):
         else:
             init_file = model_info["init_net"]
             predict_file = model_info["predict_net"]
-        with open(init_file) as i:
-            if model_info["model_type"] == "prototext" or model_info["init_net"].split('.')[-1] == "pbtxt":
+        with open(init_file, "rb") as i:
+            print(model_info)
+            if model_info["model_type"] == "prototext" or init_file.split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
                 init_def = ptxt.Parse(i.read(), caffe2_pb2.NetDef())
             else:
                 init_def = caffe2_pb2.NetDef()
                 init_def.ParseFromString(i.read())
-        with open(predict_file) as p:
+        with open(predict_file, "rb") as p:
+            print(model_info["model_type"])
             if model_info["model_type"] == "prototext" or predict_file.split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
                 predict_def = ptxt.Parse(p.read(), caffe2_pb2.NetDef())
@@ -171,7 +186,7 @@ def Run(args, extra_args):
                 predict_def = caffe2_pb2.NetDef()
                 predict_def.ParseFromString(p.read())
         if args.int8_cosim:
-            with open(model_info["predict_net"]) as p:
+            with open(model_info["predict_net"], "rb") as p:
                 if model_info["model_type"] == "prototext" or model_info["predict_net"].split('.')[-1] == "pbtxt":
                     import google.protobuf.text_format as ptxt
                     cosim_predict_def = ptxt.Parse(p.read(), caffe2_pb2.NetDef())
@@ -180,12 +195,6 @@ def Run(args, extra_args):
                     cosim_predict_def.ParseFromString(p.read())
     #cc2.SaveAsOnnxModel(init_def, predict_def, (1, 3, crop_size, crop_size),
     #            model_info["model_name"] + "_onnx.pb")
-    if model_info["model_type"] == "caffe legacy":
-        cc2.MergeScaleBiasInBN(predict_def)
-        cc2.RemoveUselessExternalInput(predict_def)
-        if args.int8_cosim:
-            cc2.MergeScaleBiasInBN(cosim_predict_def)
-            cc2.RemoveUselessExternalInput(cosim_predict_def)
 
     dev_map = {
         "cpu": caffe2_pb2.CPU,
@@ -214,6 +223,31 @@ def Run(args, extra_args):
     # search params shape to replace the 0 with 1 when ideep and throw warning
     if args.device.lower() == 'ideep':
         cc2.FillZeroParamsWithOne(init_def)
+    
+    if os.environ.get('DEBUGMODE') == "1":
+        with open("{0}_origin_init_net.pb".format(model_info["model_name"]), "w") as fid:
+            fid.write(init_def.SerializeToString())
+        with open("{}_origin_init_net.pbtxt".format(model_info["model_name"]), "w") as fid:
+            fid.write(str(init_def))
+        with open("{0}_origin_predict_net.pb".format(model_info["model_name"]), "w") as fid:
+            fid.write(predict_def.SerializeToString())
+        with open("{}_origin_predict_net.pbtxt".format(model_info["model_name"]), "w") as fid:
+            fid.write(str(predict_def))
+
+    if model_info["model_type"] == "caffe legacy":
+        cc2.MergeScaleBiasInBN(predict_def)
+        cc2.RemoveUselessExternalInput(predict_def)
+        if args.int8_cosim:
+            cc2.MergeScaleBiasInBN(cosim_predict_def)
+            cc2.RemoveUselessExternalInput(cosim_predict_def)
+   
+    if model_info["model_type"] == "torch legacy":
+        cc2.OptimizeTorchModel(init_def, predict_def, model_info, device_opts)
+        if os.environ.get('DEBUGMODE') == "1":
+            with open("{0}_opt_predict_net.pb".format(model_info["model_name"]), "w") as fid:
+                fid.write(predict_def.SerializeToString())
+            with open("{}_opt_predict_net.pbtxt".format(model_info["model_name"]), "w") as fid:
+                fid.write(str(predict_def))
 
     init_data = np.random.rand(batch_size, 3, crop_size, crop_size).astype(np.float32)
     init_label = np.ones((batch_size), dtype=np.int32)
@@ -241,7 +275,7 @@ def Run(args, extra_args):
 
         net = core.Net(model_info["model_name"])
         net.Proto().CopyFrom(predict_def)
-        tf.optimizeForIDEEP(net)
+        tf.optimizeForMKLDNN(net)
         predict_def = net.Proto()
 
         cosim_ws_name = "__fp32_ws__"
@@ -252,7 +286,7 @@ def Run(args, extra_args):
 
         net = core.Net(model_info["model_name"])
         net.Proto().CopyFrom(cosim_predict_def)
-        tf.optimizeForIDEEP(net)
+        tf.optimizeForMKLDNN(net)
         cosim_predict_def = net.Proto()
     else:
         # ApplyOptimizations(init_def, predict_def, model_info, optimization)
@@ -267,7 +301,7 @@ def Run(args, extra_args):
         if args.device.lower() == 'ideep' and not args.noptimize:
             logging.warning('Optimizing module {} ....................'
                             .format(model_info["model_name"]))
-            tf.optimizeForIDEEP(net)
+            tf.optimizeForMKLDNN(net)
         predict_def = net.Proto()
 
         # ws.CreateNet(predict_def)
@@ -278,6 +312,10 @@ def Run(args, extra_args):
             predict_def = new_predict_def._net
 
         if os.environ.get('DEBUGMODE') == "1":
+            with open("{0}_opt_init_net.pb".format(model_info["model_name"]), "w") as fid:
+                fid.write(init_def.SerializeToString())
+            with open("{}_opt_init_net.pbtxt".format(model_info["model_name"]), "w") as fid:
+                fid.write(str(init_def))
             with open("{0}_opt_predict_net.pb".format(model_info["model_name"]), "w") as fid:
                 fid.write(predict_def.SerializeToString())
             with open("{}_opt_predict_net.pbtxt".format(model_info["model_name"]), "w") as fid:
@@ -326,7 +364,10 @@ def Run(args, extra_args):
     fnames = []
     if args.dummydata:
         init_label = np.ones((batch_size), dtype=np.int32)
-        imgs = np.random.rand(batch_size, 3, crop_size, crop_size).astype(np.float32)
+        if args.dummyvalue != "random":
+            imgs = np.full((batch_size, 3, crop_size, crop_size), float(args.dummyvalue), dtype=np.float32)
+        else:
+            imgs = np.random.rand(batch_size, 3, crop_size, crop_size).astype(np.float32)
         for i in range(iterations):
             labels.append(init_label)
             images.append(imgs)
@@ -347,8 +388,13 @@ def Run(args, extra_args):
             oshape = (crop_size, crop_size, 3)
         else:
             r = randint(0, len(images) - 1)
-            imgs, oshape = cc2.ImageProc.PreprocessImages(
-                images[r], crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
+            if model_info["model_type"] == "mlperf legacy vgg":
+                imgs, oshape = cc2.ImageProc.PreprocessImagesMLPerfVGG(images[r])
+            elif model_info["model_type"] == "mlperf legacy mb":
+                imgs, oshape = cc2.ImageProc.PreprocessImagesMLPerfMB(images[r])
+            else:
+                imgs, oshape = cc2.ImageProc.PreprocessImages(
+                    images[r], crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
             #imgs, oshape = cc2.ImageProc.PreprocessImagesByThreading(
             #    images[r], crop_size, rescale_size, mean, scale, forchw)
         if args.model == 'faster-rcnn':
@@ -364,7 +410,11 @@ def Run(args, extra_args):
             ws.FeedBlob(str(predict_def.op[0].input[0]), imgs)
         else:
             ws.FeedBlob(str(predict_def.op[0].input[0]), imgs, device_opts)
-        if predict_def.op[-1].type == 'Accuracy' and len(validation) > 0:
+        if predict_def.op[-1].type == 'Accuracy' and args.dummydata:
+            init_label = labels[wi-warmup_iter]
+            ws.FeedBlob(str(predict_def.op[-1].input[1]), init_label, device_opts_cpu)
+            ws.FeedBlob(str(predict_def.op[-2].input[1]), init_label, device_opts_cpu)
+        elif predict_def.op[-1].type == 'Accuracy' and len(validation) > 0:
             batch_fname = fnames[r]
             init_label = np.ones((len(fnames[r])), dtype=np.int32)
             for j in range(len(fnames[r])):
@@ -389,12 +439,18 @@ def Run(args, extra_args):
             imgs = raw
             oshape = (crop_size, crop_size)
         else:
-            imgs, oshape = cc2.ImageProc.PreprocessImages(
-                raw, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
+            if model_info["model_type"] == "mlperf legacy vgg":
+                imgs, oshape = cc2.ImageProc.PreprocessImagesMLPerfVGG(raw)
+            elif model_info["model_type"] == "mlperf legacy mb":
+                imgs, oshape = cc2.ImageProc.PreprocessImagesMLPerfMB(raw)
+            else:
+                imgs, oshape = cc2.ImageProc.PreprocessImages(
+                    raw, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format)
             #imgs, oshape = cc2.ImageProc.PreprocessImagesByThreading(raw, crop_size, rescale_size, mean, scale, forchw)
         # im_info_name, blob = cc2.CreateIMBlob(oshape, predict_def, crop_size)
         # ws.FeedBlob(im_info_name, blob, device_opts)
         # x = ws.FetchBlob(im_info_name)
+
         init_label = None
         if predict_def.op[-1].type == 'Accuracy' and args.dummydata:
             init_label = labels[k]
@@ -515,7 +571,7 @@ def Run(args, extra_args):
                 ws.FeedBlob(str(predict_def.op[0].input[0]), imgs, device_opts)
             if predict_def.op[-1].type == 'Accuracy':
                 if args.device.lower() == 'gpu':
-                    ws.FeedBlob(str(predict_def.op[-1].input[1]), init_label, device_opts)    
+                    ws.FeedBlob(str(predict_def.op[-1].input[1]), init_label, device_opts)
                     if predict_def.op[-2].type == 'Accuracy':
                         ws.FeedBlob(str(predict_def.op[-2].input[1]), init_label, device_opts)
                     elif predict_def.op[-3].type == 'Accuracy':
@@ -532,6 +588,7 @@ def Run(args, extra_args):
             #    ws.RunNet(net)
             #else:
             ws.RunNet(net)
+
             comp_elapsed_time = timeit.default_timer() - comp_start_time
             comp_time += comp_elapsed_time
             output = ws.FetchBlob(str(predict_def.op[-1].output[0]))
@@ -550,6 +607,7 @@ def Run(args, extra_args):
                 outputs.append([output, output2, output3])
             elif predict_def.op[-1].type != 'Accuracy':
                 outputs.append(output)
+                #logging.info(output)
             else:
                 accuracy_top1.append(output2)
                 accuracy_top5.append(output)
@@ -567,7 +625,7 @@ def Run(args, extra_args):
 
     if args.cosim:
         ws.SwitchWorkspace(def_ws_name)
-        logging.info("Cosim passed")
+        logging.warning("Cosim passed Ran 1 test OK")
         return
     if comp_time <= 0:
         logging.error("The total time is invalid!")
@@ -597,10 +655,14 @@ def Run(args, extra_args):
     accuracy = None
     top5accuracy = None
     summary = None
+    total_image = processed_images
     if model_info["output_type"] == "segmentation" or args.dummydata:
         total_image = processed_images
     elif model_info["output_type"] == "possibility":
-        results, total_image = cc2.ParsePossOutputs(outputs)
+        label_offset=0
+        if model_info["model_type"] == "mlperf legacy mb":
+            label_offset = -1
+        results, total_image = cc2.ParsePossOutputs(outputs, label_offset)
         summary = cc2.ParsePossResults(results, labels, validation, fnames)
         if not summary:
             logging.error("Failed to parse the results!")
@@ -621,6 +683,22 @@ def Run(args, extra_args):
             top5accuracy = top5accuracy / total_image
             info_str += "\nAccuracy: {:.5%}".format(accuracy)
             info_str += "\nTop5Accuracy: {:.5%}".format(top5accuracy)
+    elif model_info["output_type"] == "argmax":
+        results, total_image = cc2.ParsePossOutputsArgMax(outputs,-1)
+        summary = cc2.ParsePossResults(results, labels, validation, fnames)
+        if not summary:
+            logging.error("Failed to parse the results!")
+            return
+        elif total_image <= 0 or len(summary) != total_image:
+            logging.error("No available results!")
+            return
+        if validation:
+            accuracy = 0
+            for res in summary:
+                if res[1] == "Pass":
+                    accuracy += 1
+            accuracy = accuracy / total_image
+            info_str += "\nAccuracy: {:.5%}".format(accuracy)
     elif model_info["output_type"] == "post image":
         results, total_image = cc2.ParsePostOutputs(outputs)
         if args.post_images_path:

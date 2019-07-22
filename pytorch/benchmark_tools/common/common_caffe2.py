@@ -11,11 +11,16 @@ import itertools
 import math
 import copy
 from collections import defaultdict
+
+import math
+import xml.etree.ElementTree as ET
 import numpy as np
 import six
 import cv2
 import onnx
-
+from caffe2.python import core 
+from caffe2.python import workspace as ws
+from common import common_mlperf
 
 class ImageProc(threading.Thread):
     """handle dataset preprocess with thread"""
@@ -156,9 +161,45 @@ class ImageProc(threading.Thread):
         # switch to HWC
         img = img.swapaxes(0, 1).swapaxes(1, 2)
         # switch to RGB
-        img = img[:, :, (2, 1, 0)]
+        #img = img[:, :, (2, 1, 0)]
         from matplotlib import pyplot
         pyplot.imsave(filename, img)
+
+    @staticmethod
+    def PreprocessSingleImageMLPerfVGG(image_path):
+        from PIL import Image
+        img = Image.open(image_path)
+        oshape = [img.size[0], img.size[1], 3]
+        img_res = common_mlperf.pre_process_vgg(img, need_transpose=True, dims=[224,224,3])
+        return img_res, oshape
+    
+    @staticmethod
+    def PreprocessSingleImageMLPerfMB(image_path):
+        from PIL import Image
+        img = Image.open(image_path)
+        oshape = [img.size[0], img.size[1], 3]
+        img_res = common_mlperf.pre_process_mobilenet(img, need_transpose=True, dims=[224,224,3])
+        return img_res, oshape
+    
+    @staticmethod
+    def PreprocessImagesMLPerfVGG(img_paths):
+        imgs = []
+        for i in img_paths:
+            img, oshape = ImageProc.PreprocessSingleImageMLPerfVGG(i)
+            img = img[np.newaxis, :, :, :].astype(np.float32)
+            imgs.append(img)
+        logging.info("oshape={} ".format(oshape))
+        return np.concatenate(imgs, 0), oshape
+    
+    @staticmethod
+    def PreprocessImagesMLPerfMB(img_paths):
+        imgs = []
+        for i in img_paths:
+            img, oshape = ImageProc.PreprocessSingleImageMLPerfMB(i)
+            img = img[np.newaxis, :, :, :].astype(np.float32)
+            imgs.append(img)
+        logging.info("oshape={} ".format(oshape))
+        return np.concatenate(imgs, 0), oshape
 
     @staticmethod
     def PreprocessSingleImage(image_path, crop_size, rescale_size, mean, scale, forchw, need_normalize, color_format):
@@ -167,10 +208,53 @@ class ImageProc(threading.Thread):
         img = cv2.imread(image_path)
         img = img.astype(np.float32)
         oshape = copy.deepcopy(img.shape)
+        logging.info("scale is {}".format(scale))
+        logging.info("mean is {}".format(mean))
+        logging.info("image is {}".format(img))
+        logging.info("image shape is {}, mean shape is {}".format(img.shape, mean.shape))
+        
+        if os.environ.get('DETECTRON') == "1":
+            img = cv2.resize(img, dsize=(rescale_size, rescale_size), interpolation=cv2.INTER_LINEAR)
+            if forchw == 1:
+                # switch to CHW
+                img = img.swapaxes(1, 2).swapaxes(0, 1)
+                # switch to RGB
+                if color_format == 'RGB':
+                    img = img[(2, 1, 0), :, :]
+            else:
+                nimg = np.ndarray((crop_size, crop_size, 4), dtype=float)
+                nimg.fill(0)
+                for i, img_i in enumerate(img):
+                    for j, img_j in enumerate(img_i):
+                        for k, img_k in enumerate(img_j):
+                            nimg[i][j][k] = img_k
+                img = nimg
+            if forchw == 1:
+                img = img[np.newaxis, :, :, :].astype(np.float32)
+            else:
+                img = img[np.newaxis, :, :, :].astype(np.uint8)
+            return img, oshape
+
+        #if need normalize
+        if need_normalize:
+            img = img/255
+       
+        # substract the mean value
+        mean_shape = mean.shape
+        img_shape = img.shape
+        if len(mean_shape) > 3:
+            mean_shape = mean.swapaxes(1, 2).swapaxes(2, 3).shape
+            mean_shape = mean_shape[1:4]
+        if mean_shape == img_shape:
+           for h in range(img.shape[0]):
+               for w in range(img.shape[1]):
+                   for c in range(img.shape[2]):
+                       img[h, w, c] = img[h, w, c] - mean[0, c, h, w]
+
         img = ImageProc.Rescale(img, rescale_size)
         img = ImageProc.CropCenter(img, crop_size, crop_size)
         if forchw == 1:
-        # switch to CHW
+            # switch to CHW
             img = img.swapaxes(1, 2).swapaxes(0, 1)
             # switch to RGB
             if color_format == 'RGB':
@@ -183,25 +267,25 @@ class ImageProc(threading.Thread):
                     for k, img_k in enumerate(img_j):
                         nimg[i][j][k] = img_k
             img = nimg
-        #logging.info("After switch to bgra {}, type ={}".format(img, type(img[0][0][0])))
-        #if need normalize
-        if need_normalize:
-            img = img/255
-        logging.info("scale is {}".format(scale))
-        logging.info("mean is {}".format(mean))
-        logging.info("image is {}".format(img))
-        logging.info("image shape is {}, mean shape is {}".format(img.shape, mean.shape))
+        
+        if mean_shape != img_shape:
+           img[0, :, :] = img[0, :, :] - mean[0, :, :]
+           img[1, :, :] = img[1, :, :] - mean[1, :, :]
+           img[2, :, :] = img[2, :, :] - mean[2, :, :]
+
+        # multiply scale
         if len(scale) == 1:
-            img = (img - mean) * float(scale[0])
+            img = img * float(scale[0])
         elif len(scale) > 1:
-            img[0, :, :] = (img[0, :, :] - mean[0, :, :])*float(scale[0])
-            img[1, :, :] = (img[1, :, :] - mean[1, :, :])*float(scale[1])
-            img[2, :, :] = (img[2, :, :] - mean[2, :, :])*float(scale[2])
+            img[0, :, :] = img[0, :, :] * float(scale[0])
+            img[1, :, :] = img[1, :, :] * float(scale[1])
+            img[2, :, :] = img[2, :, :] * float(scale[2])
             logging.info("after img is {}".format(img))
         else:
             logging.error("scale = {} is invalid".format(scale))
             exit()
-
+        
+        #logging.info("After switch to bgra {}, type ={}".format(img, type(img[0][0][0])))
         # add batch size
         if forchw == 1:
             img = img[np.newaxis, :, :, :].astype(np.float32)
@@ -291,8 +375,47 @@ class ImageProc(threading.Thread):
             fnames.append(fname)
         return (images, fnames)
 
+    @staticmethod
+    def BatchImagesByName(images_path, image_name_file, batch_size, iterations):
+        """Get image names from file"""
+        if not os.path.isfile(image_name_file):
+            logging.error("Can not find image file {}.".format(image_name_file))
+            return None
+        image_names = {}
+        with open(image_name_file) as l:
+            image_names =  [line.rstrip('\n') for line in l.readlines()]
+        print("----image_names={}".format(len(image_names)))
 
-def ParsePossOutputs(outputs):
+        """batch the dataset"""
+        bs = batch_size
+        images = []
+        image = []
+        fnames = []
+        fname = []
+        it = iterations
+        for name in image_names:
+            if it == 0:
+                break
+            fp = os.path.join(images_path, name)
+            bs -= 1
+            image.append(fp)
+            fname.append(name)
+            if bs == 0:
+                images.append(image)
+                fnames.append(fname)
+                image = []
+                fname = []
+                bs = batch_size
+                it -= 1
+                if it == 0:
+                    break
+        if len(image) > 0:
+            images.append(image)
+            fnames.append(fname)
+        return (images, fnames)
+
+
+def ParsePossOutputs(outputs, label_offset=None):
     """parse the outputs"""
     total = 0
     parsed_outputs = []
@@ -306,7 +429,10 @@ def ParsePossOutputs(outputs):
             z = 0
             while z < 5:
                 z += 1
-                index.append(np.argmax(o))
+                if label_offset == None:
+                    index.append(np.argmax(o))
+                else:
+                    index.append(np.argmax(o)+label_offset)
                 score.append(o[np.argmax(o)])
                 o[np.argmax(o)] = -1
             logging.info("The index is {}".format(index))
@@ -320,6 +446,17 @@ def ParsePossOutputs(outputs):
             parsed_outputs.append([index, score, (i, j)])
     return (parsed_outputs, total)
 
+def ParsePossOutputsArgMax(outputs, label_offset):
+    """parse the outputs"""
+    total = 0
+    parsed_outputs = []
+    score = [0.0, 0.0]
+    # logging.info("The output0 is {}".format(outputs[0])
+    for i, output in enumerate(outputs):
+        for j, index in enumerate(outputs[i]):
+            total += 1
+            parsed_outputs.append([index+label_offset, score, (i, j)])
+    return (parsed_outputs, total)
 
 def ParsePossResults(results, labels, validation, fnames):
     """parse the result to generate reports"""
@@ -341,22 +478,35 @@ def ParsePossResults(results, labels, validation, fnames):
                 summary.append((fname, "UNKNOWN", index, highest))
         elif validation:
             if fname in validation:
-                if validation[fname] == index[0]:
-                    logging.info("Validation passed for file {0} index[0]"
-                                 " {1} with a {2:.5%} probability."
-                                 .format(fname, index[0], highest))
-                    summary.append((fname, "Pass", index[0], index[0], highest))
-                elif validation[fname] in index:
-                    logging.info("Validation partially passed for file {0} index[0]"
-                                 " {1} with a {2:.5%} top1 probability."
-                                 .format(fname, validation[fname], highest))
-                    summary.append((fname, "Top5Pass", validation[fname], index[0], highest))
-                else:
-                    logging.info("Failed in validation for file {0} index"
-                                 " {1}. Should be {2}."
-                                 .format(fname, index[0], validation[fname]))
-                    summary.append(
-                        (fname, "Fail", index[0], validation[fname], highest))
+                if not isinstance(index, list):
+                    if validation[fname] == index:
+                        logging.info("Validation passed for file {0} index"
+                                     " {1} with a {2:.5%} probability."
+                                     .format(fname, index, highest))
+                        summary.append((fname, "Pass", index, index, highest))
+                    else:
+                        logging.info("Failed in validation for file {0} index"
+                                     " {1}. Should be {2}."
+                                     .format(fname, index, validation[fname]))
+                        summary.append(
+                            (fname, "Fail", index, validation[fname], highest))
+                else:    
+                    if validation[fname] == index[0]:
+                        logging.info("Validation passed for file {0} index[0]"
+                                     " {1} with a {2:.5%} probability."
+                                     .format(fname, index[0], highest))
+                        summary.append((fname, "Pass", index[0], index[0], highest))
+                    elif validation[fname] in index:
+                        logging.info("Validation partially passed for file {0} index[0]"
+                                     " {1} with a {2:.5%} top1 probability."
+                                     .format(fname, validation[fname], highest))
+                        summary.append((fname, "Top5Pass", validation[fname], index[0], highest))
+                    else:
+                        logging.info("Failed in validation for file {0} index"
+                                     " {1}. Should be {2}."
+                                     .format(fname, index[0], validation[fname]))
+                        summary.append(
+                            (fname, "Fail", index[0], validation[fname], highest))
             else:
                 logging.error("Can NOT find the file {} in validation!"
                               .format(fname))
@@ -466,6 +616,7 @@ def FetchArrayByName(init_def, name):
     for index, op in enumerate(init_def.op):
         if op.output[0] != name:
             continue
+
         if op.type != "GivenTensorFill":
             logging.error("The array {} is not contained"
                           " by GivenTensorFill".format(name))
@@ -788,11 +939,6 @@ def bbox_iou(bbox_a, bbox_b):
     area_a = np.prod(bbox_a[:, 2:] - bbox_a[:, :2], axis=1)
     area_b = np.prod(bbox_b[:, 2:] - bbox_b[:, :2], axis=1)
     return area_i / (area_a[:, None] + area_b - area_i)
-
-def prepare_and_compute_map_data(outputs, fnames, path):
-    """calculate ap for ssd"""
-    return 1
-
 
 def eval_detection_voc(
         pred_bboxes, pred_labels, pred_scores, gt_bboxes, gt_labels,
@@ -1223,7 +1369,7 @@ def SaveModel(init_file, init_net, predict_file, predict_net):
 def SaveModelPtxt(predict_file, predict_net):
     """save model in ptxt"""
     with open(predict_file, "wb") as p:
-        p.write(str(predict_net))
+        p.write(str(predict_net).encode())
 
 
 def SaveAsOnnxModel(init_net, predict_net, data_shape, onnx_file):
@@ -1238,6 +1384,265 @@ def SetOpName(predict_def):
     for i, op in enumerate(predict_def.op):
         if len(op.name) == 0:
             op.name = op.type.lower() + str(i)
+
+def removeArg(op, name):
+    for i in range(len(op.arg)):
+        if op.arg[i].name == name:
+            del op.arg[i]
+            return True
+    return False
+
+def DeleteByOutputName(init_def, name):
+    delete_idx = None
+    for i, op in enumerate(init_def.op):
+        if op.output[0] == name:
+            delete_idx = i
+            del init_def.op[delete_idx]
+    return delete_idx
+            
+def CreateByOutputName(init_def, index, name, shape, values, device_opts):
+    from caffe2.python import core, utils
+    new_op = core.CreateOperator(
+               "GivenTensorFill",
+               [],
+               [name],
+               arg=[utils.MakeArgument("shape", shape),
+                    utils.MakeArgument("values", values)],
+                    device_option = device_opts
+    )
+    init_tmp = init_def.op[index:]
+    del init_def.op[index:]
+    init_def.op.extend([new_op])
+    init_def.op.extend(init_tmp)
+
+def RemoveOutputInBN(predict_def):
+    for i, op in enumerate(predict_def.op):
+        if op.type == "SpatialBN":
+            for arg in op.arg:
+                if arg.name == "is_test" and arg.i == 1:
+                    for j in range(1, len(op.output)):
+                        del predict_def.op[i].output[1]
+
+def ClipToRelu(predict_def):
+    for i, op in enumerate(predict_def.op):
+        if op.type == "Clip": 
+            predict_def.op[i].type = "Relu"
+            removeArg(predict_def.op[i], "min")
+            removeArg(predict_def.op[i], "max")
+
+def FusePadConv(predict_def, model_info):
+    """
+    For models converted from torch
+    """
+    pad_index = -100
+    pad_indexes = []
+    for i, op in enumerate(predict_def.op):
+        if op.type == "PadImage":
+            pad_index = i + 1
+        elif op.type == "Conv" or op.type == "ConvFusion":
+            if (pad_index == i):
+                pad_indexes.append(i - 1)
+            pad_index = -100
+    rm_cnt = 0
+    for j in pad_indexes:
+        index = j - rm_cnt
+        pad_op = predict_def.op[index]
+        conv_op = predict_def.op[index + 1]
+        if (pad_op.type != "PadImage" or
+               (conv_op.type != "Conv" and conv_op.type != "ConvFusion")):
+            logging.info("Found error in Conv compatibility!")
+            continue
+       
+        
+        if model_info["model_type"] != "prototext":
+            pad_value = None
+            for i in range(len(pad_op.arg)):
+                if pad_op.arg[i].name == "pads":
+                    pad_value = pad_op.arg[i].ints
+                    max_col = max(pad_value[0], pad_value[2])
+                    max_row = max(pad_value[1], pad_value[3])
+                    pad_value = [max_col, max_row, max_col, max_row]
+             
+            from caffe2.python import core, utils
+            for i in range(len(conv_op.arg)):
+                if conv_op.arg[i].name == "pads":
+                    del predict_def.op[index+1].arg[i]
+            predict_def.op[index+1].arg.extend([utils.MakeArgument("pads", pad_value)])
+
+        predict_def.op[index+1].input[0] = pad_op.input[0]
+        # Delete pad op
+        del predict_def.op[index]
+        rm_cnt += 1 
+    logging.warning("[OPT] Merged {} padImage ops into Conv ops by folding"
+                    .format(rm_cnt))
+
+
+def MergeConvAdd(init_def, predict_def, model_info, ws, device_opts):
+    """
+    For models converted from torch
+    """
+    conv_index = -100
+    conv_indexes = []
+    for i, op in enumerate(predict_def.op):
+        if op.type == "Conv":
+            conv_index = i + 1
+        elif op.type == "Add":
+            if (conv_index == i):
+                conv_indexes.append(i - 1)
+            conv_index = -100
+    rm_cnt = 0
+    for j in conv_indexes:
+        index = j - rm_cnt
+        conv_op = predict_def.op[index]
+        add_op = predict_def.op[index + 1]
+        if (conv_op.type != "Conv" or add_op.type != "Add"):
+            logging.info("Found error in Conv compatibility!")
+            continue
+        
+        bias_index = -1
+        if conv_op.output[0] == add_op.input[0]:
+            bias_index = 1
+        elif conv_op.output[0] == add_op.input[1]:
+            bias_index = 0
+        else:
+            logging.info("Fail to find Add in Conv compatibility!")
+            continue
+        
+        if model_info["model_type"] != "prototext":
+            conv_b = None
+            if len(conv_op.input) >= 3:
+                conv_b = FetchArrayByName(init_def, conv_op.input[2])
+                if conv_b is None:
+                    logging.error("Failed to fetch conv bias")
+                    continue
+            
+            bias = ws.FetchBlob(add_op.input[bias_index])
+            bias = bias[0,:,0,0]
+            if conv_b is not None:
+                conv_bias = conv_b[2]
+                bias_name = conv_op.input[2]
+            else:
+                conv_bias = np.zeros(bias.shape)
+                bias_name = add_op.input[bias_index]
+                conv_op.input.append(bias_name)
+            conv_bias = conv_bias + bias
+            
+            del_index = DeleteByOutputName(init_def, bias_name)
+            CreateByOutputName(init_def, del_index, bias_name,\
+                    conv_bias.shape, conv_bias, device_opts)
+        else:
+            pass
+
+        if conv_op.output[0] != add_op.output[0]:
+            UpdateInputName(predict_def, index + 2, add_op.output[0],
+                    conv_op.output[0])
+        # Delete Add op
+        del predict_def.op[index + 1]
+        rm_cnt += 1 
+    logging.warning("[OPT] Merged {} Add ops into Conv ops by folding"
+                    .format(rm_cnt))
+
+def MergeConvMulAdd(init_def, predict_def, model_info, ws, device_opts):
+    """
+    For models converted from torch
+    """
+    conv_index = -100
+    conv_indexes = []
+    for i, op in enumerate(predict_def.op):
+        if op.type == "Conv":
+            conv_index = i + 1
+        elif op.type == "Mul":
+            conv_index = (i + 1) if (conv_index == i) else -100
+        elif op.type == "Add":
+            if (conv_index == i):
+                conv_indexes.append(i - 2)
+            conv_index = -100
+    rm_cnt = 0
+    for j in conv_indexes:
+        index = j - rm_cnt
+        conv_op = predict_def.op[index]
+        mul_op = predict_def.op[index + 1]
+        add_op = predict_def.op[index + 2]
+        if (
+                conv_op.type != "Conv" or
+                mul_op.type != "Mul" or
+                add_op.type != "Add"
+        ):
+            logging.info("Found error in Conv compatibility!")
+            continue
+        
+        scale_index = -1
+        if conv_op.output[0] == mul_op.input[0]:
+            scale_index = 1
+        elif conv_op.output[0] == mul_op.input[1]:
+            scale_index = 0
+        else:
+            logging.info("Fail to find scale in Conv compatibility!")
+            continue
+        bias_index = -1
+        if mul_op.output[0] == add_op.input[0]:
+            bias_index = 1
+        elif mul_op.output[0] == add_op.input[1]:
+            bias_index = 0
+        else:
+            logging.info("Fail to find bias in Conv compatibility!")
+            continue
+        
+        if model_info["model_type"] != "prototext":
+            conv_w = FetchArrayByName(init_def, conv_op.input[1])
+            conv_b = None
+            if len(conv_op.input) >= 3:
+                conv_b = FetchArrayByName(init_def, conv_op.input[2])
+                if conv_b is None:
+                    logging.error("Failed to fetch conv bias in BN folding")
+                    continue
+
+            #TODO:  need to check the scale and bias dimention           
+            scale = ws.FetchBlob(mul_op.input[scale_index])
+            # from [ic, oc, kh, kw] to [oc, ic, kh, kw]
+            scale = np.swapaxes(scale, 0, 1)
+            bias = ws.FetchBlob(add_op.input[bias_index])
+            bias = bias[0,:,0,0]
+
+            if conv_b is not None:
+                conv_bias = scale[:,0,0,0] * conv_b[2]
+                bias_name = conv_op.input[2]
+            else:
+                conv_bias = np.zeros(bias.shape)
+                bias_name = add_op.input[bias_index]
+                conv_op.input.append(bias_name)
+            conv_bias = conv_bias + bias
+
+            del_index = DeleteByOutputName(init_def, bias_name)
+            CreateByOutputName(init_def, del_index, bias_name,\
+                    conv_bias.shape, conv_bias, device_opts)
+            
+            conv_weight = conv_w[2]
+            for oc in range(scale.shape[0]):
+                conv_weight[oc,:] = scale[oc,0,0,0] * conv_weight[oc,:]
+            if not FeedArrayByName(init_def, conv_op.input[1], conv_weight):
+                logging.error("Failed to feed Conv weight")
+                continue
+        else:
+            pass
+
+        if conv_op.output[0] != add_op.output[0]:
+            UpdateInputName(predict_def, index + 3, add_op.output[0],
+                    conv_op.output[0])
+        del predict_def.op[index + 1]
+        del predict_def.op[index + 1]
+        rm_cnt += 2
+    logging.warning("[OPT] Merged {} BN ops into Conv ops by BN folding"
+                    .format(rm_cnt))
+
+
+def OptimizeTorchModel(init_def, predict_def, model_info, device_opts):
+    ws.RunNetOnce(init_def)
+    RemoveOutputInBN(predict_def)
+    ClipToRelu(predict_def)
+    FusePadConv(predict_def, model_info)
+    MergeConvAdd(init_def, predict_def, model_info, ws, device_opts)
+    MergeConvMulAdd(init_def, predict_def, model_info, ws, device_opts)
 
 
 def MergeScaleBiasInBN(predict_def):

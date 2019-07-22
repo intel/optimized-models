@@ -85,15 +85,17 @@ def Calibration(args, extra_args):
     if args.onnx_model:
         init_def, predict_def = cc2.OnnxToCaffe2(model_info["onnx_model"])
     else:
-        with open(model_info["init_net"]) as i:
-            if model_info["model_type"] == "prototext":
+        with open(model_info["init_net"], 'rb') as i:
+            if model_info["model_type"] == "prototext" or \
+                     model_info["init_net"].split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
                 init_def = ptxt.Parse(i.read(), caffe2_pb2.NetDef())
             else:
                 init_def = caffe2_pb2.NetDef()
                 init_def.ParseFromString(i.read())
-        with open(model_info["predict_net"]) as p:
-            if model_info["model_type"] == "prototext":
+        with open(model_info["predict_net"], 'rb') as p:
+            if model_info["model_type"] == "prototext" or \
+                     model_info["predict_net"].split('.')[-1] == "pbtxt":
                 import google.protobuf.text_format as ptxt
                 predict_def = ptxt.Parse(p.read(), caffe2_pb2.NetDef())
             else:
@@ -121,15 +123,26 @@ def Calibration(args, extra_args):
         return
 
     logging.warning("Start running calibration")
-    images, _ = cc2.ImageProc.BatchImages(images_path, batch_size, iterations)
 
+    if args.calibration_file:
+        images, _ = cc2.ImageProc.BatchImagesByName(images_path, args.calibration_file, batch_size, iterations)
+    else:
+        images, _ = cc2.ImageProc.BatchImages(images_path, batch_size, iterations)
     # for kl_divergence calibration, we use the first 100 images to get
     # the min and max values, and the remaing images are applied to compute the hist.
     # if the len(images) <= 100, we extend the images with themselves.
     def data_gen():
-        for raw in images:
-            imgs, _ = cc2.ImageProc.PreprocessImages(
-                raw, crop_size, rescale_size, mean, scale, 1, need_normalize, color_format)
+        images_calib = images
+        if args.single_iter_calib:
+            images_calib = [images[args.iter_calib]]
+        for raw in images_calib:
+            if model_info["model_type"] == "mlperf legacy vgg":
+                imgs, oshape = cc2.ImageProc.PreprocessImagesMLPerfVGG(raw)
+            elif model_info["model_type"] == "mlperf legacy mb":
+                imgs, oshape = cc2.ImageProc.PreprocessImagesMLPerfMB(raw)
+            else:
+                imgs, _ = cc2.ImageProc.PreprocessImages(
+                    raw, crop_size, rescale_size, mean, scale, 1, need_normalize, color_format)
             #imgs, _ = cc2.ImageProc.PreprocessImagesByThreading(
             #        raw, crop_size,rescale_size, mean, scale, 1)
             yield imgs
@@ -144,7 +157,7 @@ def Calibration(args, extra_args):
     if args.device.lower() == 'ideep' and not args.noptimize:
         logging.warning('Optimizing module {} ....................'
                         .format(model_info["model_name"]))
-        tf.optimizeForIDEEP(net)
+        tf.optimizeForMKLDNN(net)
     predict_def = net.Proto()
     if predict_def.op[-1].type == 'Accuracy':
         init_label = np.ones((batch_size), dtype=np.int32)
@@ -165,10 +178,11 @@ def Calibration(args, extra_args):
         ema_alpha = 0.5
         algorithm = EMACalib(ema_alpha)
     elif kind == "kl_divergence":
-        kl_iter_num_for_range = 100
+        kl_iter_num_for_range = 500
         while len(images) < 2*kl_iter_num_for_range:
             images += images
         algorithm = KLCalib(kl_iter_num_for_range)
+    logging.warning('Use {} calibration method....................'.format(kind))
 
     i = 0
     length = len(images)

@@ -75,8 +75,6 @@ def Inference(args, extra_args):
     inf.Run(args, extra_args)
 
 
-
-
 def GetArgumentParser():
     """
     to parse the argument
@@ -84,7 +82,7 @@ def GetArgumentParser():
     parser = argparse.ArgumentParser(description="The scripts to run Caffe2.\n"
                                                  "for example, to run alexnet inference:\n"
                                                  "./run_caffe2.py -m alexnet\n"
-                                                 " -p /path/to/imput/image\n"
+                                                 " -p /path/to/input/image\n"
                                                  " -v /path/to/image/validate/index/file\n"
                                      )
     parser.add_argument(
@@ -174,6 +172,17 @@ def GetArgumentParser():
         help="The algorithm of calibration. absmax, moving_average, or l_divergence"
     )
     parser.add_argument(
+        "-single_iter_calib", "--single_iter_calib",
+        action='store_true',
+        help="Perform calibration on single batch images or not"
+    )
+    parser.add_argument(
+        "-iter_calib", "--iter_calib",
+        type=int,
+        default=None,
+        help="Perform calibration on single batch images or not"
+    )
+    parser.add_argument(
         "-int8", "--int8_model",
         action='store_true',
         help="Use the int8 model, instead of fp32 model."
@@ -206,6 +215,11 @@ def GetArgumentParser():
              "(DEFAULT: %(default)s)"
     )
     parser.add_argument(
+        "-calibf", "--calibration_file",
+        type=str,
+        help="Use the images in calibration_file for int8 calibration."
+    )
+    parser.add_argument(
         "-s", "--show_supported_models",
         action='store_true',
         help="Show off all supported model for inference."
@@ -218,7 +232,14 @@ def GetArgumentParser():
     parser.add_argument(
         "-u", "--dummydata",
         action='store_true',
-        help="Trigger profile on current topology."
+        help="dummy dataset."
+    )
+    parser.add_argument(
+        "-uv", "--dummyvalue",
+        type=str,
+        default="random",
+        help="the fill value for dummydata."
+             "(DEFAULT: %(default)s)"
     )
     parser.add_argument(
         "-v", "--validation_file",

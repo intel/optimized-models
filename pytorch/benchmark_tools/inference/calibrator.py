@@ -139,6 +139,21 @@ class algorithm(object):
     def update_status(self):
         pass
 
+    def get_max_min(self, op, tensor, tensor_idx, tensor_name, name):
+        #name = name + "_" + str(tensor_idx)
+        arg = self.get_arg(op, name)
+        max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
+        if arg is not None:
+            orig_max = arg.floats[0]
+            orig_min = arg.floats[1]
+            cur_max = max(orig_max, max_min[0])
+            cur_min = min(orig_min, max_min[1])
+            max_min = np.array([cur_max, cur_min]).astype(np.float32)
+            self.remove_arg(op, name)
+        # save max and min vaules in predict_def as operator arguments
+        max_arg = utils.MakeArgument(name, max_min)
+        op.arg.extend([max_arg])
+
 
 class KLCalib(algorithm):
     """ KL calibrator """
@@ -209,8 +224,13 @@ class KLCalib(algorithm):
                 self.update_max(op, "absmax_output", m, output_name)
 
     def get_kl_hist(self, data, min_val, max_val, name):
-        hist_iter, hist_edges_iter = np.histogram(data, bins=2048,
-                                                  range=(min_val, max_val))
+        if min_val >= 0:
+            hist_iter, hist_edges_iter = np.histogram(data, bins=2048, range=(min_val, max_val))
+        else:
+            th = max(abs(min_val), abs(max_val))
+            min_range = -th
+            hist_iter, hist_edges_iter = np.histogram(data, bins=2048, range=(-th, th))
+
         global hist
         global hist_edges
         if name not in hist:
@@ -354,7 +374,6 @@ class AbsmaxCalib(algorithm):
         # save max vaules in predict_def as operator arguments
         op.arg.extend([max_arg])
 
-
 class EMACalib(algorithm):
     """ Moving Average calibrator """
     def __init__(self, ema_alpha=0.5):
@@ -384,13 +403,57 @@ class Calibrator(object):
 
     def RunCalibIter(self, ws, predict_def):
         """run calibrator in iteration"""
+        def wino_transform_data(blob):
+            blob_wino = blob.copy()
+            B_T = np.array([[ 0.87890625,  0,          -2.640625,  0,        1, 0 ],
+                            [ 0,          -1.40625,    -2.25,      0.625,    1, 0 ],
+                            [ 0,           1.40625,    -2.25,     -0.625,    1, 0 ],
+                            [ 0,          -0.5859375,  -0.390625,  1.5,      1, 0 ],
+                            [ 0,           0.5859375,  -0.390625, -1.5,      1, 0 ],
+                            [ 0,           0.87890625,  0,        -2.640625, 0, 1 ]])
+            B = B_T.T 
+            blob_cell = np.zeros((6, 6), dtype = np.float)
+            for n in range(blob.shape[0]):
+                for c in range(blob.shape[1]):
+                    for h in range(0, blob.shape[2], 4):
+                        for w in range(0, blob.shape[3], 4):
+                            for i in range(min(6, blob.shape[2]-h)):
+                                for j in range(min(6, blob.shape[3]-w)):
+                                    blob_cell[i][j] = blob[n][c][h + i][w + j]
+                            blob_wino_tmp = np.dot(B_T, blob_cell)
+                            blob_wino_cell = np.dot(blob_wino_tmp, B)
+                            for i in range(min(6, blob.shape[2]-h)):
+                                for j in range(min(6, blob.shape[3]-w)):
+                                    blob_wino[n][c][h + i][w + j] = blob_wino_cell[i][j]
+                            if (w + 6) >= blob.shape[3]:
+                                break
+                        if (h + 6) >= blob.shape[2]:
+                            break
+            return blob_wino
+
         for op in predict_def.op[0:]:
             for j, input_name in enumerate(op.input):
                 if self.algo.is_weights(op, j) or self.algo.is_bias(op, j):
                     continue
                 inp = ws.FetchBlob(input_name)
                 self.algo.get_max(op, inp, j, input_name, "absmax_input")
-
+               
+                if j > 0:
+                    continue
+                need_euler = self.algo.get_arg(op, "need_euler")
+                if need_euler and need_euler.i:
+                    algo_wino = self.algo.get_arg(op, "conv_algorithm")
+                    if algo_wino and algo_wino.i:
+                        arg = self.algo.get_arg(op, "pad")
+                        assert arg is not None
+                        input_pad = np.zeros((inp.shape[0],
+                                              inp.shape[1],
+                                              inp.shape[2] + 2 * arg.i,
+                                              inp.shape[3] + 2 * arg.i),
+                                              dtype=np.float)
+                        input_pad[:,:,arg.i : inp.shape[2]+arg.i, arg.i : inp.shape[3]+arg.i] = inp
+                        wino_trans = wino_transform_data(input_pad)
+                        self.algo.get_max_min(op, wino_trans, j, input_name, "wino_tinput_quant")
             this_op = copy.deepcopy(op)
             if self.dev_opt is not None:
                 this_op.device_option.CopyFrom(self.dev_opt)
@@ -438,15 +501,17 @@ class Calibrator(object):
                 "MaxPool"         : "Int8MaxPool",
                 "AveragePool"     : "Int8AveragePool",
                 "UpsampleNearest" : "Int8UpsampleNearest",
-                # Int8FC is not supported so far
-                "FC"            : "Int8FC",
+                #"FC"              : "Int8FC",
             }.get(op_type, None)
 
         def get_quantized_op_type_by_fusion_type(fusion_type):
             return {
                 1 : "Int8ConvRelu",
-                2 : "Int8ConvSum",
-                3 : "Int8ConvSumRelu",
+                2 : "Int8ConvRelu",
+                3 : "Int8ConvSum",
+                4 : "Int8ConvSumRelu",
+                5 : "Int8ConvSumRelu",
+
             }.get(fusion_type, None)
 
         def get_output_format(op_type):
@@ -738,6 +803,20 @@ class Calibrator(object):
                 self.algo.remove_arg(op, "Y_zero_point")
                 output_zero_point = get_zero_point(output_data_type[i])
                 op.arg.extend([utils.MakeArgument("Y_zero_point", output_zero_point)])
+                
+                need_euler = self.algo.get_arg(op, "need_euler")
+                if need_euler and need_euler.i:
+                    algo_wino = self.algo.get_arg(op, "conv_algorithm")
+                    if algo_wino and algo_wino.i:
+                        arg_name = "wino_tinput_quant"
+                        max_min = self.algo.get_arg(op, "wino_tinput_quant")
+                        assert max_min is not None
+                        delta = max_min.floats[0] - max_min.floats[1] + 0.000001
+                        wino_scale = delta / get_abs_max(DATA_TYPE_U8)
+                        wino_zero_point = -math.ceil(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta)
+                        wino_tinput_quant = np.array([wino_scale, wino_zero_point]).astype(np.float32)
+                        self.algo.remove_arg(op, "wino_tinput_quant")
+                        op.arg.extend([utils.MakeArgument("wino_tinput_quant", wino_tinput_quant)])
 
         def quantize_weights(ws, op, init_def):
             assert len(op.input) >= 2
@@ -880,9 +959,9 @@ class Calibrator(object):
         refine_module_outputs(predict_quantized)
 
         if os.environ.get('DEBUGMODE') == "1":
-            with open("{0}_opt_predict_net.pb".format(predict_quantized.name), "w") as fid:
+            with open("{0}_calib_predict_net.pb".format(predict_quantized.name), "w") as fid:
                 fid.write(predict_quantized.SerializeToString())
-            with open("{}_opt_predict_net.pbtxt".format(predict_quantized.name), "w") as fid:
+            with open("{}_calib_predict_net.pbtxt".format(predict_quantized.name), "w") as fid:
                 fid.write(str(predict_quantized))
 
         # DO NOT change the operator order of the module after below line
@@ -901,7 +980,7 @@ class Calibrator(object):
         for op in predict_quantized.op:
             if op.type.startswith("Int8"):
                 op.engine = str("DNNLOWP")
-            self.algo.remove_arg(op, "fusion_type")
+            #self.algo.remove_arg(op, "fusion_type")
             op.device_option.CopyFrom(caffe2_pb2.DeviceOption())
 
         organize_external_input(ws, predict_quantized, init_quantized)
