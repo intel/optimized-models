@@ -6,6 +6,9 @@
 
 ```
 wget https://download.pytorch.org/models/resnet50-19c8e357.pth
+```
+## Download resnext pytorch model if you want
+```
 wget http://data.lip6.fr/cadene/pretrainedmodels/resnext101_32x4d-29e315fa.pth
 ```
 
@@ -15,18 +18,11 @@ wget http://data.lip6.fr/cadene/pretrainedmodels/resnext101_32x4d-29e315fa.pth
 pip install torchvision
 ```   
 
-## Get pytoch source from github, merge pr and build
+## Get pytoch source from github
 
 ```
 git clone https://github.com/pytorch/pytorch.git 
-git checkout 4ac91b2d64eeea5ca21083831db5950dc08441d6
 git submodule update --init --recursive
-cd third_party/ideep
-git log
-git reset --hard 311346653b0daed97f9e9adf241e02cffa38e4c0
-cd ../..
-wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/17464.diff
-git apply 17464.diff
 python setup.py build
 ```
 
