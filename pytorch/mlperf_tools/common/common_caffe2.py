@@ -379,7 +379,6 @@ class ImageProc(threading.Thread):
         image_names = {}
         with open(image_name_file) as l:
             image_names = [line.rstrip('\n') for line in l.readlines()]
-        print("----image_names={}".format(len(image_names)))
 
         """batch the dataset"""
         bs = batch_size

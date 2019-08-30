@@ -12,8 +12,9 @@ import timeit
 import logging
 import copy
 import numpy as np
+import onnx
 from caffe2.proto import caffe2_pb2
-from caffe2.python import core
+from caffe2.python import core, utils
 from caffe2.python import workspace as ws
 from caffe2.python import transformations as tf
 
@@ -152,7 +153,37 @@ def Run(args, extra_args):
 
     model_start_time = timeit.default_timer()
     if args.onnx_model:
+        def remove_arg(op, name):
+            for i in range(len(op.arg)):
+                if op.arg[i].name == name:
+                    del op.arg[i]
+                    return True
+            return False
+
         init_def, predict_def = cc2.OnnxToCaffe2(model_info["onnx_model"])
+        if model_info["model_name"] == "resnet50":
+            ws.RunNetOnce(init_def)
+            dense_final_kernel = ws.FetchBlob("resnet_model/dense/kernel:0")
+            dense_kernel_new = np.zeros([dense_final_kernel.shape[1], dense_final_kernel.shape[0]]).astype(np.float32)
+            for i in range(dense_final_kernel.shape[0]):
+                for j in range(dense_final_kernel.shape[1]):
+                    dense_kernel_new[j][i] = dense_final_kernel[i][j]
+            net = core.Net("resnet50")
+            net.Proto().CopyFrom(init_def)
+            init_proto = net.Proto()
+            for i, op in enumerate(init_proto.op):
+                if op.output[0] == "resnet_model/dense/kernel:0":
+                    remove_arg(init_proto.op[i], "values")
+                    init_proto.op[i].arg.extend([utils.MakeArgument("values", dense_kernel_new)])
+                    remove_arg(init_proto.op[i], "shape")
+                    init_proto.op[i].arg.extend([utils.MakeArgument("shape", dense_kernel_new.shape)])
+        else:
+            init_proto = init_def
+        with open("init_net.pbtxt".format(model_info["model_name"]), "w") as fid:
+            fid.write(str(init_proto))
+        with open("predict_net.pbtxt".format(model_info["model_name"]), "w") as fid:
+            fid.write(str(predict_def))
+        return
     else:
         if args.int8_model or args.int8_cosim:
             init_file = model_info["init_net_int8"]

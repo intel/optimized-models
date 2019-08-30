@@ -1,0 +1,577 @@
+4,16d3
+<   output: "resnet_model/Pad:0"
+<   name: "resnet_model/Pad"
+<   type: "PadImage"
+<   arg {
+<     name: "pads"
+<     ints: 3
+<     ints: 3
+<     ints: 3
+<     ints: 3
+<   }
+< }
+< op {
+<   input: "resnet_model/Pad:0"
+26a14,17
+>     name: "pad"
+>     i: 3
+>   }
+>   arg {
+95,101d85
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+124,130d107
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+203,207c180,181
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+260,266d233
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+309c276
+<   type: "Add"
+---
+>   type: "Sum"
+324,330d290
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+381,385c341,342
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+438,444d394
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+487c437
+<   type: "Add"
+---
+>   type: "Sum"
+502,508d451
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+559,565d501
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<   }
+<   arg {
+570a507,510
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+616,622d555
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+665c598
+<   type: "Add"
+---
+>   type: "Sum"
+724,730d656
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+776,788d701
+<   output: "resnet_model/Pad_2:0"
+<   name: "resnet_model/Pad_2"
+<   type: "PadImage"
+<   arg {
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<   }
+< }
+< op {
+<   input: "resnet_model/Pad_2:0"
+803a717,720
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+844,850d760
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+893c803
+<   type: "Add"
+---
+>   type: "Sum"
+908,914d817
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+965,969c868,869
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+1022,1028d921
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1071c964
+<   type: "Add"
+---
+>   type: "Sum"
+1086,1092d978
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1143,1147c1029,1030
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+1200,1206d1082
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1249c1125
+<   type: "Add"
+---
+>   type: "Sum"
+1264,1270d1139
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1321,1325c1190,1191
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+1378,1384d1243
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1427c1286
+<   type: "Add"
+---
+>   type: "Sum"
+1442,1448d1300
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1494,1506d1345
+<   output: "resnet_model/Pad_4:0"
+<   name: "resnet_model/Pad_4"
+<   type: "PadImage"
+<   arg {
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<   }
+< }
+< op {
+<   input: "resnet_model/Pad_4:0"
+1516a1356,1359
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+1562,1568d1404
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+1655c1491
+<   type: "Add"
+---
+>   type: "Sum"
+1727,1731c1563,1564
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+1833c1666
+<   type: "Add"
+---
+>   type: "Sum"
+1905,1909c1738,1739
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+2011c1841
+<   type: "Add"
+---
+>   type: "Sum"
+2026,2032d1855
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2083,2087c1906,1907
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+2140,2146d1959
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2189c2002
+<   type: "Add"
+---
+>   type: "Sum"
+2204,2210d2016
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2261,2265c2067,2068
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+2318,2324d2120
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2367c2163
+<   type: "Add"
+---
+>   type: "Sum"
+2382,2388d2177
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2439,2443c2228,2229
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+2496,2502d2281
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2545c2324
+<   type: "Add"
+---
+>   type: "Sum"
+2560,2566d2338
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2612,2624d2383
+<   output: "resnet_model/Pad_6:0"
+<   name: "resnet_model/Pad_6"
+<   type: "PadImage"
+<   arg {
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<   }
+< }
+< op {
+<   input: "resnet_model/Pad_6:0"
+2634a2394,2397
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+2680,2686d2442
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2773c2529
+<   type: "Add"
+---
+>   type: "Sum"
+2788,2794d2543
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2845,2849c2594,2595
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+2902,2908d2647
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+2951c2690
+<   type: "Add"
+---
+>   type: "Sum"
+2966,2972d2704
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+3023,3027c2755,2756
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+3080,3086d2808
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+<   arg {
+3129c2851
+<   type: "Add"
+---
+>   type: "Sum"
+3139,3141c2861,2863
+<   output: "resnet_model/Mean:0"
+<   name: "resnet_model/Mean"
+<   type: "ReduceMean"
+---
+>   output: "resnet_model/Pool:0"
+>   name: ""
+>   type: "AveragePool"
+3143,3145c2865,2866
+<     name: "axes"
+<     ints: 2
+<     ints: 3
+---
+>     name: "kernel"
+>     i: 7
+3148c2869
+<     name: "keepdims"
+---
+>     name: "stride"
+3150a2872
+>   engine: ""
+3153,3172c2875
+<   input: "resnet_model/Mean:0"
+<   input: "reshape__307__308"
+<   output: "Transpose__276:0"
+<   output: "OC2_DUMMY_0"
+<   name: "reshape__307"
+<   type: "Reshape"
+< }
+< op {
+<   input: "Transpose__276:0"
+<   output: "resnet_model/Squeeze:0"
+<   name: "resnet_model/Squeeze"
+<   type: "Squeeze"
+<   arg {
+<     name: "dims"
+<     ints: 1
+<     ints: 2
+<   }
+< }
+< op {
+<   input: "resnet_model/Squeeze:0"
+---
+>   input: "resnet_model/Pool:0"
+3174,3183d2876
+<   output: "resnet_model/dense/MatMul:0"
+<   name: "resnet_model/dense/MatMul"
+<   type: "BatchMatMul"
+<   arg {
+<     name: "broadcast"
+<     i: 1
+<   }
+< }
+< op {
+<   input: "resnet_model/dense/MatMul:0"
+3185,3190d2877
+<   output: "resnet_model/dense/BiasAdd:0"
+<   name: "resnet_model/dense/BiasAdd"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/dense/BiasAdd:0"
+3192,3193c2879,2881
+<   name: "resnet_model/final_dense"
+<   type: "Copy"
+---
+>   name: ""
+>   type: "FC"
+>   engine: ""
+3197c2885
+<   output: "raw_output___2:0"
+---
+>   output: "ArgMax:0"
+3209,3214d2896
+< op {
+<   input: "raw_output___2:0"
+<   output: "ArgMax:0"
+<   name: "graph_outputs_Identity__3"
+<   type: "Copy"
+< }
+3218a2901
+> external_input: "input_tensor:0"
+3487d3169
+< external_input: "input_tensor:0"

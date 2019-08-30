@@ -1,0 +1,44 @@
+[Model Name]
+mobilenet
+
+[Model Type]
+Mlperf legacy mb
+
+[Output Type]
+Possibility
+
+[Model Description]
+Model definition for Caffe2
+
+[Init Net]
+init_net.pbtxt
+
+[Predict Net]
+predict_net.pbtxt
+
+[Init Net Int8]
+init_net_int8.pb
+
+[Predict Net Int8]
+predict_net_int8.pbtxt
+
+[Onnx Model]
+mobilenet_v1_1.0_224.onnx
+
+[Crop Size]
+224
+
+[Image Mean]
+104 117 123
+
+[Scale]
+0.0078125
+
+[Train Proto]
+
+
+[Deploy Proto]
+
+
+[Model Source]
+https://github.com/caffe2/models/tree/master/resnet50

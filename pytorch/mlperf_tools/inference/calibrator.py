@@ -139,9 +139,9 @@ class algorithm(object):
     def update_status(self):
         pass
 
-    def get_max_min(self, op, tensor, tensor_idx, tensor_name, name):
+    def get_max_min(self, op, tensor, tensor_idx, tensor_name, max_name):
         """get max and min"""
-        #name = name + "_" + str(tensor_idx)
+        name = max_name + "_" + str(tensor_idx)
         arg = self.get_arg(op, name)
         max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
         if arg is not None:
@@ -438,14 +438,16 @@ class Calibrator(object):
                 if self.algo.is_weights(op, j) or self.algo.is_bias(op, j):
                     continue
                 inp = ws.FetchBlob(input_name)
-                self.algo.get_max(op, inp, j, input_name, "absmax_input")
-
-                if j > 0:
-                    continue
-                calib_euler = self.algo.get_arg(op, "calib_euler")
-                if calib_euler and calib_euler.i:
-                    algo_wino = self.algo.get_arg(op, "conv_algorithm")
-                    if algo_wino and algo_wino.i:
+                need_euler = self.algo.get_arg(op, "need_euler")
+                if not (need_euler and need_euler.i):
+                    self.algo.get_max(op, inp, j, input_name, "absmax_input")
+                else:
+                    self.algo.get_max_min(op, inp, j, input_name, "absmax_input")
+                    # just performance the winograd transform for the first input (activation)
+                    if j > 0:
+                        continue
+                    euler_alg = self.algo.get_arg(op, "euler_algorithm")
+                    if euler_alg and euler_alg.i == 4:
                         arg = self.algo.get_arg(op, "pad")
                         assert arg is not None
                         input_pad = np.zeros((inp.shape[0],
@@ -463,7 +465,11 @@ class Calibrator(object):
 
             for m, output_name in enumerate(op.output):
                 outp = ws.FetchBlob(output_name)
-                self.algo.get_max(op, outp, m, output_name, "absmax_output")
+                need_euler = self.algo.get_arg(op, "need_euler")
+                if not (need_euler and need_euler.i):
+                    self.algo.get_max(op, outp, m, output_name, "absmax_output")
+                else:
+                    self.algo.get_max_min(op, outp, m, output_name, "absmax_output")
 
         self.algo.update_status()
         return predict_def
@@ -550,7 +556,8 @@ class Calibrator(object):
             if not op_type.startswith("Int8"):
                 return True
             return {
-                "Int8Dequantize" : True
+                "Int8Dequantize" : True,
+                "Int8FC" : True,
             }.get(op_type, False)
 
         def is_data_type_changed(op_type):
@@ -621,7 +628,7 @@ class Calibrator(object):
         def reset_arg(op, name, value):
             for i in range(len(op.arg)):
                 if op.arg[i].name == name:
-                    op.arg[i].i = value;
+                    op.arg[i].i = value
 
         def reset_conv_algorithm(predict_def):
             cur_pos = 0
@@ -632,9 +639,12 @@ class Calibrator(object):
                     cur_pos += 1
                     continue
                 is_neg_input = True
-                pre_op, pre_pos = self.algo.get_predecessor_op(0, cur_pos, predict_def)
-                Y_zero_point = self.algo.get_arg(pre_op, "Y_zero_point")
-                if pre_op and Y_zero_point.i == 0:
+                if cur_pos == 0:
+                    Y_zero_point = self.algo.get_arg(cur_op, "X_zero_point")
+                else:
+                    pre_op, pre_pos = self.algo.get_predecessor_op(0, cur_pos, predict_def)
+                    Y_zero_point = self.algo.get_arg(pre_op, "Y_zero_point")
+                if Y_zero_point.i == 0:
                     is_neg_input = False
                 conv_algo = self.algo.get_arg(cur_op, "conv_algorithm")
                 if is_neg_input and conv_algo and conv_algo.i == 1:
@@ -777,48 +787,97 @@ class Calibrator(object):
             return output_data_type
 
         def add_output_scale(predict_def, output_data_type):
+            def get_asymatric_scale(op, name):
+                max_min = self.algo.get_arg(op, name)
+                assert max_min is not None
+                delta = max_min.floats[0] - max_min.floats[1] + 0.000001
+                output_scale = delta / get_abs_max(DATA_TYPE_U8)
+                output_zero_point = int(-math.ceil(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta))
+                return output_scale, output_zero_point
+
+            def get_symatric_scale(op, name, data_type):
+                arg = self.algo.get_arg(op, name)
+                assert arg is not None
+                output_scale = arg.floats[0] / get_abs_max(data_type)
+                output_zero_point = get_zero_point(data_type)
+                return output_scale, output_zero_point
+
             for i, op in enumerate(predict_def.op):
                 if not_need_output_scale(op.type):
                     continue
+
+                if i == 0:
+                    arg_name = "absmax_input" + "_" + str(0)
+                    need_euler = self.algo.get_arg(op, "need_euler")
+                    if need_euler and need_euler.i:
+                        input_scale, input_zero_point = \
+                                get_asymatric_scale(op, arg_name)
+                    else:
+                        input_scale, input_zero_point = \
+                                get_symatric_scale(op, arg_name, DATA_TYPE_S8)
+
+                    self.algo.remove_arg(op, "X_scale")
+                    op.arg.extend([utils.MakeArgument("X_scale", input_scale)])
+                    self.algo.remove_arg(op, "X_zero_point")
+                    op.arg.extend([utils.MakeArgument("X_zero_point", input_zero_point)])
+
                 if op.type == "Int8Quantize":
                     successors = self.algo.get_successor_ops(i, predict_def)
                     assert len(successors) > 0
                     successor = successors[0]
                     input_index = self.algo.get_input_index(op.output[0], successor)
                     arg_name = "absmax_input" + "_" + str(input_index)
-                    arg = self.algo.get_arg(successor, arg_name)
-                    assert arg is not None
-                    output_scale = arg.floats[0] / get_abs_max(output_data_type[i])
+                    need_euler = self.algo.get_arg(successor, "need_euler")
+                    if need_euler and need_euler.i:
+                        output_scale, output_zero_point = \
+                                get_asymatric_scale(successor, arg_name)
+                    else:
+                        output_scale, output_zero_point = \
+                                get_symatric_scale(successor, arg_name, output_data_type[i])
                 elif is_data_type_changed(op.type):
+                    successors = self.algo.get_successor_ops(i, predict_def)
+                    if len(successors) > 0:
+                        successor = successors[0]
+                        if successor.type == "Softmax":
+                            continue
+
                     arg_name = "absmax_output" + "_" + str(0)
                     arg = self.algo.get_arg(op, arg_name)
                     assert arg is not None
                     output_scale = arg.floats[0] / get_abs_max(output_data_type[i])
+                    need_euler = self.algo.get_arg(op, "need_euler")
+                    if need_euler and need_euler.i:
+                        output_scale, output_zero_point = \
+                                get_asymatric_scale(op, arg_name)
+                    else:
+                        output_scale, output_zero_point = \
+                                get_symatric_scale(op, arg_name, output_data_type[i])
                 else:
                     pre_op, _ = self.algo.get_predecessor_op(0, i, predict_def)
                     assert pre_op is not None
                     arg = self.algo.get_arg(pre_op, "Y_scale")
                     assert arg is not None
                     output_scale = arg.f
+                    arg = self.algo.get_arg(pre_op, "Y_zero_point")
+                    assert arg is not None
+                    output_zero_point = arg.i
                 self.algo.remove_arg(op, "Y_scale")
                 op.arg.extend([utils.MakeArgument("Y_scale", output_scale)])
                 self.algo.remove_arg(op, "Y_zero_point")
-                output_zero_point = get_zero_point(output_data_type[i])
                 op.arg.extend([utils.MakeArgument("Y_zero_point", output_zero_point)])
 
-                calib_euler = self.algo.get_arg(op, "calib_euler")
-                if calib_euler and calib_euler.i:
-                    algo_wino = self.algo.get_arg(op, "conv_algorithm")
-                    if algo_wino and algo_wino.i:
-                        arg_name = "wino_tinput_quant"
-                        max_min = self.algo.get_arg(op, "wino_tinput_quant")
-                        assert max_min is not None
-                        delta = max_min.floats[0] - max_min.floats[1] + 0.000001
-                        wino_scale = delta / get_abs_max(DATA_TYPE_U8)
-                        wino_zero_point = -math.ceil(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta)
-                        wino_tinput_quant = np.array([wino_scale, wino_zero_point]).astype(np.float32)
-                        self.algo.remove_arg(op, "wino_tinput_quant")
-                        op.arg.extend([utils.MakeArgument("wino_tinput_quant", wino_tinput_quant)])
+                need_euler = self.algo.get_arg(op, "need_euler")
+                euler_alg = self.algo.get_arg(op, "euler_algorithm")
+                if need_euler and need_euler.i and euler_alg and euler_alg.i == 4:
+                    arg_name = "wino_tinput_quant" + "_" + str(0)
+                    max_min = self.algo.get_arg(op, arg_name)
+                    assert max_min is not None
+                    delta = max_min.floats[0] - max_min.floats[1] + 0.000001
+                    wino_scale = delta / get_abs_max(DATA_TYPE_U8)
+                    wino_zero_point = -math.ceil(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta)
+                    wino_tinput_quant = np.array([wino_scale, wino_zero_point]).astype(np.float32)
+                    self.algo.remove_arg(op, arg_name)
+                    op.arg.extend([utils.MakeArgument(arg_name, wino_tinput_quant)])
 
         def float_weights(ws, op, init_def):
             assert len(op.input) >= 2
@@ -915,11 +974,10 @@ class Calibrator(object):
                 if not op.type.startswith("Int8"):
                     continue
                 if has_weights(op):
-                    calib_euler = self.algo.get_arg(op, "calib_euler")
-
+                    need_euler = self.algo.get_arg(op, "need_euler")
                     weights_filler = self.algo.get_op_by_output(op.input[1], init_def)
                     if weights_filler is None:
-                        if calib_euler and calib_euler.i:
+                        if need_euler and need_euler.i:
                             float_weights(ws, op, init_def)
                         else:
                             weights_scale = quantize_weights(ws, op, init_def)
@@ -928,7 +986,7 @@ class Calibrator(object):
                         bias_filler = self.algo.get_op_by_output(op.input[2], init_def)
                         if bias_filler is not None:
                             continue
-                        if calib_euler and calib_euler.i:
+                        if need_euler and need_euler.i:
                             float_bias(ws, op, init_def)
                             continue
 
@@ -940,12 +998,18 @@ class Calibrator(object):
                                 arg = self.algo.get_arg(weights_filler, "Y_scales")
                                 assert arg is not None
                                 weights_scale = np.array(arg.floats).astype(np.float32)
-                        pre_op, _ = self.algo.get_predecessor_op(0, i, predict_def)
-                        assert pre_op is not None
-                        arg = self.algo.get_arg(pre_op, "Y_scale")
-                        assert arg is not None
+                        if i == 0:
+                            arg = self.algo.get_arg(op, "X_scale")
+                            input_scale = arg.f
+                        else:
+                            pre_op, _ = self.algo.get_predecessor_op(0, i, predict_def)
+                            assert pre_op is not None
+                            arg = self.algo.get_arg(pre_op, "Y_scale")
+                            assert arg is not None
+                            input_scale = arg.f
+                        assert input_scale is not None
                         assert weights_scale is not None
-                        quantize_bias(ws, op, init_def, arg.f, weights_scale)
+                        quantize_bias(ws, op, init_def, input_scale, weights_scale)
             return init_def
 
         def organize_external_input(ws, predict_def, init_def):
@@ -994,9 +1058,9 @@ class Calibrator(object):
 
         update_op_type(predict_quantized)
 
-        insert_dequantize(predict_quantized)
+        #insert_dequantize(predict_quantized)
 
-        insert_quantize(predict_quantized)
+        #insert_quantize(predict_quantized)
 
         refine_module_outputs(predict_quantized)
 
