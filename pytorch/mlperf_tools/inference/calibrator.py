@@ -405,33 +405,40 @@ class Calibrator(object):
 
     def RunCalibIter(self, ws, predict_def):
         """run calibrator in iteration"""
-        def wino_transform_data(blob):
-            blob_wino = blob.copy()
-            B_T = np.array([[0.87890625, 0, -2.640625, 0, 1, 0],
-                            [0, -1.40625, -2.25, 0.625, 1, 0],
-                            [0, 1.40625, -2.25, -0.625, 1, 0],
-                            [0, -0.5859375, -0.390625, 1.5, 1, 0],
-                            [0, 0.5859375, -0.390625, -1.5, 1, 0],
-                            [0, 0.87890625, 0, -2.640625, 0, 1]])
+        def wino_transform_data(blob, tile_size):
+            blob_wino = []
+            if tile_size == 4:
+                B_T = np.array([[1, 0,-1, 0],
+                                [0,-1, 1, 0],
+                                [0, 1, 1, 0],
+                                [0,-1, 0, 1]])
+            elif tile_size == 6:
+                B_T = np.array([[0.87890625, 0, -2.640625, 0, 1, 0],
+                                [0, -1.40625, -2.25, 0.625, 1, 0],
+                                [0, 1.40625, -2.25, -0.625, 1, 0],
+                                [0, -0.5859375, -0.390625, 1.5, 1, 0],
+                                [0, 0.5859375, -0.390625, -1.5, 1, 0],
+                                [0, 0.87890625, 0, -2.640625, 0, 1]])
+            else:
+                print("Wrong tile_size!")
+                return
             B = B_T.T
-            blob_cell = np.zeros((6, 6), dtype=np.float)
+            blob_cell = np.zeros((tile_size, tile_size), dtype=np.float)
             for n in range(blob.shape[0]):
                 for c in range(blob.shape[1]):
-                    for h in range(0, blob.shape[2], 4):
-                        for w in range(0, blob.shape[3], 4):
-                            for i in range(min(6, blob.shape[2]-h)):
-                                for j in range(min(6, blob.shape[3]-w)):
-                                    blob_cell[i][j] = blob[n][c][h + i][w + j]
+                    for h in range(0, blob.shape[2], tile_size-2):
+                        for w in range(0, blob.shape[3], tile_size-2):
+                            h_max= min((h + tile_size), blob.shape[2])
+                            w_max= min((w + tile_size), blob.shape[3])
+                            blob_cell[0:h_max-h,0:w_max-w] = blob[n,c,h:h_max,w:w_max]
                             blob_wino_tmp = np.dot(B_T, blob_cell)
                             blob_wino_cell = np.dot(blob_wino_tmp, B)
-                            for i in range(min(6, blob.shape[2]-h)):
-                                for j in range(min(6, blob.shape[3]-w)):
-                                    blob_wino[n][c][h + i][w + j] = blob_wino_cell[i][j]
-                            if (w + 6) >= blob.shape[3]:
+                            blob_wino.append(blob_wino_cell)
+                            if w_max == blob.shape[3]:
                                 break
-                        if (h + 6) >= blob.shape[2]:
+                        if h_max == blob.shape[2]:
                             break
-            return blob_wino
+            return np.array(blob_wino)
 
         for op in predict_def.op[0:]:
             for j, input_name in enumerate(op.input):
@@ -456,7 +463,12 @@ class Calibrator(object):
                                               inp.shape[3] + 2 * arg.i),
                                              dtype=np.float)
                         input_pad[:, :, arg.i : inp.shape[2]+arg.i, arg.i : inp.shape[3]+arg.i] = inp
-                        wino_trans = wino_transform_data(input_pad)
+                         
+                        arg = self.algo.get_arg(op, "tile_size")
+                        input_tile = 6 
+                        if arg.i == 5:
+                            input_tile = 4 
+                        wino_trans = wino_transform_data(input_pad, input_tile)
                         self.algo.get_max_min(op, wino_trans, j, input_name, "wino_tinput_quant")
             this_op = copy.deepcopy(op)
             if self.dev_opt is not None:
@@ -792,7 +804,7 @@ class Calibrator(object):
                 assert max_min is not None
                 delta = max_min.floats[0] - max_min.floats[1] + 0.000001
                 output_scale = delta / get_abs_max(DATA_TYPE_U8)
-                output_zero_point = int(-math.ceil(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta))
+                output_zero_point = -int(round(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta))
                 return output_scale, output_zero_point
 
             def get_symatric_scale(op, name, data_type):
@@ -802,14 +814,27 @@ class Calibrator(object):
                 output_zero_point = get_zero_point(data_type)
                 return output_scale, output_zero_point
 
+            asym_quant = os.environ.get('ASYM_QUANT')
             for i, op in enumerate(predict_def.op):
+                need_euler = self.algo.get_arg(op, "need_euler")
                 if not_need_output_scale(op.type):
+                    if need_euler and need_euler.i and op.type == "Int8FC":
+                        predict_def.op[i].type = "Int8Conv"
+                        op.arg.extend([utils.MakeArgument("kernels", np.array([1,1]))])
+                        op.arg.extend([utils.MakeArgument("strides", np.array([1,1]))])
+                        op.arg.extend([utils.MakeArgument("dilations", np.array([1,1]))])
+                        
+                        successors = self.algo.get_successor_ops(i, predict_def)
+                        if len(successors) > 0:
+                          successor = successors[0]
+                          if successor.type == "ArgMax":
+                            predict_def.op[i].output[0] = successor.output[0]
+                            del predict_def.op[-1]
                     continue
 
                 if i == 0:
                     arg_name = "absmax_input" + "_" + str(0)
-                    need_euler = self.algo.get_arg(op, "need_euler")
-                    if need_euler and need_euler.i:
+                    if need_euler and need_euler.i and asym_quant == "1":
                         input_scale, input_zero_point = \
                                 get_asymatric_scale(op, arg_name)
                     else:
@@ -827,8 +852,8 @@ class Calibrator(object):
                     successor = successors[0]
                     input_index = self.algo.get_input_index(op.output[0], successor)
                     arg_name = "absmax_input" + "_" + str(input_index)
-                    need_euler = self.algo.get_arg(successor, "need_euler")
-                    if need_euler and need_euler.i:
+                    need_euler_succ = self.algo.get_arg(successor, "need_euler")
+                    if need_euler_succ and need_euler_succ.i and asym_quant == "1":
                         output_scale, output_zero_point = \
                                 get_asymatric_scale(successor, arg_name)
                     else:
@@ -845,8 +870,7 @@ class Calibrator(object):
                     arg = self.algo.get_arg(op, arg_name)
                     assert arg is not None
                     output_scale = arg.floats[0] / get_abs_max(output_data_type[i])
-                    need_euler = self.algo.get_arg(op, "need_euler")
-                    if need_euler and need_euler.i:
+                    if need_euler and need_euler.i and asym_quant == "1":
                         output_scale, output_zero_point = \
                                 get_asymatric_scale(op, arg_name)
                     else:
@@ -866,7 +890,6 @@ class Calibrator(object):
                 self.algo.remove_arg(op, "Y_zero_point")
                 op.arg.extend([utils.MakeArgument("Y_zero_point", output_zero_point)])
 
-                need_euler = self.algo.get_arg(op, "need_euler")
                 euler_alg = self.algo.get_arg(op, "euler_algorithm")
                 if need_euler and need_euler.i and euler_alg and euler_alg.i == 4:
                     arg_name = "wino_tinput_quant" + "_" + str(0)
@@ -874,11 +897,19 @@ class Calibrator(object):
                     assert max_min is not None
                     delta = max_min.floats[0] - max_min.floats[1] + 0.000001
                     wino_scale = delta / get_abs_max(DATA_TYPE_U8)
-                    wino_zero_point = -math.ceil(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta)
+                    wino_zero_point = -int(round(max_min.floats[1] * get_abs_max(DATA_TYPE_U8) / delta))
                     wino_tinput_quant = np.array([wino_scale, wino_zero_point]).astype(np.float32)
                     self.algo.remove_arg(op, arg_name)
-                    op.arg.extend([utils.MakeArgument(arg_name, wino_tinput_quant)])
-
+                    op.arg.extend([utils.MakeArgument("wino_tinput_quant", wino_tinput_quant)])
+                
+                if need_euler and need_euler.i:
+                    if op.type == "Int8ConvSumRelu":
+                        pre_op, _ = self.algo.get_predecessor_op(3, i, predict_def)
+                        if pre_op and pre_op.type == "Int8Conv":
+                            arg = self.algo.get_arg(pre_op, "Y_zero_point")
+                            self.algo.remove_arg(op, "sum_zero_point")
+                            op.arg.extend([utils.MakeArgument("sum_zero_point", arg.i)])
+                        
         def float_weights(ws, op, init_def):
             assert len(op.input) >= 2
             weights = ws.FetchBlob(op.input[1]).astype(np.float32)
