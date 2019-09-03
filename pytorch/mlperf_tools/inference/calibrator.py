@@ -440,6 +440,41 @@ class Calibrator(object):
                             break
             return np.array(blob_wino)
 
+        def wino_transform_data_overlap(blob, tile_size):
+            blob_wino = blob.copy()
+            if tile_size == 4:
+                B_T = np.array([[1, 0,-1, 0],
+                                [0,-1, 1, 0],
+                                [0, 1, 1, 0],
+                                [0,-1, 0, 1]])
+            elif tile_size == 6:
+                B_T = np.array([[0.87890625, 0, -2.640625, 0, 1, 0],
+                                [0, -1.40625, -2.25, 0.625, 1, 0],
+                                [0, 1.40625, -2.25, -0.625, 1, 0],
+                                [0, -0.5859375, -0.390625, 1.5, 1, 0],
+                                [0, 0.5859375, -0.390625, -1.5, 1, 0],
+                                [0, 0.87890625, 0, -2.640625, 0, 1]])
+            else:
+                print("Wrong tile_size!")
+                return
+            B = B_T.T
+            blob_cell = np.zeros((tile_size, tile_size), dtype=np.float)
+            for n in range(blob.shape[0]):
+                for c in range(blob.shape[1]):
+                    for h in range(0, blob.shape[2], tile_size-2):
+                        for w in range(0, blob.shape[3], tile_size-2):
+                            h_max= min((h + tile_size), blob.shape[2])
+                            w_max= min((w + tile_size), blob.shape[3])
+                            blob_cell[0:h_max-h,0:w_max-w] = blob[n,c,h:h_max,w:w_max]
+                            blob_wino_tmp = np.dot(B_T, blob_cell)
+                            blob_wino_cell = np.dot(blob_wino_tmp, B)
+                            blob_wino[n,c,h:h_max,w:w_max] = blob_wino_cell[0:h_max-h,0:w_max-w]
+                            if w_max == blob.shape[3]:
+                                break
+                        if h_max == blob.shape[2]:
+                            break
+            return blob_wino
+
         for op in predict_def.op[0:]:
             for j, input_name in enumerate(op.input):
                 if self.algo.is_weights(op, j) or self.algo.is_bias(op, j):
@@ -468,7 +503,7 @@ class Calibrator(object):
                         input_tile = 6 
                         if arg.i == 5:
                             input_tile = 4 
-                        wino_trans = wino_transform_data(input_pad, input_tile)
+                        wino_trans = wino_transform_data_overlap(input_pad, input_tile)
                         self.algo.get_max_min(op, wino_trans, j, input_name, "wino_tinput_quant")
             this_op = copy.deepcopy(op)
             if self.dev_opt is not None:
