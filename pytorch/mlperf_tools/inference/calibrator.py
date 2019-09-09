@@ -132,6 +132,9 @@ class algorithm(object):
 
     def get_max(self, op, tensor, tensor_idx, tensor_name, max_name):
         raise Exception("Please add max value computation method!")
+    
+    def get_max_min(self, op, tensor, tensor_idx, tensor_name, max_name):
+        pass
 
     def gather_max(self, predict_def):
         pass
@@ -139,21 +142,6 @@ class algorithm(object):
     def update_status(self):
         pass
 
-    def get_max_min(self, op, tensor, tensor_idx, tensor_name, max_name):
-        """get max and min"""
-        name = max_name + "_" + str(tensor_idx)
-        arg = self.get_arg(op, name)
-        max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
-        if arg is not None:
-            orig_max = arg.floats[0]
-            orig_min = arg.floats[1]
-            cur_max = max(orig_max, max_min[0])
-            cur_min = min(orig_min, max_min[1])
-            max_min = np.array([cur_max, cur_min]).astype(np.float32)
-            self.remove_arg(op, name)
-        # save max and min vaules in predict_def as operator arguments
-        max_arg = utils.MakeArgument(name, max_min)
-        op.arg.extend([max_arg])
 
 
 class KLCalib(algorithm):
@@ -376,6 +364,22 @@ class AbsmaxCalib(algorithm):
         # save max vaules in predict_def as operator arguments
         op.arg.extend([max_arg])
 
+    def get_max_min(self, op, tensor, tensor_idx, tensor_name, max_name):
+        """get max and min"""
+        name = max_name + "_" + str(tensor_idx)
+        arg = self.get_arg(op, name)
+        max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
+        if arg is not None:
+            orig_max = arg.floats[0]
+            orig_min = arg.floats[1]
+            cur_max = max(orig_max, max_min[0])
+            cur_min = min(orig_min, max_min[1])
+            max_min = np.array([cur_max, cur_min]).astype(np.float32)
+            self.remove_arg(op, name)
+        # save max and min vaules in predict_def as operator arguments
+        max_arg = utils.MakeArgument(name, max_min)
+        op.arg.extend([max_arg])
+
 class EMACalib(algorithm):
     """ Moving Average calibrator """
     def __init__(self, ema_alpha=0.5):
@@ -396,6 +400,21 @@ class EMACalib(algorithm):
         # save max vaules in predict_def as operator arguments
         op.arg.extend([max_arg])
 
+    def get_max_min(self, op, tensor, tensor_idx, tensor_name, max_name):
+        """get max and min"""
+        name = max_name + "_" + str(tensor_idx)
+        arg = self.get_arg(op, name)
+        max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
+        if arg is not None:
+            orig_max = arg.floats[0]
+            orig_min = arg.floats[1]
+            cur_max = np.array([self.ema_alpha * max_min[0] + (1-self.ema_alpha) * orig_max]).astype(np.float32)
+            cur_min = np.array([self.ema_alpha * max_min[1] + (1-self.ema_alpha) * orig_min]).astype(np.float32)
+            max_min = np.array([cur_max, cur_min]).astype(np.float32)
+            self.remove_arg(op, name)
+        # save max and min vaules in predict_def as operator arguments
+        max_arg = utils.MakeArgument(name, max_min)
+        op.arg.extend([max_arg])
 
 class Calibrator(object):
     """main calss for calibrator"""
@@ -412,6 +431,12 @@ class Calibrator(object):
                                 [0,-1, 1, 0],
                                 [0, 1, 1, 0],
                                 [0,-1, 0, 1]])
+            elif tile_size == 5:
+                B_T = np.array([[1/2, 1, -1/2, -1, 0],
+                                [ 0, -1/2, -1/2, 1, 0],
+                                [ 0, 1/2, 3/2, 1, 0],
+                                [ 0, -1, 0, 1, 0],
+                                [ 0, -1/2, -1, 1/2, 1]])
             elif tile_size == 6:
                 B_T = np.array([[0.87890625, 0, -2.640625, 0, 1, 0],
                                 [0, -1.40625, -2.25, 0.625, 1, 0],
@@ -447,6 +472,12 @@ class Calibrator(object):
                                 [0,-1, 1, 0],
                                 [0, 1, 1, 0],
                                 [0,-1, 0, 1]])
+            elif tile_size == 5:
+                B_T = np.array([[1/2, 1, -1/2, -1, 0],
+                                [ 0, -1/2, -1/2, 1, 0],
+                                [ 0, 1/2, 3/2, 1, 0],
+                                [ 0, -1, 0, 1, 0],
+                                [ 0, -1/2, -1, 1/2, 1]])
             elif tile_size == 6:
                 B_T = np.array([[0.87890625, 0, -2.640625, 0, 1, 0],
                                 [0, -1.40625, -2.25, 0.625, 1, 0],
@@ -500,10 +531,10 @@ class Calibrator(object):
                         input_pad[:, :, arg.i : inp.shape[2]+arg.i, arg.i : inp.shape[3]+arg.i] = inp
                          
                         arg = self.algo.get_arg(op, "tile_size")
-                        input_tile = 6 
-                        if arg.i == 5:
-                            input_tile = 4 
-                        wino_trans = wino_transform_data_overlap(input_pad, input_tile)
+                        if arg.i == 6 or arg.i == 5:
+                            wino_trans = wino_transform_data_overlap(input_pad, arg.i)
+                        else:
+                            wino_trans = wino_transform_data(input_pad, arg.i)
                         self.algo.get_max_min(op, wino_trans, j, input_name, "wino_tinput_quant")
             this_op = copy.deepcopy(op)
             if self.dev_opt is not None:
