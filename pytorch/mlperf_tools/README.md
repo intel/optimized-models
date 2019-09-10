@@ -4,14 +4,14 @@
 - python_version >= 3.6
 - onnx >= 1.5.0 
 ```  
-    #you can follow this to install onnx 
+    # You can follow this to install onnx 
     https://github.com/onnx/onnx/tree/rel-1.5.0
     
-    #if you have already install onnx, you can upgrade it
+    # If you have already install onnx, you can upgrade it
     pip install --upgrade onnx
 ```
 - pytorch build 
-    #if you have already build pytorch, please move to next step
+    # If you have already build pytorch, please move to next step
 
 ```
     git clone https://github.com/pytorch/pytorch.git 
@@ -53,25 +53,26 @@
 - Enviroment setup
 ```
     export LD_PRELOAD=the/location/of/libiomp5.so      
-    #Taking the following command for example to load libiomp5.so
-    #export LD_PRELOAD=/opt/intel/compilers_and_libraries_2018.1.163/linux/compiler/lib/intel64/libiomp5.so
+    # Export libiomp5.so from Intel Compiler Collection (ICC) software package.
+    # Taking the following command for example
+    # export LD_PRELOAD=/opt/intel/compilers_and_libraries_2018.1.163/linux/compiler/lib/intel64/libiomp5.so
     
-    #set full core for efficiently model quantization
+    # Set full core for efficiently model quantization
     export OMP_NUM_THREADS=${num_core} KMP_AFFINITY=proclist=[0-${num_core}-1],granularity=thread,explicit
     export PYTHONPATH=/path/to/pytorch/build/
     cd optimized-models/pytorch/mlperf_tools/
 ```
 - Transform Resnet50-V1.5  onnx model to pbtxt files
 ```    
-    #resnet50 onnx model transformation
-    python ./run_pytorch.py -onnx -m resnet50 -u -d cpu 
+    # Resnet50 onnx model transformation
+    python ./run_pytorch.py -onnx -m resnet50 -u -d cpu
     patch predict_net.pbtxt ./inference/models/resnet50/predict_patch
     mv predict_net.pbtxt ./inference/models/resnet50/
     mv init_net.pbtxt ./inference/models/resnet50/ 
 ```
 - Transform Mobilenet-V1 onnx model to pbtxt files
 ```
-    #mobilenet onnx model transformation
+    # Mobilenet onnx model transformation
     python ./run_pytorch.py -onnx -m mobilenet -u -d cpu 
     patch predict_net.pbtxt ./inference/models/mobilenet/predict_patch   
     mv predict_net.pbtxt ./inference/models/mobilenet/
@@ -81,8 +82,8 @@
 ## 4.Run calibration to generate int8 model
 
 ```
-    #the generated int8 model is ./inference/models/${model}/predict_net_int8.pbtxt
-    #the generated int8 weight is ./inference/models/${model}/init_net_int8.pbtxt
+    # The generated int8 model is ./inference/models/${model}/predict_net_int8.pbtxt
+    # The generated int8 weight is ./inference/models/${model}/init_net_int8.pbtxt
 ```
 - Int8 Resnet50-V1.5 model quantization
 ```
