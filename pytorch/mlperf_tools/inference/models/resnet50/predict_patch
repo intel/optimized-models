@@ -17,7 +17,47 @@
 >     i: 3
 >   }
 >   arg {
-95,101d85
+35a27,65
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:14
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:1
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+95,101d124
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -25,7 +65,47 @@
 <     ints: 0
 <   }
 <   arg {
-124,130d107
+115a139,177
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:4
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nChw16c"
+>   }
+124,130d185
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -33,7 +113,47 @@
 <     ints: 0
 <   }
 <   arg {
-203,207c180,181
+144a200,238
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160" 
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:4
+>     ints:8
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nChw16c"
+>   }
+203,207c297,298
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -42,7 +162,39 @@
 ---
 >     name: "pad"
 >     i: 1
-260,266d233
+223a315,345
+>   arg { 
+>     name: "need_euler"
+>     i: 1 
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 4 
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+260,266d381
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -50,11 +202,47 @@
 <     ints: 0
 <   }
 <   arg {
-309c276
+280a396,430
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:4
+>     ints:8
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "sum_zero_point"
+>     i: 128
+>   }
+309c459
 <   type: "Add"
 ---
 >   type: "Sum"
-324,330d290
+324,330d473
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -62,7 +250,39 @@
 <     ints: 0
 <   }
 <   arg {
-381,385c341,342
+344a488,518
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:11
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+381,385c555,556
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -71,7 +291,39 @@
 ---
 >     name: "pad"
 >     i: 1
-438,444d394
+401a573,603
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+438,444d639
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -79,11 +331,43 @@
 <     ints: 0
 <   }
 <   arg {
-487c437
+458a654,684
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:4
+>     ints:8
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+487c713
 <   type: "Add"
 ---
 >   type: "Sum"
-502,508d451
+502,508d727
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -91,7 +375,39 @@
 <     ints: 0
 <   }
 <   arg {
-559,565d501
+522a742,772
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:11
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+559,565d808
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -99,12 +415,44 @@
 <     ints: 1
 <   }
 <   arg {
-570a507,510
+570a814,817
 >     name: "pad"
 >     i: 1
 >   }
 >   arg {
-616,622d555
+579a827,857
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+616,622d893
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -112,11 +460,75 @@
 <     ints: 0
 <   }
 <   arg {
-665c598
+636a908,938
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:4
+>     ints:8
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+665c967
 <   type: "Add"
 ---
 >   type: "Sum"
-724,730d656
+693a996,1026
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xb161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:14
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+724,730d1056
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -124,7 +536,39 @@
 <     ints: 0
 <   }
 <   arg {
-776,788d701
+744a1071,1101
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:11
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+776,788d1132
 <   output: "resnet_model/Pad_2:0"
 <   name: "resnet_model/Pad_2"
 <   type: "PadImage"
@@ -138,12 +582,44 @@
 < }
 < op {
 <   input: "resnet_model/Pad_2:0"
-803a717,720
+803a1148,1151
 >     name: "pad"
 >     i: 1
 >   }
 >   arg {
-844,850d760
+807a1156,1186
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 1
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xa160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:14
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:8
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+844,850d1222
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -151,11 +627,47 @@
 <     ints: 0
 <   }
 <   arg {
-893c803
+864a1237,1271
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:8
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "sum_zero_point"
+>     i: 128
+>   }
+893c1300
 <   type: "Add"
 ---
 >   type: "Sum"
-908,914d817
+908,914d1314
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -163,7 +675,43 @@
 <     ints: 0
 <   }
 <   arg {
-965,969c868,869
+928a1329,1363
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+965,969c1400,1401
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -172,7 +720,43 @@
 ---
 >     name: "pad"
 >     i: 1
-1022,1028d921
+985a1418,1452
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 8
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 2
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+1022,1028d1488
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -180,11 +764,43 @@
 <     ints: 0
 <   }
 <   arg {
-1071c964
+1042a1503,1533
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:8
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+1071c1562
 <   type: "Add"
 ---
 >   type: "Sum"
-1086,1092d978
+1086,1092d1576
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -192,7 +808,43 @@
 <     ints: 0
 <   }
 <   arg {
-1143,1147c1029,1030
+1106a1591,1625
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1143,1147c1662,1663
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -201,7 +853,43 @@
 ---
 >     name: "pad"
 >     i: 1
-1200,1206d1082
+1163a1680,1714
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 8
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 2
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+1200,1206d1750
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -209,11 +897,43 @@
 <     ints: 0
 <   }
 <   arg {
-1249c1125
+1220a1765,1795
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:8
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+1249c1824
 <   type: "Add"
 ---
 >   type: "Sum"
-1264,1270d1139
+1264,1270d1838
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -221,7 +941,43 @@
 <     ints: 0
 <   }
 <   arg {
-1321,1325c1190,1191
+1284a1853,1887
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1321,1325c1924,1925
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -230,7 +986,43 @@
 ---
 >     name: "pad"
 >     i: 1
-1378,1384d1243
+1341a1942,1976
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 8
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 2
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+1378,1384d2012
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -238,11 +1030,52 @@
 <     ints: 0
 <   }
 <   arg {
-1427c1286
+1394,1397c2022,2056
+<   arg {
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:8
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+1427c2086
 <   type: "Add"
 ---
 >   type: "Sum"
-1442,1448d1300
+1442,1448d2100
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -250,7 +1083,39 @@
 <     ints: 0
 <   }
 <   arg {
-1494,1506d1345
+1462a2115,2145
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+1494,1506d2176
 <   output: "resnet_model/Pad_4:0"
 <   name: "resnet_model/Pad_4"
 <   type: "PadImage"
@@ -264,12 +1129,48 @@
 < }
 < op {
 <   input: "resnet_model/Pad_4:0"
-1516a1356,1359
+1516a2187,2190
 >     name: "pad"
 >     i: 1
 >   }
 >   arg {
-1562,1568d1404
+1525a2200,2234
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xa160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:14
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1562,1568d2270
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -277,11 +1178,131 @@
 <     ints: 0
 <   }
 <   arg {
-1655c1491
+1582a2285,2323
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 16
+>     ints: 32
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1626a2368,2406
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xb161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:14
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "sum_zero_point"
+>     i: 128
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1655c2435
 <   type: "Add"
 ---
 >   type: "Sum"
-1727,1731c1563,1564
+1690a2471,2509
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1727,1731c2546,2547
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -290,11 +1311,123 @@
 ---
 >     name: "pad"
 >     i: 1
-1833c1666
+1747a2564,2598
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 4
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+1804a2656,2690
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:32
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1833c2719
 <   type: "Add"
 ---
 >   type: "Sum"
-1905,1909c1738,1739
+1868a2755,2793
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+1905,1909c2830,2831
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -303,11 +1436,83 @@
 ---
 >     name: "pad"
 >     i: 1
-2011c1841
+1925a2848,2882
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 4 
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 4
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+1982a2940,2974
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:32
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2011c3003
 <   type: "Add"
 ---
 >   type: "Sum"
-2026,2032d1855
+2026,2032d3017
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -315,7 +1520,47 @@
 <     ints: 0
 <   }
 <   arg {
-2083,2087c1906,1907
+2046a3032,3070
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2083,2087c3107,3108
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -324,7 +1569,43 @@
 ---
 >     name: "pad"
 >     i: 1
-2140,2146d1959
+2103a3125,3159
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 4 
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 4
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc" 
+>   }
+2140,2146d3195
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -332,11 +1613,47 @@
 <     ints: 0
 <   }
 <   arg {
-2189c2002
+2160a3210,3244
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:32
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2189c3273
 <   type: "Add"
 ---
 >   type: "Sum"
-2204,2210d2016
+2204,2210d3287
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -344,7 +1661,47 @@
 <     ints: 0
 <   }
 <   arg {
-2261,2265c2067,2068
+2224a3302,3340
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2261,2265c3377,3378
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -353,7 +1710,43 @@
 ---
 >     name: "pad"
 >     i: 1
-2318,2324d2120
+2281a3395,3429
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 4
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+2318,2324d3465
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -361,19 +1754,100 @@
 <     ints: 0
 <   }
 <   arg {
-2367c2163
+2338a3480,3514
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:32
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2367c3543
 <   type: "Add"
 ---
 >   type: "Sum"
-2382,2388d2177
+2379,2387c3555,3556
+<   name: "resnet_model/conv2d_40/Conv2D"
+<   type: "Conv"
+<   arg {
 <     name: "pads"
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <   }
-<   arg {
-2439,2443c2228,2229
+---
+>   name: "resnet_model/conv2d_40/Conv2D"
+>   type: "Conv"
+2402a3572,3610
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2439,2443c3647,3648
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -382,7 +1856,43 @@
 ---
 >     name: "pad"
 >     i: 1
-2496,2502d2281
+2459a3665,3699
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 4
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+2496,2502d3735
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -390,11 +1900,47 @@
 <     ints: 0
 <   }
 <   arg {
-2545c2324
+2516a3750,3784
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:16
+>     ints:32
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2545c3813
 <   type: "Add"
 ---
 >   type: "Sum"
-2560,2566d2338
+2560,2566d3827
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -402,7 +1948,47 @@
 <     ints: 0
 <   }
 <   arg {
-2612,2624d2383
+2580a3842,3880
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:4
+>     ints:6
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:8
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2612,2624d3911
 <   output: "resnet_model/Pad_6:0"
 <   name: "resnet_model/Pad_6"
 <   type: "PadImage"
@@ -416,12 +2002,52 @@
 < }
 < op {
 <   input: "resnet_model/Pad_6:0"
-2634a2394,2397
+2634a3922,3925
 >     name: "pad"
 >     i: 1
 >   }
 >   arg {
-2680,2686d2442
+2643a3935,3973
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xa160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:14
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2680,2686d4009
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -429,11 +2055,95 @@
 <     ints: 0
 <   }
 <   arg {
-2773c2529
+2700a4024,4062
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:16
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2744a4107,4149
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xb161"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:7
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:64
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "sum_zero_point"
+>     i: 128
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2773c4178
 <   type: "Add"
 ---
 >   type: "Sum"
-2788,2794d2543
+2788,2794d4192
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -441,7 +2151,47 @@
 <     ints: 0
 <   }
 <   arg {
-2845,2849c2594,2595
+2808a4207,4245
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:128
+>     ints:4
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2845,2849c4282,4283
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -450,7 +2200,43 @@
 ---
 >     name: "pad"
 >     i: 1
-2902,2908d2647
+2865a4300,4334
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa133"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 32
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+2902,2908d4370
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -458,11 +2244,47 @@
 <     ints: 0
 <   }
 <   arg {
-2951c2690
+2922a4385,4419
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:16
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+2951c4448
 <   type: "Add"
 ---
 >   type: "Sum"
-2966,2972d2704
+2966,2972d4462
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -470,7 +2292,47 @@
 <     ints: 0
 <   }
 <   arg {
-3023,3027c2755,2756
+2986a4477,4515
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:128
+>     ints:4
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:13
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+3023,3027c4552,4553
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -479,7 +2341,43 @@
 ---
 >     name: "pad"
 >     i: 1
-3080,3086d2808
+3043a4570,4604
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 4
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s: "0xa133"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints: 2
+>     ints: 13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints: 32
+>     ints: 2
+>   }
+>   arg { 
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+3080,3086d4640
 <     name: "pads"
 <     ints: 0
 <     ints: 0
@@ -487,11 +2385,47 @@
 <     ints: 0
 <   }
 <   arg {
-3129c2851
+3100a4655,4689
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:2
+>     ints:13
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:32
+>     ints:16
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+3129c4718
 <   type: "Add"
 ---
 >   type: "Sum"
-3139,3141c2861,2863
+3139,3141c4728,4730
 <   output: "resnet_model/Mean:0"
 <   name: "resnet_model/Mean"
 <   type: "ReduceMean"
@@ -499,20 +2433,20 @@
 >   output: "resnet_model/Pool:0"
 >   name: ""
 >   type: "AveragePool"
-3143,3145c2865,2866
+3143,3145c4732,4733
 <     name: "axes"
 <     ints: 2
 <     ints: 3
 ---
 >     name: "kernel"
 >     i: 7
-3148c2869
+3148c4736
 <     name: "keepdims"
 ---
 >     name: "stride"
-3150a2872
+3150a4739
 >   engine: ""
-3153,3172c2875
+3153,3172c4742
 <   input: "resnet_model/Mean:0"
 <   input: "reshape__307__308"
 <   output: "Transpose__276:0"
@@ -535,43 +2469,90 @@
 <   input: "resnet_model/Squeeze:0"
 ---
 >   input: "resnet_model/Pool:0"
-3174,3183d2876
+3174,3176c4744,4747
 <   output: "resnet_model/dense/MatMul:0"
 <   name: "resnet_model/dense/MatMul"
 <   type: "BatchMatMul"
-<   arg {
+---
+>   input: "resnet_model/dense/bias:0"
+>   output: "resnet_model/final_dense:0"
+>   name: ""
+>   type: "FC"
+3178c4749
 <     name: "broadcast"
-<     i: 1
-<   }
+---
+>     name: "weights_extend"
+3181,3193c4752,4795
 < }
 < op {
 <   input: "resnet_model/dense/MatMul:0"
-3185,3190d2877
+<   input: "resnet_model/dense/bias:0"
 <   output: "resnet_model/dense/BiasAdd:0"
 <   name: "resnet_model/dense/BiasAdd"
 <   type: "Add"
 < }
 < op {
 <   input: "resnet_model/dense/BiasAdd:0"
-3192,3193c2879,2881
+<   output: "resnet_model/final_dense:0"
 <   name: "resnet_model/final_dense"
 <   type: "Copy"
 ---
->   name: ""
->   type: "FC"
+>   arg { 
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg { 
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg { 
+>     name: "with_argmax"
+>     i: 1
+>   }
+>   arg { 
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg { 
+>     name: "execution_mode"
+>     s:"0xd160"
+>   }
+>   arg { 
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg { 
+>     name: "blocking"
+>     ints:128
+>     ints:1
+>   }
+>   arg { 
+>     name: "flatting"
+>     ints:3
+>     ints:4
+>   }
+>   arg { 
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg { 
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
 >   engine: ""
-3197c2885
+3197c4799
 <   output: "raw_output___2:0"
 ---
 >   output: "ArgMax:0"
-3209,3214d2896
+3209,3214d4810
 < op {
 <   input: "raw_output___2:0"
 <   output: "ArgMax:0"
 <   name: "graph_outputs_Identity__3"
 <   type: "Copy"
 < }
-3218a2901
+3218a4815
 > external_input: "input_tensor:0"
-3487d3169
+3487d5083
 < external_input: "input_tensor:0"
