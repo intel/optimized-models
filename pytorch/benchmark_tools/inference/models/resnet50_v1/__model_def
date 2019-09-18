@@ -13,7 +13,7 @@ Model definition for Caffe2
 [Init Net]
 init_net.pb
 
-[Init Net]
+[Init Net Int8]
 init_net_int8.pb
 
 [Predict Net]
