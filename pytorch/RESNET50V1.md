@@ -1,6 +1,6 @@
 # Guide to Run Pytorch/caffe2 resnet50 v1 model 
 
-- please use v1.0.5
+- please use v1.0.9
 
 ## Download caffe resnet50 v1 model
 
@@ -76,8 +76,8 @@ Note:
          ./run_caffe2.py -m resnet50_v1 -p calibration_folder  -v validation_file  -b "batchsize"  -r calibration -o . 
 
     There will be two files generated under the folder, and copy them to inference/models/resnet50_v1
-         cp init_net_int8.pb inference/models/resnet50/init_onnx_int8.pb
-         cp predict_net_int8.pb inference/models/resnet50/predict_onnx_int8.pb
+         cp init_net_int8.pb inference/models/resnet50_v1
+         cp predict_net_int8.pb inference/models/resnet50_v1
 
 ```
 
