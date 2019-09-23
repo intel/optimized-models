@@ -163,7 +163,7 @@
 >   arg {
 >     name: "flatting"
 >     ints: 1
->     ints: 14 
+>     ints: 7 
 >   }
 >   arg {
 >     name: "blocking"
@@ -366,7 +366,7 @@
 >   arg {
 >     name: "flatting"
 >     ints: 2
->     ints: 12 
+>     ints: 7 
 >   }
 >   arg {
 >     name: "blocking"
@@ -395,7 +395,7 @@
 >   arg {
 >     name: "flatting"
 >     ints: 1
->     ints: 14 
+>     ints: 7 
 >   }
 >   arg {
 >     name: "blocking"
@@ -424,7 +424,7 @@
 >   arg {
 >     name: "flatting"
 >     ints: 2
->     ints: 12 
+>     ints: 7 
 >   }
 >   arg {
 >     name: "blocking"
@@ -453,7 +453,7 @@
 >   arg {
 >     name: "flatting"
 >     ints: 1
->     ints: 14 
+>     ints: 7 
 >   }
 >   arg {
 >     name: "blocking"
@@ -487,7 +487,7 @@
 >   arg {
 >     name: "blocking"
 >     ints: 32 
->     ints: 16 
+>     ints: 2 
 >   }
 >   arg {
 >     name: "partition"
@@ -545,7 +545,7 @@
 >   arg {
 >     name: "blocking"
 >     ints: 32 
->     ints: 16 
+>     ints: 2 
 >   }
 >   arg {
 >     name: "partition"
@@ -603,7 +603,7 @@
 >   arg {
 >     name: "blocking"
 >     ints: 32 
->     ints: 16 
+>     ints: 1 
 >   }
 >   arg {
 >     name: "partition"
@@ -661,7 +661,7 @@
 >   arg {
 >     name: "blocking"
 >     ints: 32 
->     ints: 16 
+>     ints: 2 
 >   }
 >   arg {
 >     name: "partition"
@@ -713,13 +713,13 @@
 >   }
 >   arg {
 >     name: "flatting"
->     ints: 4 
->     ints: 6 
+>     ints: 2 
+>     ints: 13 
 >   }
 >   arg {
 >     name: "blocking"
 >     ints: 32 
->     ints: 16 
+>     ints: 2 
 >   }
 >   arg {
 >     name: "partition"
@@ -754,7 +754,7 @@
 >     name: "partition"
 >     ints: 1
 >     ints: 1
->     ints: 1 # groups
+>     ints: 4 # groups
 >   }
 1447a2180,2211
 >   arg {
@@ -771,13 +771,13 @@
 >   }
 >   arg {
 >     name: "flatting"
->     ints: 4
->     ints: 6 
+>     ints: 2
+>     ints: 13 
 >   }
 >   arg {
 >     name: "blocking"
 >     ints: 64 
->     ints: 4
+>     ints: 2
 >   }
 >   arg {
 >     name: "partition"
@@ -789,24 +789,9 @@
 >     name: "euler_order_dst"
 >     s: "nhwc"
 >   }
-1508,1521d2271
-< }
-< op {
-<   input: "Conv__252:0"
-<   input: "reshape__254__255"
-<   output: "MobilenetV1/Logits/Conv2d_1c_1x1/Conv2D__200:0"
-<   output: "OC2_DUMMY_0"
-<   name: "reshape__254"
-<   type: "Reshape"
-< }
-< op {
-<   input: "MobilenetV1/Logits/Conv2d_1c_1x1/Conv2D__200:0"
-<   output: "MobilenetV1/Logits/SpatialSqueeze:0"
-<   name: "MobilenetV1/Logits/SpatialSqueeze"
-<   type: "Squeeze"
-1523c2273,2297
-<     name: "dims"
----
+1506a2271,2306
+>   }
+>   arg {
 >     name: "need_euler"
 >     i: 1
 >   }
@@ -821,7 +806,7 @@
 >   arg {
 >     name: "flatting"
 >     ints: 3
->     ints: 4 
+>     ints: 1 
 >   }
 >   arg {
 >     name: "blocking"
@@ -832,62 +817,12 @@
 >     name: "partition"
 >     ints: 1
 >     ints: 1
-1525d2298
-<     ints: 2
-1527,1538d2299
-< }
-< op {
-<   input: "MobilenetV1/Logits/SpatialSqueeze:0"
-<   output: "MobilenetV1/Predictions/Shape:0"
-<   name: "MobilenetV1/Predictions/Shape"
-<   type: "Shape"
-< }
-< op {
-<   input: "MobilenetV1/Predictions/Shape:0"
-<   output: "MobilenetV1/Predictions/Shape__202:0"
-<   name: "MobilenetV1/Predictions/Shape__202"
-<   type: "Cast"
-1540,1541c2301,2302
-<     name: "to"
-<     i: 2
----
+>     ints: 1
+>   }
+>   arg {
 >     name: "euler_order_src"
 >     s: "nhwc"
-1543,1548d2303
-< }
-< op {
-<   input: "MobilenetV1/Predictions/Shape__202:0"
-<   output: "MobilenetV1/Predictions/Reshape_1__204:0"
-<   name: "MobilenetV1/Predictions/Reshape_1__204"
-<   type: "Cast"
-1550,1551c2305,2306
-<     name: "to"
-<     i: 10
----
+>   }
+>   arg {
 >     name: "euler_order_dst"
 >     s: "nhwc"
-1555,1563c2310
-<   input: "MobilenetV1/Logits/SpatialSqueeze:0"
-<   input: "MobilenetV1/Predictions/Reshape__203:0"
-<   output: "MobilenetV1/Predictions/Reshape:0"
-<   output: "OC2_DUMMY_1"
-<   name: "MobilenetV1/Predictions/Reshape"
-<   type: "Reshape"
-< }
-< op {
-<   input: "MobilenetV1/Predictions/Reshape:0"
----
->   input: "Conv__252:0"
-1572,1579d2318
-< op {
-<   input: "MobilenetV1/Predictions/Softmax:0"
-<   input: "MobilenetV1/Predictions/Reshape_1__204:0"
-<   output: "MobilenetV1/Predictions/Reshape_1:0"
-<   output: "OC2_DUMMY_2"
-<   name: "MobilenetV1/Predictions/Reshape_1"
-<   type: "Reshape"
-< }
-1682c2421
-< external_output: "MobilenetV1/Predictions/Reshape_1:0"
----
-> external_output: "MobilenetV1/Predictions/Softmax:0"

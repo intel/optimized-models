@@ -368,7 +368,7 @@ class AbsmaxCalib(algorithm):
         """get max and min"""
         name = max_name + "_" + str(tensor_idx)
         arg = self.get_arg(op, name)
-        max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
+        max_min = np.array([np.max(tensor), np.min(tensor)]).astype(np.float32)
         if arg is not None:
             orig_max = arg.floats[0]
             orig_min = arg.floats[1]
@@ -404,7 +404,7 @@ class EMACalib(algorithm):
         """get max and min"""
         name = max_name + "_" + str(tensor_idx)
         arg = self.get_arg(op, name)
-        max_min = np.array([np.max(tensor), min(np.min(tensor), 0)]).astype(np.float32)
+        max_min = np.array([np.max(tensor), np.min(tensor)]).astype(np.float32)
         if arg is not None:
             orig_max = arg.floats[0]
             orig_min = arg.floats[1]
