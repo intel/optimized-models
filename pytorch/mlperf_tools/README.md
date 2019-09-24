@@ -54,7 +54,7 @@
 - Enviroment setup
 ```
     export LD_PRELOAD=the/location/of/libiomp5.so      
-    # Export libiomp5.so from Intel Compiler Collection (ICC) software package.
+    # Export libiomp5.so from Intel C/C++ Compiler (ICC) software package.
     # Taking the following command for example
     # export LD_PRELOAD=/opt/intel/compilers_and_libraries_2018.1.163/linux/compiler/lib/intel64/libiomp5.so
     
