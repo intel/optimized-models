@@ -11,18 +11,19 @@
     pip install --upgrade onnx
 ```
 - pytorch build 
-    # If you have already build pytorch, please move to next step
 
 ```
+    # If you have already build pytorch, please move to next step
     git clone https://github.com/pytorch/pytorch.git 
     git submodule update --init --recursive
+    export CAFFE2_USE_MKLDNN=ON;export USE_OPENMP=ON;
     python setup.py build
 ```
 
 - get optimized-models tool for int8 model generation
 
 ```
-    git clone --branch v1.0.8 https://github.com/intel/optimized-models.git
+    git clone --branch v1.0.9 https://github.com/intel/optimized-models.git
 ```
 
 ## 2.Download models, datasets, calibration image list.
@@ -65,7 +66,7 @@
 - Transform Resnet50-V1.5 onnx model to generate int8 model 
 ```    
     # Generate resnet50 int8 model for larger batchsize
-    # The generated int8 model and weight files are named as predict_net_int8_large_bs.pbtxt and init_net_int8_large_bs.pb
+    # The generated int8 model and weight files are named as predict_net_int8_large_bs.pbtxt and init_net_int8.pb
     python ./run_pytorch.py -onnx -m resnet50 -u -d cpu
     patch predict_net.pbtxt ./inference/models/resnet50/predict_patch
     mv predict_net.pbtxt ./inference/models/resnet50/
@@ -75,10 +76,9 @@
     python ./run_pytorch.py -m ${model} -b 1 -p /path/to/ILSVRC2012_img_val/ -calibf /path/to/cal_image_list_option_1.txt -d ideep -r calibration -o ./inference/models/${model}
     
     mv ./inference/models/${model}/predict_net_int8.pbtxt ./inference/models/${model}/predict_net_int8_large_bs.pbtxt
-    mv ./inference/models/${model}/init_net_int8.pb ./inference/models/${model}/init_net_int8_large_bs.pb
 
     # Generate resnet50 int8 model for smaller batchsize
-    # The generated int8 model and weight files are named as predict_net_int8_small_bs.pbtxt and init_net_int8_small_bs.pb
+    # The generated int8 model and weight files are named as predict_net_int8_small_bs.pbtxt and init_net_int8.pb
     python ./run_pytorch.py -onnx -m resnet50 -u -d cpu
     patch predict_net.pbtxt ./inference/models/resnet50/predict_lat_patch
     mv predict_net.pbtxt ./inference/models/resnet50/
@@ -88,13 +88,12 @@
     python ./run_pytorch.py -m ${model} -b 1 -p /path/to/ILSVRC2012_img_val/ -calibf /path/to/cal_image_list_option_1.txt -d ideep -r calibration -o ./inference/models/${model}
     
     mv ./inference/models/${model}/predict_net_int8.pbtxt ./inference/models/${model}/predict_net_int8_small_bs.pbtxt
-    mv ./inference/models/${model}/init_net_int8.pb ./inference/models/${model}/init_net_int8_small_bs.pb
 
 ```
 - Transform Mobilenet-V1 onnx model to pbtxt files
 ```
     # Generate mobilenet int8 model for larger batchsize
-    # The generated int8 model and weight files are named as predict_net_int8_large_bs.pbtxt and init_net_int8_large_bs.pb
+    # The generated int8 model and weight files are named as predict_net_int8_large_bs.pbtxt and init_net_int8.pb
     python ./run_pytorch.py -onnx -m mobilenet -u -d cpu 
     patch predict_net.pbtxt ./inference/models/mobilenet/predict_patch   
     mv predict_net.pbtxt ./inference/models/mobilenet/
@@ -104,11 +103,10 @@
     python ./run_pytorch.py -m ${model} -b 1 -p /path/to/ILSVRC2012_img_val/ -calibf /path/to/cal_image_list_option_1.txt -d ideep -r calibration -o ./inference/models/${model}
     
     mv ./inference/models/${model}/predict_net_int8.pbtxt ./inference/models/${model}/predict_net_int8_large_bs.pbtxt
-    mv ./inference/models/${model}/init_net_int8.pb ./inference/models/${model}/init_net_int8_large_bs.pb
 
 
     # Generate mobilenet int8 model for smaller batchsize
-    # The generated int8 model and weight files are named as predict_net_int8_small_bs.pbtxt and init_net_int8_small_bs.pb
+    # The generated int8 model and weight files are named as predict_net_int8_small_bs.pbtxt and init_net_int8.pb
     python ./run_pytorch.py -onnx -m mobilenet -u -d cpu 
     patch predict_net.pbtxt ./inference/models/mobilenet/predict_lat_patch   
     mv predict_net.pbtxt ./inference/models/mobilenet/
@@ -118,5 +116,4 @@
     python ./run_pytorch.py -m ${model} -b 1 -p /path/to/ILSVRC2012_img_val/ -calibf /path/to/cal_image_list_option_1.txt -d ideep -r calibration -o ./inference/models/${model}
     
     mv ./inference/models/${model}/predict_net_int8.pbtxt ./inference/models/${model}/predict_net_int8_small_bs.pbtxt
-    mv ./inference/models/${model}/init_net_int8.pb ./inference/models/${model}/init_net_int8_small_bs.pb
 ```
