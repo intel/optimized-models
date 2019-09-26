@@ -30,7 +30,7 @@
 - Download Resnet50-V1.5 and Mobilenet-V1 models. 
 
 ```
-    wget https://zenodo.org/record/2592612/files/resnet50_v1.onnx
+    wget https://zenodo.org/record/2541184/files/resnet50_v1.onnx
     mv resnet50_v1.onnx ./optimized-models/pytorch/mlperf_tools/inference/models/resnet50
 
     wget https://zenodo.org/record/3157894/files/mobilenet_v1_1.0_224.onnx

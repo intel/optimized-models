@@ -12,178 +12,39 @@
 < }
 < op {
 <   input: "resnet_model/Pad:0"
-26a14,17
+18c5,6
+<   output: "resnet_model/conv2d/Conv2D:0"
+---
+>   input: "resnet_model/batch_normalization/beta:0"
+>   output: "resnet_model/Relu:0"
+20c8
+<   type: "Conv"
+---
+>   type: "Int8ConvRelu"
+26a15,18
 >     name: "pad"
 >     i: 3
 >   }
 >   arg {
-35a27,73
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:14
->   }
->   arg {
->     name: "blocking"
->     ints:1
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
->   arg {
->     name: "euler_stream_sync"
->     i: 0
->   }
-95,101d132
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-115a147,189
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:4
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nChw16c"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-124,130d197
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-144a212,258
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:4
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nChw16c"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
->   arg {
->     name: "euler_stream_sync"
->     i: 0
->   }
-203,207c317,318
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
+36,49d27
+< }
+< op {
+<   input: "resnet_model/conv2d/Conv2D:0"
+<   input: "resnet_model/batch_normalization/gamma:0"
+<   input: "resnet_model/batch_normalization/beta:0"
+<   input: "resnet_model/batch_normalization/moving_mean:0"
+<   input: "resnet_model/batch_normalization/moving_variance:0"
+<   output: "resnet_model/batch_normalization/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization/FusedBatchNorm"
+<   type: "SpatialBN"
+51,52c29,61
+<     name: "epsilon"
+<     f: 1.00099996416e-05
 ---
->     name: "pad"
->     i: 1
-223a335,381
->   arg {
 >     name: "need_euler"
 >     i: 1
 >   }
@@ -193,7 +54,7 @@
 >   }
 >   arg {
 >     name: "tile_size"
->     i: 6
+>     i: 5
 >   }
 >   arg {
 >     name: "execution_mode"
@@ -206,8 +67,8 @@
 >   }
 >   arg {
 >     name: "blocking"
->     ints: 4
 >     ints: 1
+>     ints: 2
 >   }
 >   arg {
 >     name: "partition"
@@ -216,117 +77,445 @@
 >   }
 >   arg {
 >     name: "euler_order_src"
->     s: "nChw16c"
->   }
->   arg {
+>     s: "nhwc"
+55c64,68
+<     name: "is_test"
+---
 >     name: "euler_order_dst"
->     s: "nChw16c"
+>     s: "nhwc"
 >   }
 >   arg {
 >     name: "euler_eager_mode"
->     i: 1
->   }
+58,63c71,105
+< }
+< op {
+<   input: "resnet_model/batch_normalization/FusedBatchNorm:0"
+<   output: "resnet_model/Relu:0"
+<   name: "resnet_model/Relu"
+<   type: "Relu"
+---
 >   arg {
 >     name: "euler_stream_sync"
 >     i: 0
 >   }
-260,266d417
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-280a432,470
 >   arg {
->     name: "need_euler"
+>     name: "fusion_type"
 >     i: 1
 >   }
 >   arg {
->     name: "euler_algorithm"
->     i: 1
+>     name: "training_mode"
+>     i: 0
 >   }
 >   arg {
->     name: "tile_size"
->     i: 5
+>     name: "X_scale"
+>     f: 1.1894488334655762
 >   }
 >   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:4
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "sum_zero_point"
+>     name: "X_zero_point"
 >     i: 128
 >   }
 >   arg {
->     name: "euler_eager_mode"
->     i: 1
+>     name: "Y_scale"
+>     f: 0.12335912883281708
 >   }
-309c499
-<   type: "Add"
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+69c111
+<   type: "MaxPool"
 ---
->   type: "Sum"
-324,330d513
+>   type: "Int8MaxPool"
+87,93d128
+< }
+< op {
+<   input: "resnet_model/max_pooling2d/MaxPool:0"
+<   input: "resnet_model/conv2d_2/kernel:0"
+<   output: "resnet_model/conv2d_2/Conv2D:0"
+<   name: "resnet_model/conv2d_2/Conv2D"
+<   type: "Conv"
+95,99c130,131
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "training_mode"
+>     i: 0
+102,104c134,135
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.12335912883281708
+107,109c138,139
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_zero_point"
+>     i: 0
+112,114c142,145
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+115a147
+>   engine: "DNNLOWP"
+119,129c151,155
+<   input: "resnet_model/conv2d_1/kernel:0"
+<   output: "resnet_model/conv2d_1/Conv2D:0"
+<   name: "resnet_model/conv2d_1/Conv2D"
+<   type: "Conv"
+<   arg {
 <     name: "pads"
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <   }
-<   arg {
-344a528,562
->   arg {
+---
+>   input: "resnet_model/conv2d_2/kernel:0"
+>   input: "resnet_model/batch_normalization_2/beta:0"
+>   output: "resnet_model/Relu_1:0"
+>   name: "resnet_model/conv2d_2/Conv2D"
+>   type: "Int8ConvRelu"
+145,158d170
+< }
+< op {
+<   input: "resnet_model/conv2d_1/Conv2D:0"
+<   input: "resnet_model/batch_normalization_1/gamma:0"
+<   input: "resnet_model/batch_normalization_1/beta:0"
+<   input: "resnet_model/batch_normalization_1/moving_mean:0"
+<   input: "resnet_model/batch_normalization_1/moving_variance:0"
+<   output: "resnet_model/batch_normalization_1/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_1/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_1/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_1/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_1/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_1/FusedBatchNorm"
+<   type: "SpatialBN"
+160,161c172,173
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "need_euler"
 >     i: 1
->   }
->   arg {
+164c176
+<     name: "is_test"
+---
 >     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
+167,180d178
+< }
+< op {
+<   input: "resnet_model/conv2d_2/Conv2D:0"
+<   input: "resnet_model/batch_normalization_2/gamma:0"
+<   input: "resnet_model/batch_normalization_2/beta:0"
+<   input: "resnet_model/batch_normalization_2/moving_mean:0"
+<   input: "resnet_model/batch_normalization_2/moving_variance:0"
+<   output: "resnet_model/batch_normalization_2/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_2/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_2/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_2/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_2/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_2/FusedBatchNorm"
+<   type: "SpatialBN"
+182,183c180,181
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "tile_size"
 >     i: 5
->   }
->   arg {
+186,187c184,185
+<     name: "is_test"
+<     i: 1
+---
 >     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
+>     s: "0xc160"
+189,201d186
+< }
+< op {
+<   input: "resnet_model/batch_normalization_2/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_1:0"
+<   name: "resnet_model/Relu_1"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_1:0"
+<   input: "resnet_model/conv2d_3/kernel:0"
+<   output: "resnet_model/conv2d_3/Conv2D:0"
+<   name: "resnet_model/conv2d_3/Conv2D"
+<   type: "Conv"
+203,207c188,190
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
 >     name: "flatting"
->     ints:2
->     ints:12
+>     ints: 2
+>     ints: 12
+210,212c193,195
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+215c198
+<     name: "strides"
+---
+>     name: "partition"
+220,222c203,204
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+224,237d205
+< }
+< op {
+<   input: "resnet_model/conv2d_3/Conv2D:0"
+<   input: "resnet_model/batch_normalization_3/gamma:0"
+<   input: "resnet_model/batch_normalization_3/beta:0"
+<   input: "resnet_model/batch_normalization_3/moving_mean:0"
+<   input: "resnet_model/batch_normalization_3/moving_variance:0"
+<   output: "resnet_model/batch_normalization_3/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_3/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_3/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_3/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_3/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_3/FusedBatchNorm"
+<   type: "SpatialBN"
+239,240c207,208
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_dst"
+>     s: "nChw16c"
+243c211
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+246,258d213
+< }
+< op {
+<   input: "resnet_model/batch_normalization_3/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_2:0"
+<   name: "resnet_model/Relu_2"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_2:0"
+<   input: "resnet_model/conv2d_4/kernel:0"
+<   output: "resnet_model/conv2d_4/Conv2D:0"
+<   name: "resnet_model/conv2d_4/Conv2D"
+<   type: "Conv"
+260,264c215,216
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "fusion_type"
+>     i: 1
+266a219,245
+>     name: "training_mode"
+>     i: 0
 >   }
 >   arg {
+>     name: "Y_scale"
+>     f: 0.04216812923550606
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/max_pooling2d/MaxPool:0"
+>   input: "resnet_model/conv2d_1/kernel:0"
+>   input: "resnet_model/batch_normalization_1/beta:0"
+>   output: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   name: "resnet_model/conv2d_1/Conv2D"
+>   type: "Int8Conv"
+>   arg {
+281,294d259
+< }
+< op {
+<   input: "resnet_model/conv2d_4/Conv2D:0"
+<   input: "resnet_model/batch_normalization_4/gamma:0"
+<   input: "resnet_model/batch_normalization_4/beta:0"
+<   input: "resnet_model/batch_normalization_4/moving_mean:0"
+<   input: "resnet_model/batch_normalization_4/moving_variance:0"
+<   output: "resnet_model/batch_normalization_4/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_4/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_4/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_4/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_4/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_4/FusedBatchNorm"
+<   type: "SpatialBN"
+296,297c261,262
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+300c265
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+303,322d267
+< }
+< op {
+<   input: "resnet_model/batch_normalization_4/FusedBatchNorm:0"
+<   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0"
+<   output: "resnet_model/add:0"
+<   name: "resnet_model/add"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add:0"
+<   output: "resnet_model/Relu_3:0"
+<   name: "resnet_model/Relu_3"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_3:0"
+<   input: "resnet_model/conv2d_5/kernel:0"
+<   output: "resnet_model/conv2d_5/Conv2D:0"
+<   name: "resnet_model/conv2d_5/Conv2D"
+<   type: "Conv"
+324,328c269,270
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 5
+331,333c273,274
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+336,338c277,279
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+341c282,287
+<     name: "dilations"
+---
 >     name: "blocking"
->     ints:16
->     ints:1
+>     ints: 4
+>     ints: 4
 >   }
 >   arg {
 >     name: "partition"
->     ints:1
->     ints:1
+345,358d290
+< }
+< op {
+<   input: "resnet_model/conv2d_5/Conv2D:0"
+<   input: "resnet_model/batch_normalization_5/gamma:0"
+<   input: "resnet_model/batch_normalization_5/beta:0"
+<   input: "resnet_model/batch_normalization_5/moving_mean:0"
+<   input: "resnet_model/batch_normalization_5/moving_variance:0"
+<   output: "resnet_model/batch_normalization_5/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_5/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_5/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_5/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_5/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_5/FusedBatchNorm"
+<   type: "SpatialBN"
+360,361c292,297
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
 >   }
 >   arg {
+>     name: "euler_order_dst"
+>     s: "nChw16c"
+364c300
+<     name: "is_test"
+---
 >     name: "euler_eager_mode"
->     i: 1
+366a303,325
+>   arg {
+>     name: "euler_stream_sync"
+>     i: 0
 >   }
-381,385c599,600
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.1987118422985077
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 128
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+369,379c328,333
+<   input: "resnet_model/batch_normalization_5/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_4:0"
+<   name: "resnet_model/Relu_4"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_4:0"
+<   input: "resnet_model/conv2d_6/kernel:0"
+<   output: "resnet_model/conv2d_6/Conv2D:0"
+<   name: "resnet_model/conv2d_6/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_1:0"
+>   input: "resnet_model/conv2d_3/kernel:0"
+>   input: "resnet_model/batch_normalization_3/beta:0"
+>   output: "resnet_model/Relu_2:0"
+>   name: "resnet_model/conv2d_3/Conv2D"
+>   type: "Int8ConvRelu"
+381,385c335,336
 <     name: "pads"
 <     ints: 1
 <     ints: 1
@@ -335,24 +524,67 @@
 ---
 >     name: "pad"
 >     i: 1
-401a617,651
->   arg {
+402,415d352
+< }
+< op {
+<   input: "resnet_model/conv2d_6/Conv2D:0"
+<   input: "resnet_model/batch_normalization_6/gamma:0"
+<   input: "resnet_model/batch_normalization_6/beta:0"
+<   input: "resnet_model/batch_normalization_6/moving_mean:0"
+<   input: "resnet_model/batch_normalization_6/moving_variance:0"
+<   output: "resnet_model/batch_normalization_6/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_6/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_6/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_6/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_6/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_6/FusedBatchNorm"
+<   type: "SpatialBN"
+417,418c354,355
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "need_euler"
 >     i: 1
->   }
->   arg {
+421,422c358,359
+<     name: "is_test"
+<     i: 1
+---
 >     name: "euler_algorithm"
 >     i: 2
->   }
->   arg {
+424,436d360
+< }
+< op {
+<   input: "resnet_model/batch_normalization_6/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_5:0"
+<   name: "resnet_model/Relu_5"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_5:0"
+<   input: "resnet_model/conv2d_7/kernel:0"
+<   output: "resnet_model/conv2d_7/Conv2D:0"
+<   name: "resnet_model/conv2d_7/Conv2D"
+<   type: "Conv"
+438,442c362,363
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
 >     name: "tile_size"
 >     i: 6
->   }
->   arg {
+445,447c366,367
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
 >     name: "execution_mode"
 >     s: "0xa160"
->   }
->   arg {
+450,451c370,376
+<     name: "strides"
+<     ints: 1
+---
 >     name: "flatting"
 >     ints: 2
 >     ints: 14
@@ -360,74 +592,91 @@
 >   arg {
 >     name: "blocking"
 >     ints: 4
->     ints: 2
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-438,444d687
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-458a702,736
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:4
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-487c765
-<   type: "Add"
+455c380
+<     name: "dilations"
 ---
->   type: "Sum"
-502,508d779
+>     name: "partition"
+459,472d383
+< }
+< op {
+<   input: "resnet_model/conv2d_7/Conv2D:0"
+<   input: "resnet_model/batch_normalization_7/gamma:0"
+<   input: "resnet_model/batch_normalization_7/beta:0"
+<   input: "resnet_model/batch_normalization_7/moving_mean:0"
+<   input: "resnet_model/batch_normalization_7/moving_variance:0"
+<   output: "resnet_model/batch_normalization_7/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_7/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_7/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_7/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_7/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_7/FusedBatchNorm"
+<   type: "SpatialBN"
+474,475c385,390
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nChw16c"
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nChw16c"
+478c393
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+481,500d395
+< }
+< op {
+<   input: "resnet_model/batch_normalization_7/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_3:0"
+<   output: "resnet_model/add_1:0"
+<   name: "resnet_model/add_1"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_1:0"
+<   output: "resnet_model/Relu_6:0"
+<   name: "resnet_model/Relu_6"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_6:0"
+<   input: "resnet_model/conv2d_8/kernel:0"
+<   output: "resnet_model/conv2d_8/Conv2D:0"
+<   name: "resnet_model/conv2d_8/Conv2D"
+<   type: "Conv"
+502,506c397,398
 <     name: "pads"
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <     ints: 0
-<   }
-<   arg {
-523,529c794,835
+---
+>     name: "euler_stream_sync"
+>     i: 0
+509,511c401,402
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "fusion_type"
+>     i: 1
+514,516c405,406
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+519,521c409,410
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.038808342069387436
+523,536d411
 < }
 < op {
 <   input: "resnet_model/conv2d_8/Conv2D:0"
@@ -435,1896 +684,912 @@
 <   input: "resnet_model/batch_normalization_8/beta:0"
 <   input: "resnet_model/batch_normalization_8/moving_mean:0"
 <   input: "resnet_model/batch_normalization_8/moving_variance:0"
+<   output: "resnet_model/batch_normalization_8/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_8/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_8/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_8/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_8/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_8/FusedBatchNorm"
+<   type: "SpatialBN"
+538,539c413,414
+<     name: "epsilon"
+<     f: 1.00099996416e-05
 ---
->   arg {
->     name: "need_euler"
->     i: 1
+>     name: "Y_zero_point"
+>     i: 0
+542,543c417,418
+<     name: "is_test"
+<     i: 1
+---
+>     name: "order"
+>     s: "NHWC"
+544a420,422
+>   device_option {
 >   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-> }
-> op {
->   input: "resnet_model/conv2d_8/Conv2D:0"
->   input: "resnet_model/batch_normalization_8/gamma:0"
->   input: "resnet_model/batch_normalization_8/beta:0"
->   input: "resnet_model/batch_normalization_8/moving_mean:0"
->   input: "resnet_model/batch_normalization_8/moving_variance:0"
-559,565d864
+>   engine: "DNNLOWP"
+547,557c425,431
+<   input: "resnet_model/batch_normalization_8/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_7:0"
+<   name: "resnet_model/Relu_7"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_7:0"
+<   input: "resnet_model/conv2d_9/kernel:0"
+<   output: "resnet_model/conv2d_9/Conv2D:0"
+<   name: "resnet_model/conv2d_9/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_2:0"
+>   input: "resnet_model/conv2d_4/kernel:0"
+>   input: "resnet_model/batch_normalization_4/beta:0"
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   output: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   name: "resnet_model/conv2d_4/Conv2D"
+>   type: "Int8ConvSumRelu"
+559,561c433
 <     name: "pads"
 <     ints: 1
 <     ints: 1
-<     ints: 1
-<     ints: 1
+---
+>     name: "kernels"
+566,570d437
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
 <   }
 <   arg {
-570a870,873
->     name: "pad"
->     i: 1
->   }
->   arg {
-579a883,917
->   arg {
+580,593d446
+< }
+< op {
+<   input: "resnet_model/conv2d_9/Conv2D:0"
+<   input: "resnet_model/batch_normalization_9/gamma:0"
+<   input: "resnet_model/batch_normalization_9/beta:0"
+<   input: "resnet_model/batch_normalization_9/moving_mean:0"
+<   input: "resnet_model/batch_normalization_9/moving_variance:0"
+<   output: "resnet_model/batch_normalization_9/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_9/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_9/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_9/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_9/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_9/FusedBatchNorm"
+<   type: "SpatialBN"
+595,596c448,449
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "need_euler"
 >     i: 1
->   }
->   arg {
+599c452
+<     name: "is_test"
+---
 >     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
+602,614d454
+< }
+< op {
+<   input: "resnet_model/batch_normalization_9/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_8:0"
+<   name: "resnet_model/Relu_8"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_8:0"
+<   input: "resnet_model/conv2d_10/kernel:0"
+<   output: "resnet_model/conv2d_10/Conv2D:0"
+<   name: "resnet_model/conv2d_10/Conv2D"
+<   type: "Conv"
+616,620c456,457
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
 >     name: "tile_size"
->     i: 6
->   }
->   arg {
+>     i: 5
+623,625c460,461
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
 >     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
+>     s: "0xc160"
+628,630c464,466
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
 >     name: "flatting"
 >     ints: 2
->     ints: 14
->   }
->   arg {
+>     ints: 12
+633c469,474
+<     name: "dilations"
+---
 >     name: "blocking"
 >     ints: 4
->     ints: 2
+>     ints: 4
 >   }
 >   arg {
 >     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-616,622d953
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-636a968,1002
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:4
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-665c1031
-<   type: "Add"
+637,650d477
+< }
+< op {
+<   input: "resnet_model/conv2d_10/Conv2D:0"
+<   input: "resnet_model/batch_normalization_10/gamma:0"
+<   input: "resnet_model/batch_normalization_10/beta:0"
+<   input: "resnet_model/batch_normalization_10/moving_mean:0"
+<   input: "resnet_model/batch_normalization_10/moving_variance:0"
+<   output: "resnet_model/batch_normalization_10/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_10/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_10/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_10/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_10/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_10/FusedBatchNorm"
+<   type: "SpatialBN"
+652,653c479,480
+<     name: "epsilon"
+<     f: 1.00099996416e-05
 ---
->   type: "Sum"
-693a1060,1094
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xb161"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:7
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:8
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
 >     name: "euler_eager_mode"
 >     i: 1
+656,657c483,484
+<     name: "is_test"
+<     i: 1
+---
+>     name: "fusion_type"
+>     i: 4
+659,678d485
+< }
+< op {
+<   input: "resnet_model/batch_normalization_10/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_6:0"
+<   output: "resnet_model/add_2:0"
+<   name: "resnet_model/add_2"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_2:0"
+<   output: "resnet_model/Relu_9:0"
+<   name: "resnet_model/Relu_9"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_9:0"
+<   input: "resnet_model/conv2d_11/kernel:0"
+<   output: "resnet_model/conv2d_11/Conv2D:0"
+<   name: "resnet_model/conv2d_11/Conv2D"
+<   type: "Conv"
+680,682c487,488
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+685,687c491,492
+<     name: "strides"
+<     ints: 2
+<     ints: 2
+---
+>     name: "Y_scale"
+>     f: 0.09811477363109589
+690,692c495,496
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_zero_point"
+>     i: 0
+694,707d497
+< }
+< op {
+<   input: "resnet_model/conv2d_11/Conv2D:0"
+<   input: "resnet_model/batch_normalization_11/gamma:0"
+<   input: "resnet_model/batch_normalization_11/beta:0"
+<   input: "resnet_model/batch_normalization_11/moving_mean:0"
+<   input: "resnet_model/batch_normalization_11/moving_variance:0"
+<   output: "resnet_model/batch_normalization_11/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_11/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_11/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_11/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_11/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_11/FusedBatchNorm"
+<   type: "SpatialBN"
+709,710c499,500
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "sum_zero_point"
+>     i: 128
+713,714c503,504
+<     name: "is_test"
+<     i: 1
+---
+>     name: "order"
+>     s: "NHWC"
+715a506,508
+>   device_option {
 >   }
-724,730d1124
+>   engine: "DNNLOWP"
+718,729c511,516
+<   input: "resnet_model/Relu_9:0"
+<   input: "resnet_model/conv2d_12/kernel:0"
+<   output: "resnet_model/conv2d_12/Conv2D:0"
+<   name: "resnet_model/conv2d_12/Conv2D"
+<   type: "Conv"
+<   arg {
 <     name: "pads"
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <     ints: 0
 <   }
-<   arg {
-744a1139,1173
->   arg {
+---
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   input: "resnet_model/conv2d_5/kernel:0"
+>   input: "resnet_model/batch_normalization_5/beta:0"
+>   output: "resnet_model/Relu_4:0"
+>   name: "resnet_model/conv2d_5/Conv2D"
+>   type: "Int8ConvRelu"
+745,758d531
+< }
+< op {
+<   input: "resnet_model/conv2d_12/Conv2D:0"
+<   input: "resnet_model/batch_normalization_12/gamma:0"
+<   input: "resnet_model/batch_normalization_12/beta:0"
+<   input: "resnet_model/batch_normalization_12/moving_mean:0"
+<   input: "resnet_model/batch_normalization_12/moving_variance:0"
+<   output: "resnet_model/batch_normalization_12/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_12/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_12/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_12/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_12/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_12/FusedBatchNorm"
+<   type: "SpatialBN"
+760,761c533,534
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "need_euler"
 >     i: 1
->   }
->   arg {
+764c537
+<     name: "is_test"
+---
 >     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-776,788d1204
+767,778d539
+< }
+< op {
+<   input: "resnet_model/batch_normalization_12/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_10:0"
+<   name: "resnet_model/Relu_10"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_10:0"
 <   output: "resnet_model/Pad_2:0"
 <   name: "resnet_model/Pad_2"
 <   type: "PadImage"
-<   arg {
+780,784c541,542
 <     name: "pads"
 <     ints: 1
 <     ints: 1
 <     ints: 1
 <     ints: 1
-<   }
+---
+>     name: "tile_size"
+>     i: 5
+786,792d543
 < }
 < op {
 <   input: "resnet_model/Pad_2:0"
-803a1220,1223
->     name: "pad"
->     i: 1
->   }
->   arg {
-807a1228,1262
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 1
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:14
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-844,850d1298
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-864a1313,1347
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-893c1376
-<   type: "Add"
+<   input: "resnet_model/conv2d_13/kernel:0"
+<   output: "resnet_model/conv2d_13/Conv2D:0"
+<   name: "resnet_model/conv2d_13/Conv2D"
+<   type: "Conv"
+794,796c545,546
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
 ---
->   type: "Sum"
-908,914d1390
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-928a1405,1439
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
 >     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-965,969c1476,1477
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
+>     s: "0xc160"
+799,800c549
+<     name: "strides"
+<     ints: 2
 ---
->     name: "pad"
->     i: 1
-985a1494,1528
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
 >     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
+801a551
+>     ints: 12
+804c554,559
+<     name: "dilations"
+---
 >     name: "blocking"
->     ints: 8
+>     ints: 16
 >     ints: 1
 >   }
 >   arg {
 >     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1022,1028d1564
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1043,1051c1579,1622
+808,821d562
 < }
 < op {
-<   input: "resnet_model/conv2d_17/Conv2D:0"
-<   input: "resnet_model/batch_normalization_17/gamma:0"
-<   input: "resnet_model/batch_normalization_17/beta:0"
-<   input: "resnet_model/batch_normalization_17/moving_mean:0"
-<   input: "resnet_model/batch_normalization_17/moving_variance:0"
-<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:0"
-<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:1"
----
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-> }
-> op {
->   input: "resnet_model/conv2d_17/Conv2D:0"
->   input: "resnet_model/batch_normalization_17/gamma:0"
->   input: "resnet_model/batch_normalization_17/beta:0"
->   input: "resnet_model/batch_normalization_17/moving_mean:0"
->   input: "resnet_model/batch_normalization_17/moving_variance:0"
->   output: "resnet_model/batch_normalization_17/FusedBatchNorm:0"
->   output: "resnet_model/batch_normalization_17/FusedBatchNorm:1"
-1071c1642
-<   type: "Add"
----
->   type: "Sum"
-1086,1092d1656
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1106a1671,1705
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1143,1147c1742,1743
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1163a1760,1794
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 8
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1200,1206d1830
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1220a1845,1879
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1249c1908
-<   type: "Add"
----
->   type: "Sum"
-1264,1270d1922
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1284a1937,1971
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1321,1325c2008,2009
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1341a2026,2060
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 8
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1378,1384d2096
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1398a2111,2145
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1427c2174
-<   type: "Add"
----
->   type: "Sum"
-1442,1448d2188
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1462a2203,2237
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1494,1506d2268
-<   output: "resnet_model/Pad_4:0"
-<   name: "resnet_model/Pad_4"
-<   type: "PadImage"
-<   arg {
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<   }
-< }
-< op {
-<   input: "resnet_model/Pad_4:0"
-1516a2279,2282
->     name: "pad"
->     i: 1
->   }
->   arg {
-1525a2292,2330
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:14
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:1
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1562,1568d2366
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1583,1585c2381,2426
-< }
-< op {
-<   input: "resnet_model/conv2d_27/Conv2D:0"
----
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints: 4
->     ints: 6
->   }
->   arg {
->     name: "blocking"
->     ints: 16
->     ints: 4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-> }
-> op {
->   input: "resnet_model/conv2d_27/Conv2D:0"
-1626a2468,2510
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xb161"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:7
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:8
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "sum_zero_point"
->     i: 128
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1655c2539
-<   type: "Add"
----
->   type: "Sum"
-1690a2575,2617
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:64
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   #arg {
->   #  name: "euler_order_dst"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1727,1731c2654,2655
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1747a2672,2710
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 16
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   #arg {
->   #  name: "euler_order_src"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1804a2768,2806
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1833c2835
-<   type: "Add"
----
->   type: "Sum"
-1868a2871,2913
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:64
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   #arg {
->   #  name: "euler_order_dst"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1905,1909c2950,2951
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1925a2968,3006
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 16
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   #arg {
->   #  name: "euler_order_src"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1982a3064,3102
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2011c3131
-<   type: "Add"
----
->   type: "Sum"
-2026,2032d3145
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2046a3160,3202
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:64
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   #arg {
->   #  name: "euler_order_dst"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2083,2087c3239,3240
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2103a3257,3295
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 16
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   #arg {
->   #  name: "euler_order_src"
->   #  s: "nhwc" 
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2140,2146d3331
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2161,2164c3346,3388
-< }
-< op {
-<   input: "resnet_model/conv2d_36/Conv2D:0"
-<   input: "resnet_model/batch_normalization_36/gamma:0"
----
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-> }
-> op {
->   input: "resnet_model/conv2d_36/Conv2D:0"
->   input: "resnet_model/batch_normalization_36/gamma:0"
-2189c3413
-<   type: "Add"
----
->   type: "Sum"
-2204,2210d3427
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2224a3442,3484
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:64
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   #arg {
->   #  name: "euler_order_dst"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2261,2265c3521,3522
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2281a3539,3577
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 16
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   #arg {
->   #  name: "euler_order_src"
->   #  s: "nhwc"
->   #}
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2318,2324d3613
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2338a3628,3666
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2367c3695
-<   type: "Add"
----
->   type: "Sum"
-2382,2388d3709
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2402a3724,3766
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:64
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2439,2443c3803,3804
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2459a3821,3859
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 16
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2496,2502d3895
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2516a3910,3948
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2545c3977
-<   type: "Add"
----
->   type: "Sum"
-2560,2566d3991
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2580a4006,4048
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:64
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2612,2624d4079
-<   output: "resnet_model/Pad_6:0"
-<   name: "resnet_model/Pad_6"
-<   type: "PadImage"
-<   arg {
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<   }
-< }
-< op {
-<   input: "resnet_model/Pad_6:0"
-2634a4090,4093
->     name: "pad"
->     i: 1
->   }
->   arg {
-2643a4103,4145
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:7
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:1
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2680,2686d4181
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2700a4196,4238
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2716,2717c4254,4307
+<   input: "resnet_model/conv2d_13/Conv2D:0"
+<   input: "resnet_model/batch_normalization_13/gamma:0"
+<   input: "resnet_model/batch_normalization_13/beta:0"
+<   input: "resnet_model/batch_normalization_13/moving_mean:0"
+<   input: "resnet_model/batch_normalization_13/moving_variance:0"
+<   output: "resnet_model/batch_normalization_13/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_13/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_13/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_13/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_13/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_13/FusedBatchNorm"
+<   type: "SpatialBN"
+823,824c564,565
 <     name: "epsilon"
-<     f: 1.0009999641624745e-05
+<     f: 1.00099996416e-05
 ---
->     name: "epsilon"
->     f: 1.0009999641624745e-05
+>     name: "euler_eager_mode"
+>     i: 1
+827c568
+<     name: "is_test"
+---
+>     name: "fusion_type"
+829a571,589
+>   arg {
+>     name: "training_mode"
+>     i: 0
 >   }
 >   arg {
->     name: "is_test"
+>     name: "Y_scale"
+>     f: 0.06735234707593918
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+832,842c592,597
+<   input: "resnet_model/batch_normalization_13/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_11:0"
+<   name: "resnet_model/Relu_11"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_11:0"
+<   input: "resnet_model/conv2d_14/kernel:0"
+<   output: "resnet_model/conv2d_14/Conv2D:0"
+<   name: "resnet_model/conv2d_14/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_4:0"
+>   input: "resnet_model/conv2d_6/kernel:0"
+>   input: "resnet_model/batch_normalization_6/beta:0"
+>   output: "resnet_model/Relu_5:0"
+>   name: "resnet_model/conv2d_6/Conv2D"
+>   type: "Int8ConvRelu"
+844,848c599,600
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "pad"
+>     i: 1
+852,853c604,605
+<     ints: 1
+<     ints: 1
+---
+>     ints: 3
+>     ints: 3
+865,878d616
+< }
+< op {
+<   input: "resnet_model/conv2d_14/Conv2D:0"
+<   input: "resnet_model/batch_normalization_14/gamma:0"
+<   input: "resnet_model/batch_normalization_14/beta:0"
+<   input: "resnet_model/batch_normalization_14/moving_mean:0"
+<   input: "resnet_model/batch_normalization_14/moving_variance:0"
+<   output: "resnet_model/batch_normalization_14/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_14/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_14/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_14/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_14/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_14/FusedBatchNorm"
+<   type: "SpatialBN"
+880,881c618,619
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+884,885c622,623
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_algorithm"
+>     i: 2
+887,906d624
+< }
+< op {
+<   input: "resnet_model/batch_normalization_14/FusedBatchNorm:0"
+<   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0"
+<   output: "resnet_model/add_3:0"
+<   name: "resnet_model/add_3"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_3:0"
+<   output: "resnet_model/Relu_12:0"
+<   name: "resnet_model/Relu_12"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_12:0"
+<   input: "resnet_model/conv2d_15/kernel:0"
+<   output: "resnet_model/conv2d_15/Conv2D:0"
+<   name: "resnet_model/conv2d_15/Conv2D"
+<   type: "Conv"
+908,912c626,627
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 6
+915,917c630,631
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xa160"
+920,922c634,636
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+925c639,644
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+929,942d647
+< }
+< op {
+<   input: "resnet_model/conv2d_15/Conv2D:0"
+<   input: "resnet_model/batch_normalization_15/gamma:0"
+<   input: "resnet_model/batch_normalization_15/beta:0"
+<   input: "resnet_model/batch_normalization_15/moving_mean:0"
+<   input: "resnet_model/batch_normalization_15/moving_variance:0"
+<   output: "resnet_model/batch_normalization_15/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_15/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_15/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_15/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_15/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_15/FusedBatchNorm"
+<   type: "SpatialBN"
+944,945c649,650
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_eager_mode"
+>     i: 1
+948c653
+<     name: "is_test"
+---
+>     name: "fusion_type"
+950a656,674
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.06627663969993591
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+953,963c677,683
+<   input: "resnet_model/batch_normalization_15/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_13:0"
+<   name: "resnet_model/Relu_13"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_13:0"
+<   input: "resnet_model/conv2d_16/kernel:0"
+<   output: "resnet_model/conv2d_16/Conv2D:0"
+<   name: "resnet_model/conv2d_16/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_5:0"
+>   input: "resnet_model/conv2d_7/kernel:0"
+>   input: "resnet_model/batch_normalization_7/beta:0"
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   output: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   name: "resnet_model/conv2d_7/Conv2D"
+>   type: "Int8ConvSumRelu"
+965,967c685
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+---
+>     name: "kernels"
+972,976d689
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+<   }
+<   arg {
+986,999d698
+< }
+< op {
+<   input: "resnet_model/conv2d_16/Conv2D:0"
+<   input: "resnet_model/batch_normalization_16/gamma:0"
+<   input: "resnet_model/batch_normalization_16/beta:0"
+<   input: "resnet_model/batch_normalization_16/moving_mean:0"
+<   input: "resnet_model/batch_normalization_16/moving_variance:0"
+<   output: "resnet_model/batch_normalization_16/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_16/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_16/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_16/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_16/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_16/FusedBatchNorm"
+<   type: "SpatialBN"
+1001,1002c700,701
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+1005c704
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+1008,1018c707,1506
+< }
+< op {
+<   input: "resnet_model/batch_normalization_16/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_14:0"
+<   name: "resnet_model/Relu_14"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_14:0"
+<   input: "resnet_model/conv2d_17/kernel:0"
+<   output: "resnet_model/conv2d_17/Conv2D:0"
+---
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 4
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
 >     i: 1
 >   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.09995576739311218
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
 > }
 > op {
->   input: "resnet_model/Relu_39:0"
->   input: "resnet_model/conv2d_43/kernel:0"
->   output: "resnet_model/conv2d_43/Conv2D:0"
->   name: "resnet_model/conv2d_43/Conv2D"
->   type: "Conv"
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   input: "resnet_model/conv2d_8/kernel:0"
+>   input: "resnet_model/batch_normalization_8/beta:0"
+>   output: "resnet_model/Relu_7:0"
+>   name: "resnet_model/conv2d_8/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.059353601187467575
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_7:0"
+>   input: "resnet_model/conv2d_9/kernel:0"
+>   input: "resnet_model/batch_normalization_9/beta:0"
+>   output: "resnet_model/Relu_8:0"
+>   name: "resnet_model/conv2d_9/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.05133499205112457
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_8:0"
+>   input: "resnet_model/conv2d_10/kernel:0"
+>   input: "resnet_model/batch_normalization_10/beta:0"
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   output: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   name: "resnet_model/conv2d_10/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 4
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.09736982733011246
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   input: "resnet_model/conv2d_11/kernel:0"
+>   input: "resnet_model/batch_normalization_11/beta:0"
+>   output: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   name: "resnet_model/conv2d_11/Conv2D"
+>   type: "Int8Conv"
 >   arg {
 >     name: "kernels"
 >     ints: 1
@@ -2354,25 +1619,4548 @@
 >   }
 >   arg {
 >     name: "execution_mode"
->     s:"0xb161"
+>     s: "0xb161"
 >   }
 >   arg {
 >     name: "flatting"
->     ints:2
->     ints:7
+>     ints: 2
+>     ints: 7
 >   }
 >   arg {
 >     name: "blocking"
->     ints:64
->     ints:8
-2720,2721c4310,4312
+>     ints: 16
+>     ints: 8
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.19928225874900818
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 128
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_1/FusedBatchNorm:0_fusion_fix_53"
+>   input: "resnet_model/conv2d_12/kernel:0"
+>   input: "resnet_model/batch_normalization_12/beta:0"
+>   output: "resnet_model/Relu_10:0"
+>   name: "resnet_model/conv2d_12/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.06660674512386322
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_10:0"
+>   input: "resnet_model/conv2d_13/kernel:0"
+>   input: "resnet_model/batch_normalization_13/beta:0"
+>   output: "resnet_model/Relu_11:0"
+>   name: "resnet_model/conv2d_13/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 2
+>     ints: 2
+>   }
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 1
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.08142297714948654
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_11:0"
+>   input: "resnet_model/conv2d_14/kernel:0"
+>   input: "resnet_model/batch_normalization_14/beta:0"
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   output: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   name: "resnet_model/conv2d_14/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.17616960406303406
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "sum_zero_point"
+>     i: 128
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   input: "resnet_model/conv2d_15/kernel:0"
+>   input: "resnet_model/batch_normalization_15/beta:0"
+>   output: "resnet_model/Relu_13:0"
+>   name: "resnet_model/conv2d_15/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.05669005215167999
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_13:0"
+>   input: "resnet_model/conv2d_16/kernel:0"
+>   input: "resnet_model/batch_normalization_16/beta:0"
+>   output: "resnet_model/Relu_14:0"
+>   name: "resnet_model/conv2d_16/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.06336458772420883
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_14:0"
+>   input: "resnet_model/conv2d_17/kernel:0"
+>   input: "resnet_model/batch_normalization_17/beta:0"
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   output: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+1020c1508,3146
+<   type: "Conv"
+---
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.16778534650802612
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   input: "resnet_model/conv2d_18/kernel:0"
+>   input: "resnet_model/batch_normalization_18/beta:0"
+>   output: "resnet_model/Relu_16:0"
+>   name: "resnet_model/conv2d_18/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+>     ints: 4
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.05797480419278145
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_16:0"
+>   input: "resnet_model/conv2d_19/kernel:0"
+>   input: "resnet_model/batch_normalization_19/beta:0"
+>   output: "resnet_model/Relu_17:0"
+>   name: "resnet_model/conv2d_19/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.05050190910696983
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_17:0"
+>   input: "resnet_model/conv2d_20/kernel:0"
+>   input: "resnet_model/batch_normalization_20/beta:0"
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   output: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   name: "resnet_model/conv2d_20/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.16610391438007355
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   input: "resnet_model/conv2d_21/kernel:0"
+>   input: "resnet_model/batch_normalization_21/beta:0"
+>   output: "resnet_model/Relu_19:0"
+>   name: "resnet_model/conv2d_21/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.07092338800430298
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_19:0"
+>   input: "resnet_model/conv2d_22/kernel:0"
+>   input: "resnet_model/batch_normalization_22/beta:0"
+>   output: "resnet_model/Relu_20:0"
+>   name: "resnet_model/conv2d_22/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.07263238728046417
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_20:0"
+>   input: "resnet_model/conv2d_23/kernel:0"
+>   input: "resnet_model/batch_normalization_23/beta:0"
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   output: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   name: "resnet_model/conv2d_23/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.13565708696842194
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   input: "resnet_model/conv2d_25/kernel:0"
+>   input: "resnet_model/batch_normalization_25/beta:0"
+>   output: "resnet_model/Relu_22:0"
+>   name: "resnet_model/conv2d_25/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.07249641418457031
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_22:0"
+>   input: "resnet_model/conv2d_26/kernel:0"
+>   input: "resnet_model/batch_normalization_26/beta:0"
+>   output: "resnet_model/Relu_23:0"
+>   name: "resnet_model/conv2d_26/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 2
+>     ints: 2
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.08616360276937485
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_23:0"
+>   input: "resnet_model/conv2d_27/kernel:0"
+>   input: "resnet_model/batch_normalization_27/beta:0"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_27/Conv2D"
+>   type: "Int8Conv"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.25153636932373047
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 128
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_11/FusedBatchNorm:0_fusion_fix_187"
+>   input: "resnet_model/conv2d_24/kernel:0"
+>   input: "resnet_model/batch_normalization_24/beta:0"
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_24/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 2
+>     ints: 2
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xb161"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 7
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+>     ints: 8
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.13063400983810425
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "sum_zero_point"
+>     i: 128
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_28/kernel:0"
+>   input: "resnet_model/batch_normalization_28/beta:0"
+>   output: "resnet_model/Relu_25:0"
+>   name: "resnet_model/conv2d_28/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pads"
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 64
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.08411078155040741
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_25:0"
+>   input: "resnet_model/conv2d_29/kernel:0"
+>   input: "resnet_model/batch_normalization_29/beta:0"
+>   output: "resnet_model/Relu_26:0"
+>   name: "resnet_model/conv2d_29/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.042048707604408264
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_26:0"
+>   input: "resnet_model/conv2d_30/kernel:0"
+>   input: "resnet_model/batch_normalization_30/beta:0"
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_30/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "pads"
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.11868207156658173
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_31/kernel:0"
+>   input: "resnet_model/batch_normalization_31/beta:0"
+>   output: "resnet_model/Relu_28:0"
+>   name: "resnet_model/conv2d_31/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pads"
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 64
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.0694797933101654
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_28:0"
+>   input: "resnet_model/conv2d_32/kernel:0"
+>   input: "resnet_model/batch_normalization_32/beta:0"
+>   output: "resnet_model/Relu_29:0"
+>   name: "resnet_model/conv2d_32/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.08950222283601761
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_29:0"
+>   input: "resnet_model/conv2d_33/kernel:0"
+>   input: "resnet_model/batch_normalization_33/beta:0"
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_33/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "pads"
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>     ints: 0
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.11774331331253052
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_34/kernel:0"
+>   input: "resnet_model/batch_normalization_34/beta:0"
+>   output: "resnet_model/Relu_31:0"
+>   name: "resnet_model/conv2d_34/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 64
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.12753519415855408
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_31:0"
+>   input: "resnet_model/conv2d_35/kernel:0"
+>   input: "resnet_model/batch_normalization_35/beta:0"
+>   output: "resnet_model/Relu_32:0"
+>   name: "resnet_model/conv2d_35/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.30198660492897034
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_32:0"
+>   input: "resnet_model/conv2d_36/kernel:0"
+>   input: "resnet_model/batch_normalization_36/beta:0"
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_36/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+1022,1026c3148,3508
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.16415071487426758
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_37/kernel:0"
+>   input: "resnet_model/batch_normalization_37/beta:0"
+>   output: "resnet_model/Relu_34:0"
+>   name: "resnet_model/conv2d_37/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 64
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.10510389506816864
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_34:0"
+>   input: "resnet_model/conv2d_38/kernel:0"
+>   input: "resnet_model/batch_normalization_38/beta:0"
+>   output: "resnet_model/Relu_35:0"
+>   name: "resnet_model/conv2d_38/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "pad"
+>     i: 1
+>   }
+>   arg {
+>     name: "kernels"
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.2553398609161377
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_35:0"
+>   input: "resnet_model/conv2d_39/kernel:0"
+>   input: "resnet_model/batch_normalization_39/beta:0"
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_39/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+>   arg {
+>     name: "fusion_type"
+>     i: 4
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.1649577021598816
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_40/kernel:0"
+>   input: "resnet_model/batch_normalization_40/beta:0"
+>   output: "resnet_model/Relu_37:0"
+>   name: "resnet_model/conv2d_40/Conv2D"
+>   type: "Int8ConvRelu"
+>   arg {
+>     name: "kernels"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+1029,1031c3511,3512
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+1034,1036c3515,3517
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+1039c3520,3525
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 64
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+1043,1056d3528
+< }
+< op {
+<   input: "resnet_model/conv2d_17/Conv2D:0"
+<   input: "resnet_model/batch_normalization_17/gamma:0"
+<   input: "resnet_model/batch_normalization_17/beta:0"
+<   input: "resnet_model/batch_normalization_17/moving_mean:0"
+<   input: "resnet_model/batch_normalization_17/moving_variance:0"
+<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_17/FusedBatchNorm"
+<   type: "SpatialBN"
+1058,1059c3530,3531
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+1062,1063c3534,3535
 <     name: "is_test"
 <     i: 1
 ---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+1065,1084d3536
+< }
+< op {
+<   input: "resnet_model/batch_normalization_17/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_12:0"
+<   output: "resnet_model/add_4:0"
+<   name: "resnet_model/add_4"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_4:0"
+<   output: "resnet_model/Relu_15:0"
+<   name: "resnet_model/Relu_15"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_15:0"
+<   input: "resnet_model/conv2d_18/kernel:0"
+<   output: "resnet_model/conv2d_18/Conv2D:0"
+<   name: "resnet_model/conv2d_18/Conv2D"
+<   type: "Conv"
+1086,1090c3538,3539
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "euler_eager_mode"
+>     i: 1
+1093,1095c3542,3543
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "fusion_type"
+>     i: 1
+1098,1100c3546,3547
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+1103,1105c3550,3551
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.0649208128452301
+1107,1120d3552
+< }
+< op {
+<   input: "resnet_model/conv2d_18/Conv2D:0"
+<   input: "resnet_model/batch_normalization_18/gamma:0"
+<   input: "resnet_model/batch_normalization_18/beta:0"
+<   input: "resnet_model/batch_normalization_18/moving_mean:0"
+<   input: "resnet_model/batch_normalization_18/moving_variance:0"
+<   output: "resnet_model/batch_normalization_18/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_18/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_18/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_18/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_18/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_18/FusedBatchNorm"
+<   type: "SpatialBN"
+1122,1123c3554,3555
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "Y_zero_point"
+>     i: 0
+1126,1127c3558,3559
+<     name: "is_test"
+<     i: 1
+---
+>     name: "order"
+>     s: "NHWC"
+1128a3561,3563
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+1131,1141c3566,3571
+<   input: "resnet_model/batch_normalization_18/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_16:0"
+<   name: "resnet_model/Relu_16"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_16:0"
+<   input: "resnet_model/conv2d_19/kernel:0"
+<   output: "resnet_model/conv2d_19/Conv2D:0"
+<   name: "resnet_model/conv2d_19/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_37:0"
+>   input: "resnet_model/conv2d_41/kernel:0"
+>   input: "resnet_model/batch_normalization_41/beta:0"
+>   output: "resnet_model/Relu_38:0"
+>   name: "resnet_model/conv2d_41/Conv2D"
+>   type: "Int8ConvRelu"
+1143,1147c3573,3574
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+1164,1177d3590
+< }
+< op {
+<   input: "resnet_model/conv2d_19/Conv2D:0"
+<   input: "resnet_model/batch_normalization_19/gamma:0"
+<   input: "resnet_model/batch_normalization_19/beta:0"
+<   input: "resnet_model/batch_normalization_19/moving_mean:0"
+<   input: "resnet_model/batch_normalization_19/moving_variance:0"
+<   output: "resnet_model/batch_normalization_19/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_19/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_19/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_19/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_19/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_19/FusedBatchNorm"
+<   type: "SpatialBN"
+1179,1180c3592,3593
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+1183,1184c3596,3597
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_algorithm"
+>     i: 2
+1186,1198d3598
+< }
+< op {
+<   input: "resnet_model/batch_normalization_19/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_17:0"
+<   name: "resnet_model/Relu_17"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_17:0"
+<   input: "resnet_model/conv2d_20/kernel:0"
+<   output: "resnet_model/conv2d_20/Conv2D:0"
+<   name: "resnet_model/conv2d_20/Conv2D"
+<   type: "Conv"
+1200,1204c3600,3601
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 6
+1207,1209c3604,3605
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xa160"
+1212,1213c3608,3614
+<     name: "strides"
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 16
+1217c3618
+<     name: "dilations"
+---
 >     name: "partition"
->     ints:1
->     ints:1
-2723,2729d4313
+1221,1234d3621
+< }
+< op {
+<   input: "resnet_model/conv2d_20/Conv2D:0"
+<   input: "resnet_model/batch_normalization_20/gamma:0"
+<   input: "resnet_model/batch_normalization_20/beta:0"
+<   input: "resnet_model/batch_normalization_20/moving_mean:0"
+<   input: "resnet_model/batch_normalization_20/moving_variance:0"
+<   output: "resnet_model/batch_normalization_20/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_20/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_20/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_20/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_20/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_20/FusedBatchNorm"
+<   type: "SpatialBN"
+1236,1237c3623,3624
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+1240c3627
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+1243,1262d3629
+< }
+< op {
+<   input: "resnet_model/batch_normalization_20/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_15:0"
+<   output: "resnet_model/add_5:0"
+<   name: "resnet_model/add_5"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_5:0"
+<   output: "resnet_model/Relu_18:0"
+<   name: "resnet_model/Relu_18"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_18:0"
+<   input: "resnet_model/conv2d_21/kernel:0"
+<   output: "resnet_model/conv2d_21/Conv2D:0"
+<   name: "resnet_model/conv2d_21/Conv2D"
+<   type: "Conv"
+1264,1268c3631,3648
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.11550089716911316
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+1269a3650,3661
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_38:0"
+>   input: "resnet_model/conv2d_42/kernel:0"
+>   input: "resnet_model/batch_normalization_42/beta:0"
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   name: "resnet_model/conv2d_42/Conv2D"
+>   type: "Int8ConvSumRelu"
+1285,1298d3676
+< }
+< op {
+<   input: "resnet_model/conv2d_21/Conv2D:0"
+<   input: "resnet_model/batch_normalization_21/gamma:0"
+<   input: "resnet_model/batch_normalization_21/beta:0"
+<   input: "resnet_model/batch_normalization_21/moving_mean:0"
+<   input: "resnet_model/batch_normalization_21/moving_variance:0"
+<   output: "resnet_model/batch_normalization_21/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_21/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_21/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_21/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_21/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_21/FusedBatchNorm"
+<   type: "SpatialBN"
+1300,1301c3678,3679
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+1304c3682
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+1307,1319d3684
+< }
+< op {
+<   input: "resnet_model/batch_normalization_21/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_19:0"
+<   name: "resnet_model/Relu_19"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_19:0"
+<   input: "resnet_model/conv2d_22/kernel:0"
+<   output: "resnet_model/conv2d_22/Conv2D:0"
+<   name: "resnet_model/conv2d_22/Conv2D"
+<   type: "Conv"
+1321,1325c3686,3687
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "tile_size"
+>     i: 5
+1328,1330c3690,3691
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+1333,1335c3694,3696
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+1338c3699,3704
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 16
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+1342,1355d3707
+< }
+< op {
+<   input: "resnet_model/conv2d_22/Conv2D:0"
+<   input: "resnet_model/batch_normalization_22/gamma:0"
+<   input: "resnet_model/batch_normalization_22/beta:0"
+<   input: "resnet_model/batch_normalization_22/moving_mean:0"
+<   input: "resnet_model/batch_normalization_22/moving_variance:0"
+<   output: "resnet_model/batch_normalization_22/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_22/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_22/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_22/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_22/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_22/FusedBatchNorm"
+<   type: "SpatialBN"
+1357,1358c3709,3710
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+1361c3713
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+1364,1376d3715
+< }
+< op {
+<   input: "resnet_model/batch_normalization_22/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_20:0"
+<   name: "resnet_model/Relu_20"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_20:0"
+<   input: "resnet_model/conv2d_23/kernel:0"
+<   output: "resnet_model/conv2d_23/Conv2D:0"
+<   name: "resnet_model/conv2d_23/Conv2D"
+<   type: "Conv"
+1378,1382c3717,3718
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "fusion_type"
+>     i: 4
+1385,1387c3721,3722
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+1390,1392c3725,3726
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.13436299562454224
+1395,1397c3729,3730
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_zero_point"
+>     i: 0
+1399,1412d3731
+< }
+< op {
+<   input: "resnet_model/conv2d_23/Conv2D:0"
+<   input: "resnet_model/batch_normalization_23/gamma:0"
+<   input: "resnet_model/batch_normalization_23/beta:0"
+<   input: "resnet_model/batch_normalization_23/moving_mean:0"
+<   input: "resnet_model/batch_normalization_23/moving_variance:0"
+<   output: "resnet_model/batch_normalization_23/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_23/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_23/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_23/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_23/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_23/FusedBatchNorm"
+<   type: "SpatialBN"
+1414,1415c3733,3734
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "order"
+>     s: "NHWC"
+1417,1419c3736
+<   arg {
+<     name: "is_test"
+<     i: 1
+---
+>   device_option {
+1420a3738
+>   engine: "DNNLOWP"
+1423,1447c3741,3746
+<   input: "resnet_model/batch_normalization_23/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_18:0"
+<   output: "resnet_model/add_6:0"
+<   name: "resnet_model/add_6"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_6:0"
+<   output: "resnet_model/Relu_21:0"
+<   name: "resnet_model/Relu_21"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_21:0"
+<   input: "resnet_model/conv2d_25/kernel:0"
+<   output: "resnet_model/conv2d_25/Conv2D:0"
+<   name: "resnet_model/conv2d_25/Conv2D"
+<   type: "Conv"
+<   arg {
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+---
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_44/kernel:0"
+>   input: "resnet_model/batch_normalization_44/beta:0"
+>   output: "resnet_model/Relu_40:0"
+>   name: "resnet_model/conv2d_44/Conv2D"
+>   type: "Int8ConvRelu"
+1463,1476d3761
+< }
+< op {
+<   input: "resnet_model/conv2d_25/Conv2D:0"
+<   input: "resnet_model/batch_normalization_25/gamma:0"
+<   input: "resnet_model/batch_normalization_25/beta:0"
+<   input: "resnet_model/batch_normalization_25/moving_mean:0"
+<   input: "resnet_model/batch_normalization_25/moving_variance:0"
+<   output: "resnet_model/batch_normalization_25/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_25/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_25/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_25/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_25/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_25/FusedBatchNorm"
+<   type: "SpatialBN"
+1478,1479c3763,3764
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+1482c3767
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+1485,1496d3769
+< }
+< op {
+<   input: "resnet_model/batch_normalization_25/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_22:0"
+<   name: "resnet_model/Relu_22"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_22:0"
+<   output: "resnet_model/Pad_4:0"
+<   name: "resnet_model/Pad_4"
+<   type: "PadImage"
+1498,1502c3771,3772
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "tile_size"
+>     i: 5
+1504,1510d3773
+< }
+< op {
+<   input: "resnet_model/Pad_4:0"
+<   input: "resnet_model/conv2d_26/kernel:0"
+<   output: "resnet_model/conv2d_26/Conv2D:0"
+<   name: "resnet_model/conv2d_26/Conv2D"
+<   type: "Conv"
+1512,1514c3775,3776
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+1517,1518c3779,3785
+<     name: "strides"
+<     ints: 2
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 64
+1522c3789
+<     name: "dilations"
+---
+>     name: "partition"
+1526,1543d3792
+< }
+< op {
+<   input: "resnet_model/conv2d_26/Conv2D:0"
+<   input: "resnet_model/batch_normalization_26/gamma:0"
+<   input: "resnet_model/batch_normalization_26/beta:0"
+<   input: "resnet_model/batch_normalization_26/moving_mean:0"
+<   input: "resnet_model/batch_normalization_26/moving_variance:0"
+<   output: "resnet_model/batch_normalization_26/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_26/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_26/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_26/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_26/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_26/FusedBatchNorm"
+<   type: "SpatialBN"
+<   arg {
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+<   }
+1545,1546c3794,3795
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+1548,1560d3796
+< }
+< op {
+<   input: "resnet_model/batch_normalization_26/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_23:0"
+<   name: "resnet_model/Relu_23"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_23:0"
+<   input: "resnet_model/conv2d_27/kernel:0"
+<   output: "resnet_model/conv2d_27/Conv2D:0"
+<   name: "resnet_model/conv2d_27/Conv2D"
+<   type: "Conv"
+1562,1566c3798,3799
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+1569,1571c3802,3803
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "euler_eager_mode"
+>     i: 1
+1574,1576c3806,3807
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "fusion_type"
+>     i: 1
+1579,1581c3810,3811
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+1583,1596d3812
+< }
+< op {
+<   input: "resnet_model/conv2d_27/Conv2D:0"
+<   input: "resnet_model/batch_normalization_27/gamma:0"
+<   input: "resnet_model/batch_normalization_27/beta:0"
+<   input: "resnet_model/batch_normalization_27/moving_mean:0"
+<   input: "resnet_model/batch_normalization_27/moving_variance:0"
+<   output: "resnet_model/batch_normalization_27/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_27/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_27/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_27/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_27/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_27/FusedBatchNorm"
+<   type: "SpatialBN"
+1598,1599c3814,3815
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "Y_scale"
+>     f: 0.06363343447446823
+1602,1603c3818,3825
+<     name: "is_test"
+<     i: 1
+---
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+1604a3827
+>   engine: "DNNLOWP"
+1607,1611c3830,3835
+<   input: "resnet_model/Relu_21:0"
+<   input: "resnet_model/conv2d_24/kernel:0"
+<   output: "resnet_model/conv2d_24/Conv2D:0"
+<   name: "resnet_model/conv2d_24/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_40:0"
+>   input: "resnet_model/conv2d_45/kernel:0"
+>   input: "resnet_model/batch_normalization_45/beta:0"
+>   output: "resnet_model/Relu_41:0"
+>   name: "resnet_model/conv2d_45/Conv2D"
+>   type: "Int8ConvRelu"
+1614,1615c3838,3843
+<     ints: 1
+<     ints: 1
+---
+>     ints: 3
+>     ints: 3
+>   }
+>   arg {
+>     name: "pad"
+>     i: 1
+1627,1640d3854
+< }
+< op {
+<   input: "resnet_model/conv2d_24/Conv2D:0"
+<   input: "resnet_model/batch_normalization_24/gamma:0"
+<   input: "resnet_model/batch_normalization_24/beta:0"
+<   input: "resnet_model/batch_normalization_24/moving_mean:0"
+<   input: "resnet_model/batch_normalization_24/moving_variance:0"
+<   output: "resnet_model/batch_normalization_24/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_24/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_24/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_24/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_24/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_24/FusedBatchNorm"
+<   type: "SpatialBN"
+1642,1643c3856,3857
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+1646,1647c3860,3861
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_algorithm"
+>     i: 2
+1649,1668d3862
+< }
+< op {
+<   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0"
+<   input: "resnet_model/batch_normalization_24/FusedBatchNorm:0"
+<   output: "resnet_model/add_7:0"
+<   name: "resnet_model/add_7"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_7:0"
+<   output: "resnet_model/Relu_24:0"
+<   name: "resnet_model/Relu_24"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_24:0"
+<   input: "resnet_model/conv2d_28/kernel:0"
+<   output: "resnet_model/conv2d_28/Conv2D:0"
+<   name: "resnet_model/conv2d_28/Conv2D"
+<   type: "Conv"
+1670,1674c3864,3865
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 5
+1677,1679c3868,3869
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xa160"
+1682,1683c3872,3878
+<     name: "strides"
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 2
+>     ints: 7
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+1687c3882
+<     name: "dilations"
+---
+>     name: "partition"
+1691,1704d3885
+< }
+< op {
+<   input: "resnet_model/conv2d_28/Conv2D:0"
+<   input: "resnet_model/batch_normalization_28/gamma:0"
+<   input: "resnet_model/batch_normalization_28/beta:0"
+<   input: "resnet_model/batch_normalization_28/moving_mean:0"
+<   input: "resnet_model/batch_normalization_28/moving_variance:0"
+<   output: "resnet_model/batch_normalization_28/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_28/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_28/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_28/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_28/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_28/FusedBatchNorm"
+<   type: "SpatialBN"
+1706,1707c3887,3888
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+1710,1711c3891,3892
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+1713,1725d3893
+< }
+< op {
+<   input: "resnet_model/batch_normalization_28/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_25:0"
+<   name: "resnet_model/Relu_25"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_25:0"
+<   input: "resnet_model/conv2d_29/kernel:0"
+<   output: "resnet_model/conv2d_29/Conv2D:0"
+<   name: "resnet_model/conv2d_29/Conv2D"
+<   type: "Conv"
+1727,1731c3895,3896
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "euler_eager_mode"
+>     i: 1
+1734,1736c3899,3900
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "fusion_type"
+>     i: 1
+1739,1741c3903,3904
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+1744,1746c3907,3908
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.0664471834897995
+1748,1761d3909
+< }
+< op {
+<   input: "resnet_model/conv2d_29/Conv2D:0"
+<   input: "resnet_model/batch_normalization_29/gamma:0"
+<   input: "resnet_model/batch_normalization_29/beta:0"
+<   input: "resnet_model/batch_normalization_29/moving_mean:0"
+<   input: "resnet_model/batch_normalization_29/moving_variance:0"
+<   output: "resnet_model/batch_normalization_29/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_29/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_29/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_29/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_29/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_29/FusedBatchNorm"
+<   type: "SpatialBN"
+1763,1764c3911,3912
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "Y_zero_point"
+>     i: 0
+1767,1768c3915,3916
+<     name: "is_test"
+<     i: 1
+---
+>     name: "order"
+>     s: "NHWC"
+1769a3918,3920
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+1772,1789c3923,3928
+<   input: "resnet_model/batch_normalization_29/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_26:0"
+<   name: "resnet_model/Relu_26"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_26:0"
+<   input: "resnet_model/conv2d_30/kernel:0"
+<   output: "resnet_model/conv2d_30/Conv2D:0"
+<   name: "resnet_model/conv2d_30/Conv2D"
+<   type: "Conv"
+<   arg {
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+---
+>   input: "resnet_model/Relu_41:0"
+>   input: "resnet_model/conv2d_46/kernel:0"
+>   input: "resnet_model/batch_normalization_46/beta:0"
+>   output: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   name: "resnet_model/conv2d_46/Conv2D"
+>   type: "Int8Conv"
+1805,1818d3943
+< }
+< op {
+<   input: "resnet_model/conv2d_30/Conv2D:0"
+<   input: "resnet_model/batch_normalization_30/gamma:0"
+<   input: "resnet_model/batch_normalization_30/beta:0"
+<   input: "resnet_model/batch_normalization_30/moving_mean:0"
+<   input: "resnet_model/batch_normalization_30/moving_variance:0"
+<   output: "resnet_model/batch_normalization_30/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_30/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_30/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_30/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_30/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_30/FusedBatchNorm"
+<   type: "SpatialBN"
+1820,1821c3945,3946
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+1824c3949
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+1827,1846d3951
+< }
+< op {
+<   input: "resnet_model/batch_normalization_30/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_24:0"
+<   output: "resnet_model/add_8:0"
+<   name: "resnet_model/add_8"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_8:0"
+<   output: "resnet_model/Relu_27:0"
+<   name: "resnet_model/Relu_27"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_27:0"
+<   input: "resnet_model/conv2d_31/kernel:0"
+<   output: "resnet_model/conv2d_31/Conv2D:0"
+<   name: "resnet_model/conv2d_31/Conv2D"
+<   type: "Conv"
+1848,1852c3953,3954
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 5
+1855,1857c3957,3958
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+1860,1862c3961,3963
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+1865c3966,3971
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 32
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+1869,1882d3974
+< }
+< op {
+<   input: "resnet_model/conv2d_31/Conv2D:0"
+<   input: "resnet_model/batch_normalization_31/gamma:0"
+<   input: "resnet_model/batch_normalization_31/beta:0"
+<   input: "resnet_model/batch_normalization_31/moving_mean:0"
+<   input: "resnet_model/batch_normalization_31/moving_variance:0"
+<   output: "resnet_model/batch_normalization_31/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_31/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_31/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_31/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_31/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_31/FusedBatchNorm"
+<   type: "SpatialBN"
+1884,1885c3976,3977
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+1888,1889c3980,3981
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+1891,1903d3982
+< }
+< op {
+<   input: "resnet_model/batch_normalization_31/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_28:0"
+<   name: "resnet_model/Relu_28"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_28:0"
+<   input: "resnet_model/conv2d_32/kernel:0"
+<   output: "resnet_model/conv2d_32/Conv2D:0"
+<   name: "resnet_model/conv2d_32/Conv2D"
+<   type: "Conv"
+1905,1909c3984,3985
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "euler_eager_mode"
+>     i: 1
+1912,1914c3988,3989
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "training_mode"
+>     i: 0
+1917,1919c3992,3993
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.5611670613288879
+1922,1924c3996,3997
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_zero_point"
+>     i: 128
+1926,1939d3998
+< }
+< op {
+<   input: "resnet_model/conv2d_32/Conv2D:0"
+<   input: "resnet_model/batch_normalization_32/gamma:0"
+<   input: "resnet_model/batch_normalization_32/beta:0"
+<   input: "resnet_model/batch_normalization_32/moving_mean:0"
+<   input: "resnet_model/batch_normalization_32/moving_variance:0"
+<   output: "resnet_model/batch_normalization_32/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_32/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_32/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_32/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_32/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_32/FusedBatchNorm"
+<   type: "SpatialBN"
+1941,1942c4000,4001
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "order"
+>     s: "NHWC"
+1944,1946c4003
+<   arg {
+<     name: "is_test"
+<     i: 1
+---
+>   device_option {
+1947a4005
+>   engine: "DNNLOWP"
+1950,1967c4008,4014
+<   input: "resnet_model/batch_normalization_32/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_29:0"
+<   name: "resnet_model/Relu_29"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_29:0"
+<   input: "resnet_model/conv2d_33/kernel:0"
+<   output: "resnet_model/conv2d_33/Conv2D:0"
+<   name: "resnet_model/conv2d_33/Conv2D"
+<   type: "Conv"
+<   arg {
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+---
+>   input: "resnet_model/batch_normalization_27/FusedBatchNorm:0_fusion_fix_362"
+>   input: "resnet_model/conv2d_43/kernel:0"
+>   input: "resnet_model/batch_normalization_43/beta:0"
+>   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   output: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   name: "resnet_model/conv2d_43/Conv2D"
+>   type: "Int8ConvSumRelu"
+1975,1976c4022,4023
+<     ints: 1
+<     ints: 1
+---
+>     ints: 2
+>     ints: 2
+1983,1996d4029
+< }
+< op {
+<   input: "resnet_model/conv2d_33/Conv2D:0"
+<   input: "resnet_model/batch_normalization_33/gamma:0"
+<   input: "resnet_model/batch_normalization_33/beta:0"
+<   input: "resnet_model/batch_normalization_33/moving_mean:0"
+<   input: "resnet_model/batch_normalization_33/moving_variance:0"
+<   output: "resnet_model/batch_normalization_33/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_33/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_33/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_33/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_33/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_33/FusedBatchNorm"
+<   type: "SpatialBN"
+1998,1999c4031,4032
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+2002c4035
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+2005,2024d4037
+< }
+< op {
+<   input: "resnet_model/batch_normalization_33/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_27:0"
+<   output: "resnet_model/add_9:0"
+<   name: "resnet_model/add_9"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_9:0"
+<   output: "resnet_model/Relu_30:0"
+<   name: "resnet_model/Relu_30"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_30:0"
+<   input: "resnet_model/conv2d_34/kernel:0"
+<   output: "resnet_model/conv2d_34/Conv2D:0"
+<   name: "resnet_model/conv2d_34/Conv2D"
+<   type: "Conv"
+2026,2030c4039,4040
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 5
+2033,2035c4043,4044
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xb161"
+2038,2040c4047,4049
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 2
+>     ints: 7
+2043c4052,4057
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 64
+>     ints: 8
+>   }
+>   arg {
+>     name: "partition"
+2047,2060d4060
+< }
+< op {
+<   input: "resnet_model/conv2d_34/Conv2D:0"
+<   input: "resnet_model/batch_normalization_34/gamma:0"
+<   input: "resnet_model/batch_normalization_34/beta:0"
+<   input: "resnet_model/batch_normalization_34/moving_mean:0"
+<   input: "resnet_model/batch_normalization_34/moving_variance:0"
+<   output: "resnet_model/batch_normalization_34/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_34/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_34/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_34/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_34/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_34/FusedBatchNorm"
+<   type: "SpatialBN"
+2062,2063c4062,4063
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+2066,2067c4066,4067
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+2069,2081d4068
+< }
+< op {
+<   input: "resnet_model/batch_normalization_34/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_31:0"
+<   name: "resnet_model/Relu_31"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_31:0"
+<   input: "resnet_model/conv2d_35/kernel:0"
+<   output: "resnet_model/conv2d_35/Conv2D:0"
+<   name: "resnet_model/conv2d_35/Conv2D"
+<   type: "Conv"
+2083,2087c4070,4071
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "euler_eager_mode"
+>     i: 1
+2090,2092c4074,4075
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "fusion_type"
+>     i: 4
+2095,2097c4078,4079
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+2100,2102c4082,4083
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.28264933824539185
+2104,2117d4084
+< }
+< op {
+<   input: "resnet_model/conv2d_35/Conv2D:0"
+<   input: "resnet_model/batch_normalization_35/gamma:0"
+<   input: "resnet_model/batch_normalization_35/beta:0"
+<   input: "resnet_model/batch_normalization_35/moving_mean:0"
+<   input: "resnet_model/batch_normalization_35/moving_variance:0"
+<   output: "resnet_model/batch_normalization_35/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_35/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_35/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_35/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_35/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_35/FusedBatchNorm"
+<   type: "SpatialBN"
+2119,2120c4086,4087
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "Y_zero_point"
+>     i: 0
+2123,2124c4090,4091
+<     name: "is_test"
+<     i: 1
+---
+>     name: "sum_zero_point"
+>     i: 128
+2126,2144c4093,4097
+< }
+< op {
+<   input: "resnet_model/batch_normalization_35/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_32:0"
+<   name: "resnet_model/Relu_32"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_32:0"
+<   input: "resnet_model/conv2d_36/kernel:0"
+<   output: "resnet_model/conv2d_36/Conv2D:0"
+<   name: "resnet_model/conv2d_36/Conv2D"
+<   type: "Conv"
+<   arg {
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+2145a4099,4107
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   input: "resnet_model/conv2d_47/kernel:0"
+>   input: "resnet_model/batch_normalization_47/beta:0"
+>   output: "resnet_model/Relu_43:0"
+>   name: "resnet_model/conv2d_47/Conv2D"
+>   type: "Int8ConvRelu"
+2161,2174d4122
+< }
+< op {
+<   input: "resnet_model/conv2d_36/Conv2D:0"
+<   input: "resnet_model/batch_normalization_36/gamma:0"
+<   input: "resnet_model/batch_normalization_36/beta:0"
+<   input: "resnet_model/batch_normalization_36/moving_mean:0"
+<   input: "resnet_model/batch_normalization_36/moving_variance:0"
+<   output: "resnet_model/batch_normalization_36/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_36/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_36/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_36/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_36/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_36/FusedBatchNorm"
+<   type: "SpatialBN"
+2176,2177c4124,4125
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+2180c4128
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+2183,2202d4130
+< }
+< op {
+<   input: "resnet_model/batch_normalization_36/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_30:0"
+<   output: "resnet_model/add_10:0"
+<   name: "resnet_model/add_10"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_10:0"
+<   output: "resnet_model/Relu_33:0"
+<   name: "resnet_model/Relu_33"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_33:0"
+<   input: "resnet_model/conv2d_37/kernel:0"
+<   output: "resnet_model/conv2d_37/Conv2D:0"
+<   name: "resnet_model/conv2d_37/Conv2D"
+<   type: "Conv"
+2204,2208c4132,4133
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 5
+2211,2213c4136,4137
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+2216,2218c4140,4142
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+2221c4145,4150
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 128
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+2225,2238d4153
+< }
+< op {
+<   input: "resnet_model/conv2d_37/Conv2D:0"
+<   input: "resnet_model/batch_normalization_37/gamma:0"
+<   input: "resnet_model/batch_normalization_37/beta:0"
+<   input: "resnet_model/batch_normalization_37/moving_mean:0"
+<   input: "resnet_model/batch_normalization_37/moving_variance:0"
+<   output: "resnet_model/batch_normalization_37/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_37/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_37/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_37/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_37/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_37/FusedBatchNorm"
+<   type: "SpatialBN"
+2240,2241c4155,4160
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+2244c4163
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+2246a4166,4188
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.054554056376218796
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+2249,2259c4191,4196
+<   input: "resnet_model/batch_normalization_37/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_34:0"
+<   name: "resnet_model/Relu_34"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_34:0"
+<   input: "resnet_model/conv2d_38/kernel:0"
+<   output: "resnet_model/conv2d_38/Conv2D:0"
+<   name: "resnet_model/conv2d_38/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_43:0"
+>   input: "resnet_model/conv2d_48/kernel:0"
+>   input: "resnet_model/batch_normalization_48/beta:0"
+>   output: "resnet_model/Relu_44:0"
+>   name: "resnet_model/conv2d_48/Conv2D"
+>   type: "Int8ConvRelu"
+2261,2265c4198,4199
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "pad"
+>     i: 1
+2282,2295d4215
+< }
+< op {
+<   input: "resnet_model/conv2d_38/Conv2D:0"
+<   input: "resnet_model/batch_normalization_38/gamma:0"
+<   input: "resnet_model/batch_normalization_38/beta:0"
+<   input: "resnet_model/batch_normalization_38/moving_mean:0"
+<   input: "resnet_model/batch_normalization_38/moving_variance:0"
+<   output: "resnet_model/batch_normalization_38/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_38/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_38/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_38/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_38/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_38/FusedBatchNorm"
+<   type: "SpatialBN"
+2297,2298c4217,4218
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+2301,2302c4221,4222
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_algorithm"
+>     i: 2
+2304,2316d4223
+< }
+< op {
+<   input: "resnet_model/batch_normalization_38/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_35:0"
+<   name: "resnet_model/Relu_35"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_35:0"
+<   input: "resnet_model/conv2d_39/kernel:0"
+<   output: "resnet_model/conv2d_39/Conv2D:0"
+<   name: "resnet_model/conv2d_39/Conv2D"
+<   type: "Conv"
+2318,2322c4225,4226
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "tile_size"
+>     i: 6
+2325,2327c4229,4230
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "execution_mode"
+>     s: "0xa160"
+2330,2331c4233,4239
+<     name: "strides"
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 2
+>     ints: 7
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 32
+2335c4243
+<     name: "dilations"
+---
+>     name: "partition"
+2339,2352d4246
+< }
+< op {
+<   input: "resnet_model/conv2d_39/Conv2D:0"
+<   input: "resnet_model/batch_normalization_39/gamma:0"
+<   input: "resnet_model/batch_normalization_39/beta:0"
+<   input: "resnet_model/batch_normalization_39/moving_mean:0"
+<   input: "resnet_model/batch_normalization_39/moving_variance:0"
+<   output: "resnet_model/batch_normalization_39/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_39/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_39/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_39/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_39/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_39/FusedBatchNorm"
+<   type: "SpatialBN"
+2354,2355c4248,4249
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+2358c4252
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+2361,2380d4254
+< }
+< op {
+<   input: "resnet_model/batch_normalization_39/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_33:0"
+<   output: "resnet_model/add_11:0"
+<   name: "resnet_model/add_11"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_11:0"
+<   output: "resnet_model/Relu_36:0"
+<   name: "resnet_model/Relu_36"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_36:0"
+<   input: "resnet_model/conv2d_40/kernel:0"
+<   output: "resnet_model/conv2d_40/Conv2D:0"
+<   name: "resnet_model/conv2d_40/Conv2D"
+<   type: "Conv"
+2382,2386c4256,4269
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.04026130586862564
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+2388a4272,4287
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+> }
+> op {
+>   input: "resnet_model/Relu_44:0"
+>   input: "resnet_model/conv2d_49/kernel:0"
+>   input: "resnet_model/batch_normalization_49/beta:0"
+>   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   output: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   name: "resnet_model/conv2d_49/Conv2D"
+>   type: "Int8ConvSumRelu"
+>   arg {
+2403,2416d4301
+< }
+< op {
+<   input: "resnet_model/conv2d_40/Conv2D:0"
+<   input: "resnet_model/batch_normalization_40/gamma:0"
+<   input: "resnet_model/batch_normalization_40/beta:0"
+<   input: "resnet_model/batch_normalization_40/moving_mean:0"
+<   input: "resnet_model/batch_normalization_40/moving_variance:0"
+<   output: "resnet_model/batch_normalization_40/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_40/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_40/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_40/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_40/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_40/FusedBatchNorm"
+<   type: "SpatialBN"
+2418,2419c4303,4304
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+2422c4307
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+2425,2437d4309
+< }
+< op {
+<   input: "resnet_model/batch_normalization_40/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_37:0"
+<   name: "resnet_model/Relu_37"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_37:0"
+<   input: "resnet_model/conv2d_41/kernel:0"
+<   output: "resnet_model/conv2d_41/Conv2D:0"
+<   name: "resnet_model/conv2d_41/Conv2D"
+<   type: "Conv"
+2439,2443c4311,4312
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "tile_size"
+>     i: 5
+2446,2448c4315,4316
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+2451,2453c4319,4321
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+2456c4324,4329
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 32
+>     ints: 4
+>   }
+>   arg {
+>     name: "partition"
+2460,2473d4332
+< }
+< op {
+<   input: "resnet_model/conv2d_41/Conv2D:0"
+<   input: "resnet_model/batch_normalization_41/gamma:0"
+<   input: "resnet_model/batch_normalization_41/beta:0"
+<   input: "resnet_model/batch_normalization_41/moving_mean:0"
+<   input: "resnet_model/batch_normalization_41/moving_variance:0"
+<   output: "resnet_model/batch_normalization_41/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_41/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_41/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_41/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_41/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_41/FusedBatchNorm"
+<   type: "SpatialBN"
+2475,2476c4334,4335
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_dst"
+>     s: "nhwc"
+2479c4338
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+2482,2494d4340
+< }
+< op {
+<   input: "resnet_model/batch_normalization_41/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_38:0"
+<   name: "resnet_model/Relu_38"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_38:0"
+<   input: "resnet_model/conv2d_42/kernel:0"
+<   output: "resnet_model/conv2d_42/Conv2D:0"
+<   name: "resnet_model/conv2d_42/Conv2D"
+<   type: "Conv"
+2496,2500c4342,4343
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "fusion_type"
+>     i: 4
+2503,2505c4346,4347
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+2508,2510c4350,4351
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.3044634759426117
+2513,2515c4354,4355
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_zero_point"
+>     i: 0
+2517,2530d4356
+< }
+< op {
+<   input: "resnet_model/conv2d_42/Conv2D:0"
+<   input: "resnet_model/batch_normalization_42/gamma:0"
+<   input: "resnet_model/batch_normalization_42/beta:0"
+<   input: "resnet_model/batch_normalization_42/moving_mean:0"
+<   input: "resnet_model/batch_normalization_42/moving_variance:0"
+<   output: "resnet_model/batch_normalization_42/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_42/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_42/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_42/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_42/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_42/FusedBatchNorm"
+<   type: "SpatialBN"
+2532,2533c4358,4359
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "order"
+>     s: "NHWC"
+2535,2537c4361
+<   arg {
+<     name: "is_test"
+<     i: 1
+---
+>   device_option {
+2538a4363
+>   engine: "DNNLOWP"
+2541,2565c4366,4371
+<   input: "resnet_model/batch_normalization_42/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_36:0"
+<   output: "resnet_model/add_12:0"
+<   name: "resnet_model/add_12"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_12:0"
+<   output: "resnet_model/Relu_39:0"
+<   name: "resnet_model/Relu_39"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_39:0"
+<   input: "resnet_model/conv2d_44/kernel:0"
+<   output: "resnet_model/conv2d_44/Conv2D:0"
+<   name: "resnet_model/conv2d_44/Conv2D"
+<   type: "Conv"
+<   arg {
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<   }
+---
+>   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   input: "resnet_model/conv2d_50/kernel:0"
+>   input: "resnet_model/batch_normalization_50/beta:0"
+>   output: "resnet_model/Relu_46:0"
+>   name: "resnet_model/conv2d_50/Conv2D"
+>   type: "Int8ConvRelu"
+2581,2594d4386
+< }
+< op {
+<   input: "resnet_model/conv2d_44/Conv2D:0"
+<   input: "resnet_model/batch_normalization_44/gamma:0"
+<   input: "resnet_model/batch_normalization_44/beta:0"
+<   input: "resnet_model/batch_normalization_44/moving_mean:0"
+<   input: "resnet_model/batch_normalization_44/moving_variance:0"
+<   output: "resnet_model/batch_normalization_44/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_44/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_44/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_44/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_44/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_44/FusedBatchNorm"
+<   type: "SpatialBN"
+2596,2597c4388,4389
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+2600c4392
+<     name: "is_test"
+---
+>     name: "euler_algorithm"
+2603,2614d4394
+< }
+< op {
+<   input: "resnet_model/batch_normalization_44/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_40:0"
+<   name: "resnet_model/Relu_40"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_40:0"
+<   output: "resnet_model/Pad_6:0"
+<   name: "resnet_model/Pad_6"
+<   type: "PadImage"
+2616,2620c4396,4397
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "tile_size"
+>     i: 5
+2622,2628d4398
+< }
+< op {
+<   input: "resnet_model/Pad_6:0"
+<   input: "resnet_model/conv2d_45/kernel:0"
+<   output: "resnet_model/conv2d_45/Conv2D:0"
+<   name: "resnet_model/conv2d_45/Conv2D"
+<   type: "Conv"
+2630,2632c4400,4401
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "execution_mode"
+>     s: "0xc160"
+2635,2636c4404,4405
+<     name: "strides"
+<     ints: 2
+---
+>     name: "blocking"
+>     ints: 128
+2640c4409,4414
+<     name: "dilations"
+---
+>     name: "flatting"
+>     ints: 4
+>     ints: 6
+>   }
+>   arg {
+>     name: "partition"
+2644,2657d4417
+< }
+< op {
+<   input: "resnet_model/conv2d_45/Conv2D:0"
+<   input: "resnet_model/batch_normalization_45/gamma:0"
+<   input: "resnet_model/batch_normalization_45/beta:0"
+<   input: "resnet_model/batch_normalization_45/moving_mean:0"
+<   input: "resnet_model/batch_normalization_45/moving_variance:0"
+<   output: "resnet_model/batch_normalization_45/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_45/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_45/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_45/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_45/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_45/FusedBatchNorm"
+<   type: "SpatialBN"
+2659,2660c4419,4424
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+2663c4427
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+2665a4430,4452
+>   arg {
+>     name: "fusion_type"
+>     i: 1
+>   }
+>   arg {
+>     name: "training_mode"
+>     i: 0
+>   }
+>   arg {
+>     name: "Y_scale"
+>     f: 0.08017652481794357
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+>   }
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+2668,2678c4455,4460
+<   input: "resnet_model/batch_normalization_45/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_41:0"
+<   name: "resnet_model/Relu_41"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_41:0"
+<   input: "resnet_model/conv2d_46/kernel:0"
+<   output: "resnet_model/conv2d_46/Conv2D:0"
+<   name: "resnet_model/conv2d_46/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_46:0"
+>   input: "resnet_model/conv2d_51/kernel:0"
+>   input: "resnet_model/batch_normalization_51/beta:0"
+>   output: "resnet_model/Relu_47:0"
+>   name: "resnet_model/conv2d_51/Conv2D"
+>   type: "Int8ConvRelu"
+2680,2684c4462,4463
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "pad"
+>     i: 1
+2688,2689c4467,4468
+<     ints: 1
+<     ints: 1
+---
+>     ints: 3
+>     ints: 3
+2701,2714d4479
+< }
+< op {
+<   input: "resnet_model/conv2d_46/Conv2D:0"
+<   input: "resnet_model/batch_normalization_46/gamma:0"
+<   input: "resnet_model/batch_normalization_46/beta:0"
+<   input: "resnet_model/batch_normalization_46/moving_mean:0"
+<   input: "resnet_model/batch_normalization_46/moving_variance:0"
+<   output: "resnet_model/batch_normalization_46/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_46/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_46/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_46/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_46/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_46/FusedBatchNorm"
+<   type: "SpatialBN"
+2716,2717c4481,4482
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "need_euler"
+>     i: 1
+2720,2721c4485,4486
+<     name: "is_test"
+<     i: 1
+---
+>     name: "euler_algorithm"
+>     i: 2
+2723,2729d4487
 < }
 < op {
 <   input: "resnet_model/Relu_39:0"
@@ -2380,367 +6168,553 @@
 <   output: "resnet_model/conv2d_43/Conv2D:0"
 <   name: "resnet_model/conv2d_43/Conv2D"
 <   type: "Conv"
-2731,2733c4315,4316
+2731,2733c4489,4490
 <     name: "kernels"
 <     ints: 1
 <     ints: 1
 ---
->     name: "sum_zero_point"
->     i: 128
-2736,2738c4319,4320
+>     name: "tile_size"
+>     i: 6
+2736,2737c4493,4497
 <     name: "strides"
 <     ints: 2
-<     ints: 2
+---
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+2738a4499
+>     ints: 7
+2741c4502,4507
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 32
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+2745,2758d4510
+< }
+< op {
+<   input: "resnet_model/conv2d_43/Conv2D:0"
+<   input: "resnet_model/batch_normalization_43/gamma:0"
+<   input: "resnet_model/batch_normalization_43/beta:0"
+<   input: "resnet_model/batch_normalization_43/moving_mean:0"
+<   input: "resnet_model/batch_normalization_43/moving_variance:0"
+<   output: "resnet_model/batch_normalization_43/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_43/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_43/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_43/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_43/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_43/FusedBatchNorm"
+<   type: "SpatialBN"
+2760,2761c4512,4513
+<     name: "epsilon"
+<     f: 1.00099996416e-05
 ---
 >     name: "euler_order_src"
 >     s: "nhwc"
-2741,2743c4323,4328
+2764c4516
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+2767,2786d4518
+< }
+< op {
+<   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0"
+<   input: "resnet_model/batch_normalization_43/FusedBatchNorm:0"
+<   output: "resnet_model/add_13:0"
+<   name: "resnet_model/add_13"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_13:0"
+<   output: "resnet_model/Relu_42:0"
+<   name: "resnet_model/Relu_42"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_42:0"
+<   input: "resnet_model/conv2d_47/kernel:0"
+<   output: "resnet_model/conv2d_47/Conv2D:0"
+<   name: "resnet_model/conv2d_47/Conv2D"
+<   type: "Conv"
+2788,2792c4520,4521
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "fusion_type"
+>     i: 1
+2795,2797c4524,4525
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+2800,2802c4528,4529
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.05668415129184723
+2805,2807c4532,4533
 <     name: "dilations"
 <     ints: 1
 <     ints: 1
 ---
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
-2773c4358
-<   type: "Add"
+>     name: "Y_zero_point"
+>     i: 0
+2809,2822d4534
+< }
+< op {
+<   input: "resnet_model/conv2d_47/Conv2D:0"
+<   input: "resnet_model/batch_normalization_47/gamma:0"
+<   input: "resnet_model/batch_normalization_47/beta:0"
+<   input: "resnet_model/batch_normalization_47/moving_mean:0"
+<   input: "resnet_model/batch_normalization_47/moving_variance:0"
+<   output: "resnet_model/batch_normalization_47/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_47/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_47/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_47/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_47/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_47/FusedBatchNorm"
+<   type: "SpatialBN"
+2824,2825c4536,4537
+<     name: "epsilon"
+<     f: 1.00099996416e-05
 ---
->   type: "Sum"
-2788,2794d4372
+>     name: "order"
+>     s: "NHWC"
+2827,2829c4539
+<   arg {
+<     name: "is_test"
+<     i: 1
+---
+>   device_option {
+2830a4541
+>   engine: "DNNLOWP"
+2833,2843c4544,4550
+<   input: "resnet_model/batch_normalization_47/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_43:0"
+<   name: "resnet_model/Relu_43"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_43:0"
+<   input: "resnet_model/conv2d_48/kernel:0"
+<   output: "resnet_model/conv2d_48/Conv2D:0"
+<   name: "resnet_model/conv2d_48/Conv2D"
+<   type: "Conv"
+---
+>   input: "resnet_model/Relu_47:0"
+>   input: "resnet_model/conv2d_52/kernel:0"
+>   input: "resnet_model/batch_normalization_52/beta:0"
+>   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   output: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   name: "resnet_model/conv2d_52/Conv2D"
+>   type: "Int8ConvSumRelu"
+2845,2847c4552
 <     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
+<     ints: 1
+<     ints: 1
+---
+>     name: "kernels"
+2852,2856d4556
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
 <   }
 <   arg {
-2808a4387,4429
->   arg {
+2866,2879d4565
+< }
+< op {
+<   input: "resnet_model/conv2d_48/Conv2D:0"
+<   input: "resnet_model/batch_normalization_48/gamma:0"
+<   input: "resnet_model/batch_normalization_48/beta:0"
+<   input: "resnet_model/batch_normalization_48/moving_mean:0"
+<   input: "resnet_model/batch_normalization_48/moving_variance:0"
+<   output: "resnet_model/batch_normalization_48/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_48/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_48/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_48/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_48/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_48/FusedBatchNorm"
+<   type: "SpatialBN"
+2881,2882c4567,4568
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "need_euler"
 >     i: 1
->   }
->   arg {
+2885c4571
+<     name: "is_test"
+---
 >     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
+2888,2900d4573
+< }
+< op {
+<   input: "resnet_model/batch_normalization_48/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_44:0"
+<   name: "resnet_model/Relu_44"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_44:0"
+<   input: "resnet_model/conv2d_49/kernel:0"
+<   output: "resnet_model/conv2d_49/Conv2D:0"
+<   name: "resnet_model/conv2d_49/Conv2D"
+<   type: "Conv"
+2902,2906c4575,4576
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
 >     name: "tile_size"
 >     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:128
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2845,2849c4466,4467
-<     name: "pads"
-<     ints: 1
-<     ints: 1
+2909,2911c4579,4580
+<     name: "kernels"
 <     ints: 1
 <     ints: 1
 ---
->     name: "pad"
->     i: 1
-2865a4484,4522
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
 >     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
+>     s: "0xc160"
+2914,2916c4583,4585
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
 >     name: "flatting"
->     ints: 2
->     ints: 7
->   }
->   arg {
+>     ints: 4
+>     ints: 6
+2919c4588,4593
+<     name: "dilations"
+---
 >     name: "blocking"
 >     ints: 32
->     ints: 1
+>     ints: 4
 >   }
 >   arg {
 >     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-2902,2908d4558
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2922a4573,4611
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
+2923,2936d4596
+< }
+< op {
+<   input: "resnet_model/conv2d_49/Conv2D:0"
+<   input: "resnet_model/batch_normalization_49/gamma:0"
+<   input: "resnet_model/batch_normalization_49/beta:0"
+<   input: "resnet_model/batch_normalization_49/moving_mean:0"
+<   input: "resnet_model/batch_normalization_49/moving_variance:0"
+<   output: "resnet_model/batch_normalization_49/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_49/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_49/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_49/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_49/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_49/FusedBatchNorm"
+<   type: "SpatialBN"
+2938,2939c4598,4599
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
 >     name: "euler_order_dst"
 >     s: "nhwc"
->   }
->   arg {
+2942c4602
+<     name: "is_test"
+---
 >     name: "euler_eager_mode"
->     i: 1
->   }
-2951c4640
+2945,2964d4604
+< }
+< op {
+<   input: "resnet_model/batch_normalization_49/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_42:0"
+<   output: "resnet_model/add_14:0"
+<   name: "resnet_model/add_14"
 <   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_14:0"
+<   output: "resnet_model/Relu_45:0"
+<   name: "resnet_model/Relu_45"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_45:0"
+<   input: "resnet_model/conv2d_50/kernel:0"
+<   output: "resnet_model/conv2d_50/Conv2D:0"
+<   name: "resnet_model/conv2d_50/Conv2D"
+<   type: "Conv"
+2966,2970c4606,4607
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
 ---
->   type: "Sum"
-2966,2972d4654
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2986a4669,4711
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "blocking"
->     ints:128
->     ints:2
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-3023,3027c4748,4749
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-3043a4766,4804
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 7
->   }
->   arg {
->     name: "blocking"
->     ints: 32
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-3080,3086d4840
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-3100a4855,4897
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:4
->     ints:6
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
->   arg {
 >     name: "euler_stream_sync"
 >     i: 0
->   }
-3129c4926
-<   type: "Add"
+2973,2975c4610,4611
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
 ---
->   type: "Sum"
-3139,3141c4936,4938
+>     name: "fusion_type"
+>     i: 4
+2978,2980c4614,4615
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+2983,2985c4618,4623
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_scale"
+>     f: 0.47799748182296753
+>   }
+>   arg {
+>     name: "Y_zero_point"
+>     i: 0
+2986a4625,4631
+>   arg {
+>     name: "order"
+>     s: "NHWC"
+>   }
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+2989,3000c4634,4637
+<   input: "resnet_model/conv2d_50/Conv2D:0"
+<   input: "resnet_model/batch_normalization_50/gamma:0"
+<   input: "resnet_model/batch_normalization_50/beta:0"
+<   input: "resnet_model/batch_normalization_50/moving_mean:0"
+<   input: "resnet_model/batch_normalization_50/moving_variance:0"
+<   output: "resnet_model/batch_normalization_50/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_50/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_50/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_50/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_50/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_50/FusedBatchNorm"
+<   type: "SpatialBN"
+---
+>   input: "resnet_model/batch_normalization_46/FusedBatchNorm:0_fusion_fix_619"
+>   output: "resnet_model/Pool:0"
+>   name: ""
+>   type: "Int8AveragePool"
+3002,3003c4639,4640
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "kernel"
+>     i: 7
+3006c4643
+<     name: "is_test"
+---
+>     name: "stride"
+3009,3021d4645
+< }
+< op {
+<   input: "resnet_model/batch_normalization_50/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_46:0"
+<   name: "resnet_model/Relu_46"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_46:0"
+<   input: "resnet_model/conv2d_51/kernel:0"
+<   output: "resnet_model/conv2d_51/Conv2D:0"
+<   name: "resnet_model/conv2d_51/Conv2D"
+<   type: "Conv"
+3023,3027c4647,4648
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
+>     name: "training_mode"
+>     i: 0
+3030,3032c4651,4652
+<     name: "kernels"
+<     ints: 3
+<     ints: 3
+---
+>     name: "Y_scale"
+>     f: 0.47799748182296753
+3035,3037c4655,4656
+<     name: "strides"
+<     ints: 1
+<     ints: 1
+---
+>     name: "Y_zero_point"
+>     i: 0
+3040,3042c4659,4660
+<     name: "dilations"
+<     ints: 1
+<     ints: 1
+---
+>     name: "order"
+>     s: "NHWC"
+3043a4662,4664
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+3046,3057c4667,4672
+<   input: "resnet_model/conv2d_51/Conv2D:0"
+<   input: "resnet_model/batch_normalization_51/gamma:0"
+<   input: "resnet_model/batch_normalization_51/beta:0"
+<   input: "resnet_model/batch_normalization_51/moving_mean:0"
+<   input: "resnet_model/batch_normalization_51/moving_variance:0"
+<   output: "resnet_model/batch_normalization_51/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_51/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_51/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_51/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_51/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_51/FusedBatchNorm"
+<   type: "SpatialBN"
+---
+>   input: "resnet_model/Pool:0"
+>   input: "resnet_model/dense/kernel:0"
+>   input: "resnet_model/dense/bias:0"
+>   output: "ArgMax:0"
+>   name: ""
+>   type: "Int8Conv"
+3059,3060c4674,4675
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "weights_extend"
+>     i: 1
+3063c4678
+<     name: "is_test"
+---
+>     name: "need_euler"
+3066,3078d4680
+< }
+< op {
+<   input: "resnet_model/batch_normalization_51/FusedBatchNorm:0"
+<   output: "resnet_model/Relu_47:0"
+<   name: "resnet_model/Relu_47"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_47:0"
+<   input: "resnet_model/conv2d_52/kernel:0"
+<   output: "resnet_model/conv2d_52/Conv2D:0"
+<   name: "resnet_model/conv2d_52/Conv2D"
+<   type: "Conv"
+3080,3084c4682,4683
+<     name: "pads"
+<     ints: 0
+<     ints: 0
+<     ints: 0
+<     ints: 0
+---
+>     name: "euler_algorithm"
+>     i: 2
+3087,3089c4686,4687
+<     name: "kernels"
+<     ints: 1
+<     ints: 1
+---
+>     name: "with_argmax"
+>     i: 1
+3092c4690,4698
+<     name: "strides"
+---
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xd160"
+>   }
+>   arg {
+>     name: "partition"
+3097c4703,4704
+<     name: "dilations"
+---
+>     name: "blocking"
+>     ints: 128
+3098a4706,4709
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 3
+3101,3114d4711
+< }
+< op {
+<   input: "resnet_model/conv2d_52/Conv2D:0"
+<   input: "resnet_model/batch_normalization_52/gamma:0"
+<   input: "resnet_model/batch_normalization_52/beta:0"
+<   input: "resnet_model/batch_normalization_52/moving_mean:0"
+<   input: "resnet_model/batch_normalization_52/moving_variance:0"
+<   output: "resnet_model/batch_normalization_52/FusedBatchNorm:0"
+<   output: "resnet_model/batch_normalization_52/FusedBatchNorm:1"
+<   output: "resnet_model/batch_normalization_52/FusedBatchNorm:2"
+<   output: "resnet_model/batch_normalization_52/FusedBatchNorm:3"
+<   output: "resnet_model/batch_normalization_52/FusedBatchNorm:4"
+<   name: "resnet_model/batch_normalization_52/FusedBatchNorm"
+<   type: "SpatialBN"
+3116,3117c4713,4718
+<     name: "epsilon"
+<     f: 1.00099996416e-05
+---
+>     name: "euler_order_src"
+>     s: "nhwc"
+>   }
+>   arg {
+>     name: "euler_order_dst"
+>     s: "nhwc"
+3120c4721
+<     name: "is_test"
+---
+>     name: "euler_eager_mode"
+3123,3141d4723
+< }
+< op {
+<   input: "resnet_model/batch_normalization_52/FusedBatchNorm:0"
+<   input: "resnet_model/Relu_45:0"
+<   output: "resnet_model/add_15:0"
+<   name: "resnet_model/add_15"
+<   type: "Add"
+< }
+< op {
+<   input: "resnet_model/add_15:0"
+<   output: "resnet_model/Relu_48:0"
+<   name: "resnet_model/Relu_48"
+<   type: "Relu"
+< }
+< op {
+<   input: "resnet_model/Relu_48:0"
 <   output: "resnet_model/Mean:0"
 <   name: "resnet_model/Mean"
 <   type: "ReduceMean"
----
->   output: "resnet_model/Pool:0"
->   name: ""
->   type: "AveragePool"
-3143,3145c4940,4941
+3143,3145c4725,4726
 <     name: "axes"
 <     ints: 2
 <     ints: 3
 ---
->     name: "kernel"
->     i: 7
-3148c4944
+>     name: "euler_stream_sync"
+>     i: 0
+3148,3149c4729,4730
 <     name: "keepdims"
+<     i: 1
 ---
->     name: "stride"
-3150a4947
->   engine: ""
-3153,3164c4950,4955
+>     name: "training_mode"
+>     i: 0
+3151,3164d4731
+< }
+< op {
 <   input: "resnet_model/Mean:0"
 <   input: "reshape__307__308"
 <   output: "Transpose__276:0"
@@ -2753,21 +6727,14 @@
 <   output: "resnet_model/Squeeze:0"
 <   name: "resnet_model/Squeeze"
 <   type: "Squeeze"
----
->   input: "resnet_model/Pool:0"
->   input: "resnet_model/dense/kernel:0"
->   input: "resnet_model/dense/bias:0"
->   output: "resnet_model/final_dense:0"
->   name: ""
->   type: "FC"
-3166,3168c4957,4958
+3166c4733,4734
 <     name: "dims"
-<     ints: 1
-<     ints: 2
 ---
->     name: "weights_extend"
->     i: 1
-3170,3176d4959
+>     name: "kernels"
+>     ints: 1
+3168d4735
+<     ints: 2
+3170,3176d4736
 < }
 < op {
 <   input: "resnet_model/Squeeze:0"
@@ -2775,11 +6742,14 @@
 <   output: "resnet_model/dense/MatMul:0"
 <   name: "resnet_model/dense/MatMul"
 <   type: "BatchMatMul"
-3178c4961
+3178,3179c4738,4740
 <     name: "broadcast"
+<     i: 1
 ---
->     name: "need_euler"
-3181,3193c4964,5011
+>     name: "strides"
+>     ints: 1
+>     ints: 1
+3181,3199d4741
 < }
 < op {
 <   input: "resnet_model/dense/MatMul:0"
@@ -2793,67 +6763,38 @@
 <   output: "resnet_model/final_dense:0"
 <   name: "resnet_model/final_dense"
 <   type: "Copy"
----
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "with_argmax"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xd160"
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "blocking"
->     ints:128
->     ints:1
->   }
->   arg {
->     name: "flatting"
->     ints:3
->     ints:1
->   }
->   arg {
->     name: "euler_order_src"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_order_dst"
->     s: "nhwc"
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
->   arg {
->     name: "euler_stream_sync"
->     i: 0
->   }
->   engine: ""
-3197c5015
+< }
+< op {
+<   input: "resnet_model/final_dense:0"
 <   output: "raw_output___2:0"
+<   name: "ArgMax"
+<   type: "ArgMax"
+3201,3202c4743,4745
+<     name: "keepdims"
+<     i: 0
 ---
->   output: "ArgMax:0"
-3209,3214d5026
+>     name: "dilations"
+>     ints: 1
+>     ints: 1
+3205,3206c4748,4749
+<     name: "axis"
+<     i: 1
+---
+>     name: "order"
+>     s: "NHWC"
+3208,3213c4751,4753
+< }
 < op {
 <   input: "raw_output___2:0"
 <   output: "ArgMax:0"
 <   name: "graph_outputs_Identity__3"
 <   type: "Copy"
-< }
-3218a5031
+---
+>   device_option {
+>   }
+>   engine: "DNNLOWP"
+3218a4759
 > external_input: "input_tensor:0"
-3487d5299
+3486,3487d5026
+< external_input: "reshape__307__308"
 < external_input: "input_tensor:0"
