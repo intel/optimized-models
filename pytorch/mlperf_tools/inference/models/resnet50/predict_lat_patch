@@ -12,12 +12,11 @@
 < }
 < op {
 <   input: "resnet_model/Pad:0"
-26a14,17
+35a23,73
+>   arg {
 >     name: "pad"
 >     i: 3
 >   }
->   arg {
-35a27,73
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -65,15 +64,7 @@
 >     name: "euler_stream_sync"
 >     i: 0
 >   }
-95,101d132
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-115a147,189
+115a154,196
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -117,15 +108,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-124,130d197
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-144a212,258
+144a226,272
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -173,16 +156,7 @@
 >     name: "euler_stream_sync"
 >     i: 0
 >   }
-203,207c317,318
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-223a335,381
+223a352,398
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -230,15 +204,7 @@
 >     name: "euler_stream_sync"
 >     i: 0
 >   }
-260,266d417
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-280a432,470
+280a456,494
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -278,19 +244,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-309c499
+309c523
 <   type: "Add"
 ---
 >   type: "Sum"
-324,330d513
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-344a528,562
+344a559,593
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -326,16 +284,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-381,385c599,600
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-401a617,651
+401a651,685
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -371,15 +320,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-438,444d687
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-458a702,736
+458a743,777
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -415,167 +356,125 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-487c765
+487c806
 <   type: "Add"
 ---
 >   type: "Sum"
-502,508d779
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-523,529c794,835
+522a842,876
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints:16
+>     ints:2
+>   }
+>   arg {
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+579a934,968
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 4
+>     ints: 2
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+636a1026,1060
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints:4
+>     ints:4
+>   }
+>   arg {
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+665c1089
+<   type: "Add"
+---
+>   type: "Sum"
+694c1118,1153
 < }
-< op {
-<   input: "resnet_model/conv2d_8/Conv2D:0"
-<   input: "resnet_model/batch_normalization_8/gamma:0"
-<   input: "resnet_model/batch_normalization_8/beta:0"
-<   input: "resnet_model/batch_normalization_8/moving_mean:0"
-<   input: "resnet_model/batch_normalization_8/moving_variance:0"
 ---
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:16
->     ints:2
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-> }
-> op {
->   input: "resnet_model/conv2d_8/Conv2D:0"
->   input: "resnet_model/batch_normalization_8/gamma:0"
->   input: "resnet_model/batch_normalization_8/beta:0"
->   input: "resnet_model/batch_normalization_8/moving_mean:0"
->   input: "resnet_model/batch_normalization_8/moving_variance:0"
-559,565d864
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<   }
-<   arg {
-570a870,873
->     name: "pad"
->     i: 1
->   }
->   arg {
-579a883,917
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 4
->     ints: 2
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-616,622d953
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-636a968,1002
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:4
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-665c1031
-<   type: "Add"
----
->   type: "Sum"
-693a1060,1094
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -611,15 +510,8 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-724,730d1124
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-744a1139,1173
+> }
+744a1204,1238
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -655,7 +547,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-776,788d1204
+776,788d1269
 <   output: "resnet_model/Pad_2:0"
 <   name: "resnet_model/Pad_2"
 <   type: "PadImage"
@@ -669,12 +561,11 @@
 < }
 < op {
 <   input: "resnet_model/Pad_2:0"
-803a1220,1223
+807a1289,1327
+>   arg {
 >     name: "pad"
 >     i: 1
 >   }
->   arg {
-807a1228,1262
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -710,15 +601,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-844,850d1298
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-864a1313,1347
+864a1385,1423
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -750,23 +633,19 @@
 >     ints:1
 >     ints:1
 >   }
+>   arg { 
+>     name: "sum_zero_point"
+>     i: 128
+>   }
 >   arg {
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-893c1376
+893c1452
 <   type: "Add"
 ---
 >   type: "Sum"
-908,914d1390
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-928a1405,1439
+928a1488,1522
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -802,16 +681,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-965,969c1476,1477
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-985a1494,1528
+985a1580,1614
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -847,24 +717,236 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1022,1028d1564
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1043,1051c1579,1622
+1042a1672,1706
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints:8
+>     ints:4
+>   }
+>   arg {
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+1071c1735
+<   type: "Add"
+---
+>   type: "Sum"
+1106a1771,1805
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg {
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg {
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg {
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+1163a1863,1897
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+1220a1955,1989
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints:8
+>     ints:4
+>   }
+>   arg {
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+1249c2018
+<   type: "Add"
+---
+>   type: "Sum"
+1284a2054,2088
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 1
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 5
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s:"0xc160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints:2
+>     ints:12
+>   }
+>   arg {
+>     name: "blocking"
+>     ints:32
+>     ints:4
+>   }
+>   arg {
+>     name: "partition"
+>     ints:1
+>     ints:1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+1341a2146,2180
+>   arg {
+>     name: "need_euler"
+>     i: 1
+>   }
+>   arg {
+>     name: "euler_algorithm"
+>     i: 2
+>   }
+>   arg {
+>     name: "tile_size"
+>     i: 6
+>   }
+>   arg {
+>     name: "execution_mode"
+>     s: "0xa160"
+>   }
+>   arg {
+>     name: "flatting"
+>     ints: 2
+>     ints: 14
+>   }
+>   arg {
+>     name: "blocking"
+>     ints: 8
+>     ints: 1
+>   }
+>   arg {
+>     name: "partition"
+>     ints: 1
+>     ints: 1
+>   }
+>   arg {
+>     name: "euler_eager_mode"
+>     i: 1
+>   }
+1399,1403c2238,2277
 < }
 < op {
-<   input: "resnet_model/conv2d_17/Conv2D:0"
-<   input: "resnet_model/batch_normalization_17/gamma:0"
-<   input: "resnet_model/batch_normalization_17/beta:0"
-<   input: "resnet_model/batch_normalization_17/moving_mean:0"
-<   input: "resnet_model/batch_normalization_17/moving_variance:0"
-<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:0"
-<   output: "resnet_model/batch_normalization_17/FusedBatchNorm:1"
+<   input: "resnet_model/conv2d_23/Conv2D:0"
+<   input: "resnet_model/batch_normalization_23/gamma:0"
+<   input: "resnet_model/batch_normalization_23/beta:0"
 ---
 >   arg {
 >     name: "need_euler"
@@ -903,300 +985,14 @@
 >   }
 > }
 > op {
->   input: "resnet_model/conv2d_17/Conv2D:0"
->   input: "resnet_model/batch_normalization_17/gamma:0"
->   input: "resnet_model/batch_normalization_17/beta:0"
->   input: "resnet_model/batch_normalization_17/moving_mean:0"
->   input: "resnet_model/batch_normalization_17/moving_variance:0"
->   output: "resnet_model/batch_normalization_17/FusedBatchNorm:0"
->   output: "resnet_model/batch_normalization_17/FusedBatchNorm:1"
-1071c1642
+>   input: "resnet_model/conv2d_23/Conv2D:0"
+>   input: "resnet_model/batch_normalization_23/gamma:0"
+>   input: "resnet_model/batch_normalization_23/beta:0"
+1427c2301
 <   type: "Add"
 ---
 >   type: "Sum"
-1086,1092d1656
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1106a1671,1705
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1143,1147c1742,1743
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1163a1760,1794
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 8
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1200,1206d1830
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1220a1845,1879
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1249c1908
-<   type: "Add"
----
->   type: "Sum"
-1264,1270d1922
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1284a1937,1971
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:32
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1321,1325c2008,2009
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1341a2026,2060
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 2
->   }
->   arg {
->     name: "tile_size"
->     i: 6
->   }
->   arg {
->     name: "execution_mode"
->     s: "0xa160"
->   }
->   arg {
->     name: "flatting"
->     ints: 2
->     ints: 14
->   }
->   arg {
->     name: "blocking"
->     ints: 8
->     ints: 1
->   }
->   arg {
->     name: "partition"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1378,1384d2096
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1398a2111,2145
->   arg {
->     name: "need_euler"
->     i: 1
->   }
->   arg {
->     name: "euler_algorithm"
->     i: 1
->   }
->   arg {
->     name: "tile_size"
->     i: 5
->   }
->   arg {
->     name: "execution_mode"
->     s:"0xc160"
->   }
->   arg {
->     name: "flatting"
->     ints:2
->     ints:12
->   }
->   arg {
->     name: "blocking"
->     ints:8
->     ints:4
->   }
->   arg {
->     name: "partition"
->     ints:1
->     ints:1
->   }
->   arg {
->     name: "euler_eager_mode"
->     i: 1
->   }
-1427c2174
-<   type: "Add"
----
->   type: "Sum"
-1442,1448d2188
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1462a2203,2237
+1462a2337,2371
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1232,7 +1028,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1494,1506d2268
+1494,1506d2402
 <   output: "resnet_model/Pad_4:0"
 <   name: "resnet_model/Pad_4"
 <   type: "PadImage"
@@ -1246,12 +1042,11 @@
 < }
 < op {
 <   input: "resnet_model/Pad_4:0"
-1516a2279,2282
+1525a2422,2464
+>   arg {
 >     name: "pad"
 >     i: 1
 >   }
->   arg {
-1525a2292,2330
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1291,19 +1086,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1562,1568d2366
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-1583,1585c2381,2426
-< }
-< op {
-<   input: "resnet_model/conv2d_27/Conv2D:0"
----
+1582a2522,2564
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1347,10 +1130,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-> }
-> op {
->   input: "resnet_model/conv2d_27/Conv2D:0"
-1626a2468,2510
+1626a2609,2651
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1394,11 +1174,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1655c2539
+1655c2680
 <   type: "Add"
 ---
 >   type: "Sum"
-1690a2575,2617
+1690a2716,2758
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1442,16 +1222,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1727,1731c2654,2655
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1747a2672,2710
+1747a2816,2854
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1491,7 +1262,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1804a2768,2806
+1804a2912,2950
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1531,11 +1302,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1833c2835
+1833c2979
 <   type: "Add"
 ---
 >   type: "Sum"
-1868a2871,2913
+1868a3015,3057
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1579,16 +1350,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1905,1909c2950,2951
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-1925a2968,3006
+1925a3115,3153
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1628,7 +1390,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-1982a3064,3102
+1982a3211,3249
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1668,19 +1430,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2011c3131
+2011c3278
 <   type: "Add"
 ---
 >   type: "Sum"
-2026,2032d3145
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2046a3160,3202
+2046a3314,3356
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1724,16 +1478,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2083,2087c3239,3240
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2103a3257,3295
+2103a3414,3452
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1773,20 +1518,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2140,2146d3331
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2161,2164c3346,3388
-< }
-< op {
-<   input: "resnet_model/conv2d_36/Conv2D:0"
-<   input: "resnet_model/batch_normalization_36/gamma:0"
----
+2160a3510,3548
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1826,23 +1558,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-> }
-> op {
->   input: "resnet_model/conv2d_36/Conv2D:0"
->   input: "resnet_model/batch_normalization_36/gamma:0"
-2189c3413
+2189c3577
 <   type: "Add"
 ---
 >   type: "Sum"
-2204,2210d3427
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2224a3442,3484
+2224a3613,3655
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1886,16 +1606,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2261,2265c3521,3522
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2281a3539,3577
+2281a3713,3751
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1935,15 +1646,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2318,2324d3613
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2338a3628,3666
+2338a3809,3847
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -1983,19 +1686,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2367c3695
+2367c3876
 <   type: "Add"
 ---
 >   type: "Sum"
-2382,2388d3709
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2402a3724,3766
+2402a3912,3954
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2039,16 +1734,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2439,2443c3803,3804
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2459a3821,3859
+2459a4012,4050
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2088,15 +1774,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2496,2502d3895
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2516a3910,3948
+2516a4108,4146
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2136,19 +1814,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2545c3977
+2545c4175
 <   type: "Add"
 ---
 >   type: "Sum"
-2560,2566d3991
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2580a4006,4048
+2580a4211,4253
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2192,26 +1862,22 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2612,2624d4079
+2612,2614c4285,4326
 <   output: "resnet_model/Pad_6:0"
 <   name: "resnet_model/Pad_6"
 <   type: "PadImage"
-<   arg {
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<   }
-< }
-< op {
-<   input: "resnet_model/Pad_6:0"
-2634a4090,4093
->     name: "pad"
->     i: 1
->   }
+---
+>   input: "resnet_model/conv2d_45/kernel:0"
+>   output: "resnet_model/conv2d_45/Conv2D:0"
+>   name: "resnet_model/conv2d_45/Conv2D"
+>   type: "Conv"
 >   arg {
-2643a4103,4145
+>     name: "pads"
+>     ints: 1
+>     ints: 1
+>     ints: 1
+>     ints: 1
+>   }
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2243,7 +1909,13 @@
 >     ints:1
 >     ints:1
 >   }
->   arg {
+2616,2620c4328,4337
+<     name: "pads"
+<     ints: 1
+<     ints: 1
+<     ints: 1
+<     ints: 1
+---
 >     name: "euler_order_src"
 >     s: "nhwc"
 >   }
@@ -2254,16 +1926,15 @@
 >   arg {
 >     name: "euler_eager_mode"
 >     i: 1
->   }
-2680,2686d4181
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2700a4196,4238
+2622,2628d4338
+< }
+< op {
+<   input: "resnet_model/Pad_6:0"
+<   input: "resnet_model/conv2d_45/kernel:0"
+<   output: "resnet_model/conv2d_45/Conv2D:0"
+<   name: "resnet_model/conv2d_45/Conv2D"
+<   type: "Conv"
+2700a4411,4453
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2307,39 +1978,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2716,2717c4254,4307
-<     name: "epsilon"
-<     f: 1.0009999641624745e-05
----
->     name: "epsilon"
->     f: 1.0009999641624745e-05
->   }
->   arg {
->     name: "is_test"
->     i: 1
->   }
-> }
-> op {
->   input: "resnet_model/Relu_39:0"
->   input: "resnet_model/conv2d_43/kernel:0"
->   output: "resnet_model/conv2d_43/Conv2D:0"
->   name: "resnet_model/conv2d_43/Conv2D"
->   type: "Conv"
->   arg {
->     name: "kernels"
->     ints: 1
->     ints: 1
->   }
->   arg {
->     name: "strides"
->     ints: 2
->     ints: 2
->   }
->   arg {
->     name: "dilations"
->     ints: 1
->     ints: 1
->   }
+2744a4498,4544
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2365,60 +2004,34 @@
 >     name: "blocking"
 >     ints:64
 >     ints:8
-2720,2721c4310,4312
-<     name: "is_test"
-<     i: 1
----
+>   }
+>   arg {
 >     name: "partition"
 >     ints:1
 >     ints:1
-2723,2729d4313
-< }
-< op {
-<   input: "resnet_model/Relu_39:0"
-<   input: "resnet_model/conv2d_43/kernel:0"
-<   output: "resnet_model/conv2d_43/Conv2D:0"
-<   name: "resnet_model/conv2d_43/Conv2D"
-<   type: "Conv"
-2731,2733c4315,4316
-<     name: "kernels"
-<     ints: 1
-<     ints: 1
----
+>   }
+>   arg {
 >     name: "sum_zero_point"
 >     i: 128
-2736,2738c4319,4320
-<     name: "strides"
-<     ints: 2
-<     ints: 2
----
+>   }
+>   arg {
 >     name: "euler_order_src"
 >     s: "nhwc"
-2741,2743c4323,4328
-<     name: "dilations"
-<     ints: 1
-<     ints: 1
----
+>   }
+>   arg {
 >     name: "euler_order_dst"
 >     s: "nhwc"
 >   }
 >   arg {
 >     name: "euler_eager_mode"
 >     i: 1
-2773c4358
+>   }
+2773c4573
 <   type: "Add"
 ---
 >   type: "Sum"
-2788,2794d4372
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2808a4387,4429
->   arg {
+2808a4609,4651
+>   arg { 
 >     name: "need_euler"
 >     i: 1
 >   }
@@ -2461,16 +2074,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2845,2849c4466,4467
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-2865a4484,4522
+2865a4709,4747
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2510,15 +2114,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2902,2908d4558
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2922a4573,4611
+2922a4805,4843
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2558,19 +2154,11 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-2951c4640
+2951c4872
 <   type: "Add"
 ---
 >   type: "Sum"
-2966,2972d4654
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-2986a4669,4711
+2986a4908,4950
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2614,16 +2202,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-3023,3027c4748,4749
-<     name: "pads"
-<     ints: 1
-<     ints: 1
-<     ints: 1
-<     ints: 1
----
->     name: "pad"
->     i: 1
-3043a4766,4804
+3043a5008,5046
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2663,15 +2242,7 @@
 >     name: "euler_eager_mode"
 >     i: 1
 >   }
-3080,3086d4840
-<     name: "pads"
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<     ints: 0
-<   }
-<   arg {
-3100a4855,4897
+3100a5104,5146
 >   arg {
 >     name: "need_euler"
 >     i: 1
@@ -2715,11 +2286,11 @@
 >     name: "euler_stream_sync"
 >     i: 0
 >   }
-3129c4926
+3129c5175
 <   type: "Add"
 ---
 >   type: "Sum"
-3139,3141c4936,4938
+3139,3141c5185,5187
 <   output: "resnet_model/Mean:0"
 <   name: "resnet_model/Mean"
 <   type: "ReduceMean"
@@ -2727,20 +2298,20 @@
 >   output: "resnet_model/Pool:0"
 >   name: ""
 >   type: "AveragePool"
-3143,3145c4940,4941
+3143,3145c5189,5190
 <     name: "axes"
 <     ints: 2
 <     ints: 3
 ---
 >     name: "kernel"
 >     i: 7
-3148c4944
+3148c5193
 <     name: "keepdims"
 ---
 >     name: "stride"
-3150a4947
+3150a5196
 >   engine: ""
-3153,3164c4950,4955
+3153,3164c5199,5204
 <   input: "resnet_model/Mean:0"
 <   input: "reshape__307__308"
 <   output: "Transpose__276:0"
@@ -2760,14 +2331,14 @@
 >   output: "resnet_model/final_dense:0"
 >   name: ""
 >   type: "FC"
-3166,3168c4957,4958
+3166,3168c5206,5207
 <     name: "dims"
 <     ints: 1
 <     ints: 2
 ---
 >     name: "weights_extend"
 >     i: 1
-3170,3176d4959
+3170,3176d5208
 < }
 < op {
 <   input: "resnet_model/Squeeze:0"
@@ -2775,11 +2346,11 @@
 <   output: "resnet_model/dense/MatMul:0"
 <   name: "resnet_model/dense/MatMul"
 <   type: "BatchMatMul"
-3178c4961
+3178c5210
 <     name: "broadcast"
 ---
 >     name: "need_euler"
-3181,3193c4964,5011
+3181,3193c5213,5260
 < }
 < op {
 <   input: "resnet_model/dense/MatMul:0"
@@ -2842,18 +2413,18 @@
 >     i: 0
 >   }
 >   engine: ""
-3197c5015
+3197c5264
 <   output: "raw_output___2:0"
 ---
 >   output: "ArgMax:0"
-3209,3214d5026
+3209,3214d5275
 < op {
 <   input: "raw_output___2:0"
 <   output: "ArgMax:0"
 <   name: "graph_outputs_Identity__3"
 <   type: "Copy"
 < }
-3218a5031
+3218a5280
 > external_input: "input_tensor:0"
-3487d5299
+3487d5548
 < external_input: "input_tensor:0"
