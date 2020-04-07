@@ -507,10 +507,8 @@ class Calibrator(object):
         def get_quantized_op_type_by_fusion_type(fusion_type):
             return {
                 1 : "Int8ConvRelu",
-                2 : "Int8ConvRelu",
-                3 : "Int8ConvSum",
-                4 : "Int8ConvSumRelu",
-                5 : "Int8ConvSumRelu",
+                2 : "Int8ConvSum",
+                3 : "Int8ConvSumRelu",
 
             }.get(fusion_type, None)
 
