@@ -17,6 +17,7 @@
 # under the License.
 
 import argparse
+from datetime import datetime
 import logging
 import ctypes
 import time
@@ -85,14 +86,17 @@ if __name__ == '__main__':
     parser.add_argument('--param-file', type=str, default='checkpoint-0000.params', help='param file path')
     parser.add_argument('--batch-size', type=int, default=1024)
     parser.add_argument('--label-name', type=str, default='softmax_label')
-    parser.add_argument('--accuracy', type=bool, default=False)
+    parser.add_argument('--accuracy', action='store_true')
     parser.add_argument('--shuffle-dataset', action='store_true', default=True,
                         help='shuffle the calibration dataset')
     parser.add_argument('--num-omp-threads', type=int, default=28)
-    parser.add_argument('--num-batches', type=int, default=8000000)
+    parser.add_argument('--num-batches', type=int, default=100000)
+    parser.add_argument('--num-warmup', type=int, default=5000)
+    parser.add_argument('--cuda', action='store_true', help='Inference on GPU with CUDA')
+    parser.add_argument('--gpu-id', type=int, default=0)
     args = parser.parse_args()
 
-    ctx = mx.cpu()
+    ctx = mx.gpu(args.gpu_id) if args.cuda else mx.cpu()
 
     logging.basicConfig()
     logger = logging.getLogger('logger')
@@ -144,14 +148,17 @@ if __name__ == '__main__':
     check_call(_LIB.MXSetNumOMPThreads(ctypes.c_int(args.num_omp_threads)))
     batch_data = []
     nbatch = 0
-    for batch in data:
-        if nbatch < args.num_batches:
+    while nbatch < args.num_batches:
+        for batch in data:
             batch_data.append(batch)
             nbatch += 1
-        else:
-            break
+            if nbatch < args.num_batches:
+                continue
+            else:
+                break
+        data.hard_reset()
     #for data warmup
-    wi = 50
+    wi = args.num_warmup
     i = 0
     for batch in batch_data:
         if i < wi:
@@ -168,6 +175,7 @@ if __name__ == '__main__':
         mx.profiler.set_state('run')
     nbatch = 0
     tic = time.time()
+    logger.info('INFERENCING STARTED: %s', datetime.now().strftime("%m/%d/%Y %H:%M:%S.%f")[:-3])
     for batch in batch_data:
         nbatch += 1
         mod.forward(batch, is_train=False)
@@ -177,6 +185,7 @@ if __name__ == '__main__':
             mod.update_metric(acc_m, batch.label)
         else:
             mx.nd.waitall()
+    logger.info('INFERENCING FINISHED: %s', datetime.now().strftime("%m/%d/%Y %H:%M:%S.%f")[:-3])
     speed = nbatch * batch_size / (time.time() - tic)
     logger.info("Run [%d] Batchs \tSpeed: %.2f samples/sec", nbatch, speed)
     if args.accuracy is True:
