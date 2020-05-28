@@ -87,7 +87,7 @@ export DATA_PATH=<The path for imagenet dataset>
   | --rank | node number |
   | bathc_size | 256/nodes |
 
-  **Commands on nodes**
+  **Commands run on nodes:**
 
     * on node 0
   ```
