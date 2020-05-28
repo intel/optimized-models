@@ -87,26 +87,25 @@ export DATA_PATH=<The path for imagenet dataset>
   | --rank | node number |
   | bathc_size | 256/nodes |
 
-
-  * on node 0
+    * on node 0
 ```
-  export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
+    export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
   python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=0 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
 ```
-  * on node1
+    * on node1
 ```
-  export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
-  python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=1 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
+    export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
+    python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=1 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
 ```
-  * on node2
+    * on node2
 ```
-  export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
-  python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=2 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
+    export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
+    python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=2 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
 ```
-  * on node3
+    * on node3
 ```
-  export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
-  python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=3 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
+    export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
+    python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=3 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
 ```
 
 * inference throughput benchmark (4 instances, 24 cores/ins):
