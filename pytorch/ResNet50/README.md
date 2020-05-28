@@ -62,12 +62,12 @@
 
 Core(s) per socket: 24
 
-**Note:** change following ip address according to your environment
-
 ```
 export DNNL_PRIMITIVE_CACHE_CAPACITY=1024
 export DATA_PATH=<The path for imagenet dataset>
 ```
+
+**Note:** change ip address (xxx.xxx.xxx.xxx) in the following commands to the one in your environment
 
 ### FP32:
 * training benchmark (4 instances, 24 cores/ins):
@@ -86,6 +86,7 @@ export DATA_PATH=<The path for imagenet dataset>
   | --world-size | node numbers |
   | --rank | node number |
   | bathc_size | 256/nodes |
+
 
   * on node 0
 ```

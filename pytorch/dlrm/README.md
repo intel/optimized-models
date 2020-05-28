@@ -39,42 +39,32 @@
 
 4. Clone source code and build
 
-  **PyTorch**
 ```
+  # PyTorch
   git clone https://github.com/pytorch/pytorch.git
   git checkout tags/v1.5.0-rc3 -b v1.5-rc3
   git submodule sync && git submodule update --init --recursive
-```
 
-  **Extension**
-```
+  # extension
   git clone https://github.com/intel/intel-extension-for-pytorch.git
   git checkout tags/v0.1 -b v0.1   // TODO: replace this branch with new one including oneDNN
   git submodule update --init –recursive
-```
 
-  **prepare patch to PyTorch**
-```
+  # prepare patch to PyTorch
   cp {path/to/intel-pytorch-extension}/torch_patches/dlrm_fp32.patch {path/to/pytorch}/
   cp {path/to/intel-pytorch-extension}/torch_patches/dpcpp-v1.5-rc3.patch {path/to/pytorch}/
-```
 
-  **build PyTorch**
-```
+  # build PyTorch
   cd {path/to/pytorch}
   patch -p1 < dpcpp-v1.5-rc3.patch
   patch -p1 < dlrm_fp32.patch
   python setup.py install
-```
 
-  **build extension**
-```
+  # build extension
   cd {path/to/intel-pytorch-extension}
   python setup.py install
-```
 
-  **DLRM**
-```
+  # DLRM
   git clone https://github.com/facebookresearch/dlrm.git
   git checkout 4705ea122d3cc693367f54e937db28c9c673d71b
   cd {path/to/dlrm}
