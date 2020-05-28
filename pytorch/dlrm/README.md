@@ -21,14 +21,21 @@
 ```
 
 3. Install dependencies
-  1. ```pip install sklearn onnx psutil tqdm lark-parser```
-  2. ```conda config --add channels intel
-     conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps```
-  3. ```wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.7.90/gperftools-2.7.90.tar.gz
-        tar -xzf gperftools-2.7.90.tar.gz
-        cd gperftools-2.7.90
-        ./configure --prefix=$HOME/.local
-        make && make install```
+```
+  # 1.
+  pip install sklearn onnx psutil tqdm lark-parser
+  
+  #2.
+  conda config --add channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps
+  
+  #3.
+  wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.7.90/gperftools-2.7.90.tar.gz
+  tar -xzf gperftools-2.7.90.tar.gz
+  cd gperftools-2.7.90
+  ./configure --prefix=$HOME/.local
+  make && make install
+```
 
 4. Clone source code and build
 
@@ -120,10 +127,17 @@
 ```
 
 3. Install dependencies
-  1. ```pip install sklearn onnx psutil tqdm```
-  2. ```conda config --add channels intel
-     conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps```
-  3. ```conda install jemalloc```
+```
+  # 1.
+  pip install sklearn onnx psutil tqdm
+
+  # 2.
+  conda config --add channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps
+
+  # 3.
+  conda install jemalloc
+```
 
 4. Clone source code and build
 ```
