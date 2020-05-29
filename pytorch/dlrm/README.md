@@ -1,4 +1,12 @@
-# Guide to run DLRM with FP32 and/or BF16 data type
+# Guide to run DLRM with FP32/BF16 data type
+
+## Verified on
+
+| Item | Value |
+| -: | :- |
+| OS | Ubuntu 20.04 LTS |
+| Compiler | gcc 7.5.0 |
+| Memory | DDR4 3200MHz, 192GB/socket |
 
 ## Prepare your running environment
 
@@ -99,8 +107,13 @@
 ---
 # Guide to run DLRM Facebook Model with INT8 data type
 
-**Note:**
-* GCC requirement: gcc7/gcc8
+## Verified on
+
+| Item | Value |
+| -: | :- |
+| OS | Ubuntu 20.04 LTS |
+| Compiler | gcc 7.5.0 |
+| Memory | DDR4 3200MHz, 192GB/socket |
 
 1. Install anaconda 3.0
 ```

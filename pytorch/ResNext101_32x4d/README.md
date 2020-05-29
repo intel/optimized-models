@@ -1,4 +1,12 @@
-# Guide to run ResNext101_32x4d with FP32 and/or BF16 data type
+# Guide to run ResNext101_32x4d with FP32/BF16 data type
+
+## Verified on
+
+| Item | Value |
+| -: | :- |
+| OS | Ubuntu 20.04 LTS |
+| Compiler | gcc 7.5.0 |
+| Memory | DDR4 3200MHz |
 
 ## Prepare your running environment
 1. Setup for PyTorch build environment: (using GCC7)
@@ -138,7 +146,7 @@ export DATA_PATH=<The path for imagenet dataset>
   MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000" KMP_BLOCKTIME=1 KMP_HW_SUBSET=1t KMP_AFFINITY=granularity=fine,compact,1,0 OMP_NUM_THREADS=24 numactl -C0-23 -m0 python -u main_multinode.py -a resnext101_32x4d  --mkldnn $DATA_PATH -b 128 -j 24 --world-size=4 --rank=0 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --bf16 & MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000" KMP_BLOCKTIME=1 KMP_HW_SUBSET=1t KMP_AFFINITY=granularity=fine,compact,1,0 OMP_NUM_THREADS=24 numactl -C24-47 -m1 python -u main_multinode.py -a resnext101_32x4d  --mkldnn $DATA_PATH -b 128 -j 24 --world-size=4 --rank=1 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --bf16 & MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000" KMP_BLOCKTIME=1 KMP_HW_SUBSET=1t KMP_AFFINITY=granularity=fine,compact,1,0 OMP_NUM_THREADS=24 numactl  -C48-71 -m2 python -u main_multinode.py -a resnext101_32x4d  --mkldnn $DATA_PATH -b 128 -j 24 --world-size=4 --rank=2 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --bf16 & MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000" KMP_BLOCKTIME=1 KMP_HW_SUBSET=1t KMP_AFFINITY=granularity=fine,compact,1,0 OMP_NUM_THREADS=24 numactl  -C72-95 -m3 python -u main_multinode.py -a resnext101_32x4d  --mkldnn $DATA_PATH -b 128 -j 24 --world-size=4 --rank=3 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --bf16
 ```
 
-* training accuracy(4 nodes, batch_size=64 for every node):
+* training accuracy (4 nodes, batch_size=64 for every node):
 
   **Legends:**
 
@@ -172,14 +180,14 @@ export DATA_PATH=<The path for imagenet dataset>
     python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=3 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1 --bf16
   ```
 
-* inference throughput benchmark(4 instances, 24 core/ins):
+* inference throughput benchmark (4 instances, 24 cores/ins):
 ```
   export LD_PRELOAD=$HOME/.local/lib/libjemalloc.so
   export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
   bash run_inference_cpu_multi_instance.sh resnext101_32x4d bf16
 ```
 
-* inference realtime benchmark(24 instances, 4 core/ins):
+* inference realtime benchmark (24 instances, 4 cores/ins):
 ```
   export LD_PRELOAD=$HOME/.local/lib/libjemalloc.so
   export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
