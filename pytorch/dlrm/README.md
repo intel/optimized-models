@@ -10,10 +10,6 @@
 
 ## Prepare your running environment
 
-**Note:**
-* GCC requirement: gcc7/gcc8
-* DDR requirement: 192G/socket with 2933MHz/3200MHz
-
 1. Install anaconda 3.0
 ```
   wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
@@ -55,7 +51,7 @@
 
   # extension
   git clone https://github.com/intel/intel-extension-for-pytorch.git
-  git checkout tags/v0.1 -b v0.1   // TODO: replace this branch with new one including oneDNN
+  git checkout cpx-y20m06
   git submodule update --init –recursive
 
   # prepare patch to PyTorch
@@ -76,7 +72,7 @@
   git clone https://github.com/facebookresearch/dlrm.git
   git checkout 4705ea122d3cc693367f54e937db28c9c673d71b
   cd {path/to/dlrm}
-  cp {path/to/intel-pytorch-extension}/torch_patches/models/mlperf_dlrm_ipex.diff  ./
+  cp {path/to/intel-pytorch-extension}/torch_patches/models/mlperf_dlrm_ipex_OneDNN.diff  ./
   patch -p1 < mlperf_dlrm_ipex.diff
 ```
 

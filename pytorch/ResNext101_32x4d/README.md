@@ -97,7 +97,7 @@ export DATA_PATH=<The path for imagenet dataset>
 
   **Commands run on nodes**
 
-    * on node 0
+    * on node0
   ```
     export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
     python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=0 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1
@@ -159,7 +159,7 @@ export DATA_PATH=<The path for imagenet dataset>
 
   **Commands run on nodes**
   
-    * on node 0
+    * on node0
   ```
     export MALLOC_CONF="oversize_threshold:1,background_thread:true,metadata_thp:auto,dirty_decay_ms:9000000000,muzzy_decay_ms:9000000000"
     python -u main.py --lr 0.1 -a resnext101_32x4d --mkldnn $DATA_PATH -b 64 -j 48 --world-size=4 --rank=0 --dist-backend=gloo --dist-url="tcp://xxx.xxx.xxx.xxx:7689" --seed 1 --bf16
