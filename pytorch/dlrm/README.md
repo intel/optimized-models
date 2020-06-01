@@ -15,7 +15,7 @@
   wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
   chmod +x anaconda3.sh
   ./anaconda3.sh -b -p ~/anaconda3
-  ./anaconda3/bin/conda create -n dlrm python=3.7
+  ./anaconda3/bin/conda create -n dlrm
 ```
 
 2. Setup anaconda virtual environment for DLRM
@@ -30,8 +30,9 @@
   pip install sklearn onnx psutil tqdm lark-parser
   
   #2.
-  conda config --add channels intel
-  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps
+  conda config --append channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing
+  conda install intel-openmp mkl mkl-include numpy -c intel --no-update-deps
   
   #3.
   wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.7.90/gperftools-2.7.90.tar.gz
@@ -72,7 +73,15 @@
   git clone https://github.com/facebookresearch/dlrm.git
   git checkout 4705ea122d3cc693367f54e937db28c9c673d71b
   cd {path/to/dlrm}
+  # (run with oneDNN mlp)
   cp {path/to/intel-pytorch-extension}/torch_patches/models/mlperf_dlrm_ipex_OneDNN.diff  ./
+  git checkout dlrm_s_pytorch.py 
+  git checkout bencn/run_and_time.sh
+  patch -p1 < mlperf_dlrm_ipex_oneDNN.diff
+  # (run with libXSSM mlp)
+  cp {path/to/intel-pytorch-extension}/torch_patches/models/mlperf_dlrm_ipex.diff  ./
+  git checkout dlrm_s_pytorch.py
+  git checkout bencn/run_and_time.sh
   patch -p1 < mlperf_dlrm_ipex.diff
 ```
 
@@ -116,7 +125,7 @@
   wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
   chmod +x anaconda3.sh
   ./anaconda3.sh -b -p ~/anaconda3
-  ./anaconda3/bin/conda create -n dlrm python=3.7
+  ./anaconda3/bin/conda create -n dlrm
 ```
 
 2. Setup anaconda virtual environment for DLRM
@@ -131,8 +140,9 @@
   pip install sklearn onnx psutil tqdm
 
   # 2.
-  conda config --add channels intel
-  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps
+  conda config --append channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing 
+  conda install intel-openmp mkl mkl-include numpy -c intel --no-update-deps
 
   # 3.
   conda install jemalloc
