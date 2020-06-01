@@ -14,13 +14,13 @@
   wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
   chmod +x anaconda3.sh
   ./anaconda3.sh -b -p ~/anaconda3
-  ./anaconda3/bin/conda create -yn pytorch
+  ./anaconda3/bin/conda create -yn pytorch python=3.7
   export PATH=~/anaconda3/bin:$PATH
   source ./anaconda3/bin/activate pytorch
   pip install sklearn onnx
-  conda config --add channels intel
-  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp
-  conda install mkl mkl-include numpy -c intel --no-update-deps
+  conda config --append channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing
+  conda install intel-openmp mkl mkl-include numpy -c intel --no-update-deps
 ```
 
 2. Build and install PyTorch
@@ -31,6 +31,7 @@
   python setup.py clean
   git submodule sync &&  git submodule update --init --recursive
   wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/37331.diff
+  git apply 37331.diff
   cd third_party/ideep/ && git checkout master && git pull && git checkout pytorch_dnnl_dev && cd ../../
   git add third_party/ideep && git submodule sync && git submodule update --init --recursive
   cd third_party/ideep # make sure ideep commit is 2bf943e
