@@ -30,8 +30,9 @@
   pip install sklearn onnx psutil tqdm lark-parser
   
   #2.
-  conda config --add channels intel
-  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps
+  conda config --append channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing
+  conda install intel-openmp mkl mkl-include numpy -c intel --no-update-deps
   
   #3.
   wget https://github.com/gperftools/gperftools/releases/download/gperftools-2.7.90/gperftools-2.7.90.tar.gz
@@ -73,7 +74,7 @@
   git checkout 4705ea122d3cc693367f54e937db28c9c673d71b
   cd {path/to/dlrm}
   cp {path/to/intel-pytorch-extension}/torch_patches/models/mlperf_dlrm_ipex_OneDNN.diff  ./
-  patch -p1 < mlperf_dlrm_ipex.diff
+  patch -p1 < mlperf_dlrm_ipex_oneDNN.diff
 ```
 
 5. Download data
@@ -131,8 +132,9 @@
   pip install sklearn onnx psutil tqdm
 
   # 2.
-  conda config --add channels intel
-  conda install ninja pyyaml setuptools cmake cffi typing intel-openmp mkl mkl-include numpy -c intel --no-update-deps
+  conda config --append channels intel
+  conda install ninja pyyaml setuptools cmake cffi typing 
+  conda install intel-openmp mkl mkl-include numpy -c intel --no-update-deps
 
   # 3.
   conda install jemalloc
