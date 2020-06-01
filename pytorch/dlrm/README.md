@@ -21,7 +21,7 @@
 2. Setup anaconda virtual environment for DLRM
 ```
   export PATH=~/anaconda3/bin:$PATH
-  source ./anaconda3/bin/activate dlrm 
+  source ./anaconda3/bin/activate dlrm
 ```
 
 3. Install dependencies
