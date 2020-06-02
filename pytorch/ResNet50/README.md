@@ -5,7 +5,7 @@
 | Item | Value |
 | -: | :- |
 | OS | Ubuntu 20.04 LTS |
-| Compiler | gcc 7.5.0 |
+| Compiler | gcc 8.4.0 |
 | Memory | DDR4 3200MHz |
 
 ## Prepare your running environment
