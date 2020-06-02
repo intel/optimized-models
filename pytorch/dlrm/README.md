@@ -5,7 +5,7 @@
 | Item | Value |
 | -: | :- |
 | OS | Ubuntu 20.04 LTS |
-| Compiler | gcc 7.5.0 |
+| Compiler | gcc 8.4.0 |
 | Memory | DDR4 3200MHz, 192GB/socket |
 
 ## Prepare your running environment
@@ -27,7 +27,7 @@
 3. Install dependencies
 ```
   # 1.
-  pip install sklearn onnx psutil tqdm lark-parser
+  pip install sklearn onnx tqdm lark-parser
   
   #2.
   conda config --add channels intel
@@ -108,7 +108,7 @@
 | Item | Value |
 | -: | :- |
 | OS | Ubuntu 20.04 LTS |
-| Compiler | gcc 7.5.0 |
+| Compiler | gcc 8.4.0 |
 | Memory | DDR4 3200MHz, 192GB/socket |
 
 1. Install anaconda 3.0
@@ -128,7 +128,7 @@
 3. Install dependencies
 ```
   # 1.
-  pip install sklearn onnx psutil tqdm
+  pip install sklearn onnx tqdm
 
   # 2.
   conda config --add channels intel
