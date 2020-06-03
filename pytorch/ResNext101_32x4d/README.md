@@ -9,7 +9,7 @@
 | Memory | DDR4 3200MHz |
 
 ## Prepare your running environment
-1. Setup for PyTorch build environment: (using GCC7)
+1. Setup for PyTorch build environment:
 ```
   wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
   chmod +x anaconda3.sh
