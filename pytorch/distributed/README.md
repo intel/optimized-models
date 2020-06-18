@@ -2,25 +2,22 @@
 
 Guide to use OneCCL to do distributed training in Pytorch.
 
-## Requirements
-- 1. Install anaconda 3.0 & Dependencies
-  ```
+### Install anaconda 3.0 and Dependencies
+```
      wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
      chmod +x anaconda3.sh
      ./anaconda3.sh -b -p ~/anaconda3
      ./anaconda3/bin/conda create -n pytorch-ccl python=3.7
      export PATH=~/anaconda3/bin:$PATH
-     source ./anaconda3/bin/activate pytorch-ccl
-     conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
-
-  ```
-- 2. Install PyTorch ([pytorch.org](http://pytorch.org))
+     source ./anaconda3/bin/activate pytorch-ccl conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
+```   
+### Install PyTorch ([pytorch.org](http://pytorch.org))
   ```
      git clone https://github.com/pytorch/pytorch.git
      git submodule sync && git submodule update --init --recursive
      python setup.py install
-  ```
-- 3. Install oneCCL
+  ```  
+### Install oneCCL
   ```
      git clone https://github.com/oneapi-src/oneCCL.git
      cd {path-to-oneCCL}
@@ -30,7 +27,7 @@ Guide to use OneCCL to do distributed training in Pytorch.
      make -j
      make install  
   ```
-- 4. Install torch-ccl 
+### Install torch-ccl 
   ```
      git clone https://github.com/intel/torch-ccl.git
      source ~/.local/env/setvars.sh
@@ -96,7 +93,6 @@ Guide to use OneCCL to do distributed training in Pytorch.
      
              # update parameters
              optimizer.step()
-   
    ```
 ## Run Scripts & CPU Affinity 
    ```
@@ -109,5 +105,6 @@ Guide to use OneCCL to do distributed training in Pytorch.
      export CCL_WORKER_AFFINITY="0,1,28,29"
      
      mpiexec.hydra -np 2  -l -genv  I_MPI_PIN_DOMAIN=[0x0000000FFFFFFC,0xFFFFFFC0000000] -genv KMP_BLOCKTIME=1 \
-                   -genv KMP_HW_SUBSET=1t -genv KMP_AFFINITY=verbose,granularity=fine,compact,1,0 -genv OMP_NUM_THREADS=24 -ppn 2 numactl -l python -u ut_memory.py 
+                   -genv KMP_HW_SUBSET=1t -genv KMP_AFFINITY=verbose,granularity=fine,compact,1,0 \
+                   -genv OMP_NUM_THREADS=24 -ppn 2 numactl -l python -u ut_memory.py 
    ```
