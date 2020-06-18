@@ -3,7 +3,7 @@
 Guide to use OneCCL to do distributed training in Pytorch.
 
 ### Install anaconda 3.0 and Dependencies
-```
+```bash
      wget https://repo.continuum.io/archive/Anaconda3-5.0.0-Linux-x86_64.sh -O anaconda3.sh
      chmod +x anaconda3.sh
      ./anaconda3.sh -b -p ~/anaconda3
@@ -13,14 +13,13 @@ Guide to use OneCCL to do distributed training in Pytorch.
      conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
 ```   
 ### Install PyTorch 
-```
-  
+```bash 
      git clone https://github.com/pytorch/pytorch.git
      git submodule sync && git submodule update --init --recursive
      python setup.py install
-  ```  
+```  
 ### Install oneCCL
-  ```
+```bash
      git clone https://github.com/oneapi-src/oneCCL.git
      cd {path-to-oneCCL}
      mkdir build 
@@ -28,15 +27,15 @@ Guide to use OneCCL to do distributed training in Pytorch.
      cmake .. -DCMAKE_INSTALL_PREFIX=~/.local
      make -j
      make install  
-  ```
+```
 ### Install torch-ccl 
-  ```
+```bash
      git clone https://github.com/intel/torch-ccl.git
      source ~/.local/env/setvars.sh
      python setup.py install 
-  ```
-## Demo for using OneCCL in Pytorch
-   ```
+```
+### Demo for using OneCCL in Pytorch
+```python
      import os
      import torch
      import torch.nn as nn
@@ -86,9 +85,9 @@ Guide to use OneCCL to do distributed training in Pytorch.
      
              # update parameters
              optimizer.step()
-   ```
-## Run Scripts & CPU Affinity 
-   ```
+```
+### Run Scripts & CPU Affinity 
+```bash 
      source ~/.local/env/setvars.sh
      export MASTER_ADDR="127.0.1"
      export MASTER_PORT="29500"
@@ -102,4 +101,4 @@ Guide to use OneCCL to do distributed training in Pytorch.
      mpiexec.hydra -np 2  -l -genv  I_MPI_PIN_DOMAIN=[0x0000000FFFFFFC,0xFFFFFFC0000000] 
                    -genv KMP_BLOCKTIME=1 -genv KMP_AFFINITY=verbose,granularity=fine,compact,1,0 \
                    -genv OMP_NUM_THREADS=24 -ppn 2 python -u ut_memory.py 
-   ```
+```
