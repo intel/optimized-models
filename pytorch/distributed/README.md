@@ -92,9 +92,9 @@ Guide to use OneCCL to do distributed training in Pytorch.
      export MASTER_ADDR="127.0.1"
      export MASTER_PORT="29500"
 
-     # we want to run 2 ranks and 1 rank/socket
-     # CCL_WORKER_COUNT mean the threads numer of single rank used for CCL 
-     # CCL_WORKER_COUNT,CCL_WORKER_AFFINITY and I_MPI_PIN_DOMAIN should be align. 
+     # Example:
+     # Running 2 processes on 2 sockets.
+     # Each socket has 28 cores. (4 cores for CCL, other 24 cores for computation) 
      export CCL_WORKER_COUNT=2
      export CCL_WORKER_AFFINITY="0,1,28,29"
      
