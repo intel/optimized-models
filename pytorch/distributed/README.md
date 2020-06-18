@@ -10,7 +10,7 @@ Guide to use OneCCL to do distributed training in Pytorch.
      ./anaconda3/bin/conda create -n pytorch-ccl python=3.7
      export PATH=~/anaconda3/bin:$PATH
      source ./anaconda3/bin/activate pytorch-ccl 
-     conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
+     conda install intel-openmp numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
 ```   
 ### Install PyTorch 
 ```bash 
