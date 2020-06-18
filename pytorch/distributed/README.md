@@ -9,10 +9,12 @@ Guide to use OneCCL to do distributed training in Pytorch.
      ./anaconda3.sh -b -p ~/anaconda3
      ./anaconda3/bin/conda create -n pytorch-ccl python=3.7
      export PATH=~/anaconda3/bin:$PATH
-     source ./anaconda3/bin/activate pytorch-ccl conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
+     source ./anaconda3/bin/activate pytorch-ccl 
+     conda install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
 ```   
-### Install PyTorch ([pytorch.org](http://pytorch.org))
-  ```
+### Install PyTorch 
+```
+  
      git clone https://github.com/pytorch/pytorch.git
      git submodule sync && git submodule update --init --recursive
      python setup.py install
@@ -61,18 +63,9 @@ Guide to use OneCCL to do distributed training in Pytorch.
          
          os.environ['RANK'] = os.environ.get('PMI_RANK', -1)
          os.environ['WORLD_SIZE'] = os.environ.get('PMI_SIZE', -1)
-         
-         #master host is neccessary when you use multi-node 
-         os.environ['MASTER_ADDR'] = '127.0.0.1'
-         os.environ['MASTER_PORT']='29500'
-     
-         #Initialize the process group with ccl backend 
+       
+         # Initialize the process group with ccl backend 
          dist.init_process_group(backend='ccl')
-     
-         rank = dist.get_rank()
-         size = dist.get_world_size()
-         print("rank: ", rank)
-         print("size:", size)
      
          model = Model()
          if dist.get_world_size() > 1:
@@ -84,11 +77,11 @@ Guide to use OneCCL to do distributed training in Pytorch.
              loss_fn = nn.MSELoss()
              optimizer = torch.optim.SGD(model.parameters(), lr=0.001)
      
-             #forward pass
+             # forward pass
              res = model(input)
              L=loss_fn(res, labels)
      
-             #backward PASS
+             # backward PASS
              L.backward()
      
              # update parameters
@@ -97,14 +90,16 @@ Guide to use OneCCL to do distributed training in Pytorch.
 ## Run Scripts & CPU Affinity 
    ```
      source ~/.local/env/setvars.sh
+     export MASTER_ADDR="127.0.1"
+     export MASTER_PORT="29500"
 
-     #use CCL_WORKER_COUNT threads in every rank to do communication 
-     #more detail can be found in OneCC/doc/rst/source/env_variables.rst
-     #CCL_WORKER_COUNT,CCL_WORKER_AFFINITY and I_MPI_PIN_DOMAIN should be align. 
+     # we want to run 2 ranks and 1 rank/socket
+     # CCL_WORKER_COUNT mean the threads numer of single rank used for CCL 
+     # CCL_WORKER_COUNT,CCL_WORKER_AFFINITY and I_MPI_PIN_DOMAIN should be align. 
      export CCL_WORKER_COUNT=2
      export CCL_WORKER_AFFINITY="0,1,28,29"
      
-     mpiexec.hydra -np 2  -l -genv  I_MPI_PIN_DOMAIN=[0x0000000FFFFFFC,0xFFFFFFC0000000] -genv KMP_BLOCKTIME=1 \
-                   -genv KMP_HW_SUBSET=1t -genv KMP_AFFINITY=verbose,granularity=fine,compact,1,0 \
-                   -genv OMP_NUM_THREADS=24 -ppn 2 numactl -l python -u ut_memory.py 
+     mpiexec.hydra -np 2  -l -genv  I_MPI_PIN_DOMAIN=[0x0000000FFFFFFC,0xFFFFFFC0000000] 
+                   -genv KMP_BLOCKTIME=1 -genv KMP_AFFINITY=verbose,granularity=fine,compact,1,0 \
+                   -genv OMP_NUM_THREADS=24 -ppn 2 python -u ut_memory.py 
    ```
