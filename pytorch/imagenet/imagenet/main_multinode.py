@@ -1,3 +1,49 @@
+# ****************************************************************************
+# Copyright 2019-2020 Intel Corporation
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ****************************************************************************
+
+# ****************************************************************************
+# Copyright (c) 2017,
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of the copyright holder nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+# ****************************************************************************
+
 import argparse
 import os
 import random
@@ -18,7 +64,6 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
 from torch.utils import mkldnn as mkldnn_utils
-import models as m
 
 model_names = sorted(name for name in models.__dict__
     if name.islower() and not name.startswith("__")
@@ -94,9 +139,6 @@ parser.add_argument('-qe', '--qengine', type=str, default="all",
                     '(DEFAULT: %(default)s)')
 parser.add_argument('-w', '--warmup-iterations', default=0, type=int, metavar='N',
                     help='number of warmup iterations to run')
-parser.add_argument('--INT8', type=str, default="no_INT8",
-                    help='Choose run mode. \"no_INT8\", \"calibration_olny\", \"INT8_only\", \"INT8_and_fp32\".'
-                    '(DEFAULT: %(default)s)')
 parser.add_argument("-t", "--profile", action='store_true',
                     help="Trigger profile on current topology.")
 parser.add_argument("-qs", "--qscheme", type=str, default="perTensor",
@@ -214,126 +256,6 @@ def main_worker(gpu, ngpus_per_node, args):
         criterion = nn.CrossEntropyLoss().cuda(args.gpu)
     else:
         criterion = nn.CrossEntropyLoss()
-
-    model_info = m.GetModelInfo(args.arch)
-    float_model_file = os.path.join(model_info['model_dir'], model_info['float_Model'])
-
-    if (args.INT8 == "FP32_only"):
-        layers_tmp = ((model_info["layers"]).split('/')[-1]).split(' ')
-        layers = list(map(int, layers_tmp))
-        groups = int(model_info['groups'])
-        width_per_group = int(model_info['width_per_group'])
-        loaded_model = models.resnet.ResNet(models.resnet.Bottleneck, layers, groups=groups, width_per_group=width_per_group)
-        state_dict = torch.load(float_model_file)
-        if (model_info['model_name'] == 'resnext101_32x4d'):
-            state_dict = state_dict['state_dict']
-            import collections
-            state_dict_new = collections.OrderedDict()
-            for key in state_dict.keys():
-                key_new = key.split("module.")[1]
-                state_dict_new[key_new] = state_dict[key]
-            loaded_model.load_state_dict(state_dict_new)
-        else:
-            loaded_model.load_state_dict(state_dict)
-        loaded_model.to('cpu')
-        loaded_model.eval()
-        top1 = validate(val_loader, loaded_model, criterion, args, is_INT8=False)
-        return
-
-    if (args.INT8 != "no_INT8"):
-        quantized_model_state_dict_file = os.path.join(model_info['model_dir'], args.qscheme + "_reduceRange_" + str(args.reduce_range) + "_" + model_info['quantized_Model_State_Dict'])
-        quantized_model_file = os.path.join(model_info['model_dir'], args.qscheme + "_" + model_info['quantized_Model'])
-        scripted_quantized_model_file = os.path.join(model_info['model_dir'], args.qscheme + "_reduceRange_" + str(args.reduce_range) + "_" + model_info['scripted_Quantized_Model'])
-        layers_tmp = ((model_info["layers"]).split('/')[-1]).split(' ')
-        layers = list(map(int, layers_tmp))
-        groups = int(model_info['groups'])
-        width_per_group = int(model_info['width_per_group'])
-
-        loaded_model = torch.quantization.QuantWrapper(models.resnet.ResNet(QuantizableBottleneck, layers, groups=groups, width_per_group=width_per_group))
-        if not os.path.exists(quantized_model_state_dict_file):
-            state_dict = torch.load(float_model_file)
-            if (model_info['model_name'] == 'resnext101_32x4d'):
-                loaded_model.load_state_dict(state_dict['state_dict'])
-            else:
-                loaded_model.module.load_state_dict(state_dict)
-        loaded_model.to('cpu')
-        loaded_model.eval()
-        if args.qscheme == "perTensor":
-            qconfig = torch.quantization.QConfig(activation=torch.quantization.observer.MinMaxObserver.with_args(reduce_range=args.reduce_range),
-                              weight=torch.quantization.default_weight_observer)
-            loaded_model.qconfig = qconfig
-        elif args.qscheme == "perChannel":
-            qconfig = torch.quantization.QConfig(activation=torch.quantization.observer.MinMaxObserver.with_args(reduce_range=args.reduce_range),
-                              weight=torch.quantization.default_per_channel_weight_observer)
-            loaded_model.qconfig = qconfig
-        else:
-            assert False
-        fuse_resnext_modules(loaded_model.module)
-        print('Transforming model, qscheme:{}'.format(args.qscheme))
-        torch.quantization.prepare(loaded_model, inplace=True)
-
-        if not os.path.exists(quantized_model_state_dict_file):
-            # with open(args.model + "_" + args.qscheme + "_prepare_model.txt", "w") as f:
-            #    print(loaded_model, file=f)
-            # Calibrate
-            val_loader_calib = torch.utils.data.DataLoader(
-                datasets.ImageFolder(valdir, transforms.Compose([
-                    transforms.Resize(256),
-                    transforms.CenterCrop(224),
-                    transforms.ToTensor(),
-                    normalize,
-                ])),
-                batch_size=1, shuffle=False,
-                num_workers=args.workers, pin_memory=True, blocking=blocking)
-            print("calibration model first..., iteration:{}".format(args.iter_calib))
-            validate(val_loader_calib, loaded_model, criterion, args, is_INT8=True, is_calibration=True)
-            print('Calibration... done')
-            print("convert model......")
-            torch.quantization.convert(loaded_model, inplace=True)
-            print('Conversion... done')
-
-            # Now, let us serialize the model and also script and serialize it.
-            # Serialize using state dict
-            print('save state_dict to {}'.format(quantized_model_state_dict_file))
-            torch.save(loaded_model.state_dict(),quantized_model_state_dict_file)
-
-            # Serialize without state dict
-            # torch.save(myModel,saved_model_dir+args.model+quantized_model_file)
-            # test_model = torch.load(quantized_model_file)
-
-            # Script and serialize Does not work with mode@opt
-            scriptedModel = torch.jit.script(loaded_model)
-            print('save scriptedModel to {}'.format(scripted_quantized_model_file))
-            torch.jit.save(scriptedModel,scripted_quantized_model_file)
-
-            print("saved_model_dir:{}".format(model_info['model_dir']))
-            print('Serialization done')
-            if args.INT8 == 'calibration_olny':
-                return
-        else:
-            print("convert model......")
-            torch.quantization.convert(loaded_model, inplace=True)
-
-        state_dict_quantized = torch.load(quantized_model_state_dict_file)
-
-        if args.qengine == 'fbgemm' or args.qengine == 'all':
-            torch.backends.quantized.engine = 'fbgemm'
-            print('Loaded quantized model:state_dict')
-            loaded_model.load_state_dict(state_dict_quantized)
-            print('Testing on fbgemm')
-            top1 = validate(val_loader, loaded_model, criterion, args, is_INT8=True)
-        if args.qengine == 'mkldnn' or args.qengine == 'all':
-            torch.backends.quantized.engine = 'mkldnn'
-            print('Loaded quantized model:state_dict')
-            if (model_info['model_name'] == 'resnext101_32x4d' or \
-                model_info['model_name'] == 'resnet50'):
-                state_dict_quantized['module.fc.scale'] = 1
-                state_dict_quantized['module.fc.zero_point'] = 0
-            loaded_model.load_state_dict(state_dict_quantized)
-            print('Testing on mkldnn')
-            top1 = validate(val_loader, loaded_model, criterion, args, is_INT8=True)
-        if args.INT8 == 'INT8_only':
-            return
 
     if args.gpu is not None and args.cuda:
         print("Use GPU: {} for training".format(args.gpu))
