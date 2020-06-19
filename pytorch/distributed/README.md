@@ -10,7 +10,9 @@ Guide to use OneCCL to do distributed training in Pytorch.
      ./anaconda3/bin/conda create -n pytorch-ccl python=3.7
      export PATH=~/anaconda3/bin:$PATH
      source ./anaconda3/bin/activate pytorch-ccl 
-     conda install intel-openmp numpy ninja pyyaml mkl mkl-include setuptools cmake cffi
+     conda config --append channels intel
+     conda install ninja pyyaml setuptools cmake cffi typing
+     conda install intel-openmp mkl mkl-include numpy -c intel --no-update-deps
 ```   
 ### Install PyTorch 
 ```bash 
@@ -41,13 +43,12 @@ Guide to use OneCCL to do distributed training in Pytorch.
      import torch.nn as nn
      from torch.nn.parallel import DistributedDataParallel as DDP
      import torch.distributed as dist
-     import sys
-     
+     import sys     
      try:
-        import torch_ccl
+         import torch_ccl
      except ImportError as e:
-        print("import torch_ccl error", e)
-        sys.exit()
+         print("import torch_ccl error", e)
+         sys.exit()
      
      class Model(nn.Module):
          def __init__(self):
@@ -68,7 +69,7 @@ Guide to use OneCCL to do distributed training in Pytorch.
      
          model = Model()
          if dist.get_world_size() > 1:
-            model=DDP(model)
+             model=DDP(model)
      
          for i in range(3):
              input = torch.randn(2, 4)
@@ -89,16 +90,16 @@ Guide to use OneCCL to do distributed training in Pytorch.
 ### Run Scripts & CPU Affinity 
 ```bash 
      source ~/.local/env/setvars.sh
-     export MASTER_ADDR="127.0.1"
+     export MASTER_ADDR="127.0.0.1"
      export MASTER_PORT="29500"
 
      # Example:
      # Running 2 processes on 2 sockets.
      # Each socket has 28 cores. (4 cores for CCL, other 24 cores for computation) 
-     export CCL_WORKER_COUNT=2
-     export CCL_WORKER_AFFINITY="0,1,28,29"
+     export CCL_WORKER_COUNT=4
+     export CCL_WORKER_AFFINITY="0,1,2,3,28,29,31,32"
      
-     mpiexec.hydra -np 2  -l -genv  I_MPI_PIN_DOMAIN=[0x0000000FFFFFFC,0xFFFFFFC0000000] 
+     mpiexec.hydra -np 2  -l -genv  I_MPI_PIN_DOMAIN=[0x0000000FFFFFF0,0xFFFFFF00000000] 
                    -genv KMP_BLOCKTIME=1 -genv KMP_AFFINITY=verbose,granularity=fine,compact,1,0 \
                    -genv OMP_NUM_THREADS=24 -ppn 2 python -u ut_memory.py 
 ```
