@@ -165,6 +165,11 @@ def main():
     # print("args.world_size", args.world_size)
     args.cuda = not args.no_cuda and torch.cuda.is_available()
 
+    if not args.mkldnn:
+        torch._C._set_mkldnn_enabled(False)
+    if args.mkldnn and not args.cuda:
+        torch._C._set_mkldnn_enabled(True)
+
     if args.seed is not None:
         random.seed(args.seed)
         torch.manual_seed(args.seed)

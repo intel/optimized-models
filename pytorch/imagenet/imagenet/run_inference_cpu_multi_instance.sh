@@ -37,6 +37,15 @@ then
     echo "### running bf16 datatype"
 fi
 
+if [[ "$3" == "disable-mkldnn" ]]
+then
+    unset LD_PRELOAD
+    echo "### running non mkldnn  model"
+else
+    ARGS="$ARGS --mkldnn"
+    echo "### running mkldnn backend"
+fi
+
 CORES=`lscpu | grep Core | awk '{print $4}'`
 SOCKETS=`lscpu | grep Socket | awk '{print $2}'`
 TOTAL_CORES=`expr $CORES \* $SOCKETS`
@@ -66,7 +75,7 @@ for i in $(seq 1 $LAST_INSTANCE); do
 
     echo "### running on instance $i, numa node $numa_node_i, core list {$start_core_i, $end_core_i}..."
     numactl --physcpubind=$start_core_i-$end_core_i --membind=$numa_node_i python -u main.py -e -a $ARGS \
-        --mkldnn --dummy -j $CORES_PER_INSTANCE $DATA_PATH -b $BATCH_SIZE 2>&1 | tee $LOG_i &
+        --dummy -j $CORES_PER_INSTANCE $DATA_PATH -b $BATCH_SIZE 2>&1 | tee $LOG_i &
 done
 
 numa_node_0=0
@@ -76,7 +85,7 @@ LOG_0=inference_cpu_bs${BATCH_SIZE}_ins0.txt
 
 echo "### running on instance 0, numa node $numa_node_0, core list {$start_core_0, $end_core_0}...\n\n"
 numactl --physcpubind=$start_core_0-$end_core_0 --membind=$numa_node_0 python -u main.py -e -a $ARGS \
-    --mkldnn --dummy -j $CORES_PER_INSTANCE $DATA_PATH -b $BATCH_SIZE 2>&1 | tee $LOG_0
+    --dummy -j $CORES_PER_INSTANCE $DATA_PATH -b $BATCH_SIZE 2>&1 | tee $LOG_0
 
 sleep 10
 echo -e "\n\n Sum sentences/s together:"
