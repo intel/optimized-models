@@ -30,8 +30,8 @@
   git checkout gh/xiaobingsuper/18/orig
   python setup.py clean
   git submodule sync &&  git submodule update --init --recursive
-  wget https://patch-diff.githubusercontent.com/raw/pytorch/pytorch/pull/37331.diff
-  git apply 37331.diff
+  wget https://github.com/hongzhen1/pytorch/commit/3511d7f6bd2060e20cf77b770ae32ff538700f37.diff -O dataloader.diff
+  git apply dataloader.diff
   cd third_party/ideep/ && git checkout master && git pull && git checkout pytorch_dnnl_dev && cd ../../
   git add third_party/ideep && git submodule sync && git submodule update --init --recursive
   cd third_party/ideep # make sure ideep commit is 2bf943e
