@@ -60,6 +60,7 @@
   cd ..
   git clone https://github.com/pytorch/vision
   cd vision
+  git checkout v0.7.0
   python setup.py install
 
   cd ..

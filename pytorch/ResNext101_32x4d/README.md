@@ -61,6 +61,7 @@
   git clone https://github.com/intel/optimized-models.git
 
   git clone https://github.com/pytorch/vision
+  git checkout v0.7.0
   cd vision
   cp ../optimized-models/imagenet/imagenet/resnet.py torchvision/models/resnet.py
   python setup.py install

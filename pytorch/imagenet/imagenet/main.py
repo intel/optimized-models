@@ -223,43 +223,50 @@ def main_worker(gpu, ngpus_per_node, args):
         print("args.dist_url {}".format(args.dist_url))
         dist.init_process_group(backend=args.dist_backend, init_method=args.dist_url,
                                 world_size=args.world_size, rank=args.rank)
-    # Data loading code
-    traindir = os.path.join(args.data, 'train')
-    valdir = os.path.join(args.data, 'val')
-    normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
+
+    if args.dummy:
+        assert args.evaluate, "please using real dataset if you want run training path"
+    if not args.dummy:
+        # Data loading code
+        traindir = os.path.join(args.data, 'train')
+        valdir = os.path.join(args.data, 'val')
+        normalize = transforms.Normalize(mean=[0.485, 0.456, 0.406],
                                      std=[0.229, 0.224, 0.225])
 
-    train_dataset = datasets.ImageFolder(
-        traindir,
-        transforms.Compose([
-            transforms.RandomResizedCrop(224),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            normalize,
-        ]))
+        train_dataset = datasets.ImageFolder(
+            traindir,
+            transforms.Compose([
+                transforms.RandomResizedCrop(224),
+                transforms.RandomHorizontalFlip(),
+                transforms.ToTensor(),
+                normalize,
+            ]))
 
-    if args.distributed:
-        train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+        if args.distributed:
+            train_sampler = torch.utils.data.distributed.DistributedSampler(train_dataset)
+        else:
+            train_sampler = None
+
+        if args.workers != 0:
+            blocking = True
+        else:
+            blocking = False
+        train_loader = torch.utils.data.DataLoader(
+            train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
+            num_workers=args.workers, pin_memory=True, sampler=train_sampler, blocking=blocking)
+
+        val_loader = torch.utils.data.DataLoader(
+            datasets.ImageFolder(valdir, transforms.Compose([
+                transforms.Resize(256),
+                transforms.CenterCrop(224),
+                transforms.ToTensor(),
+                normalize,
+            ])),
+            batch_size=args.batch_size, shuffle=False,
+            num_workers=args.workers, pin_memory=True, blocking=blocking)
     else:
-        train_sampler = None
-
-    if args.workers != 0:
-        blocking = True
-    else:
-        blocking = False
-    train_loader = torch.utils.data.DataLoader(
-        train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
-        num_workers=args.workers, pin_memory=True, sampler=train_sampler, blocking=blocking)
-
-    val_loader = torch.utils.data.DataLoader(
-        datasets.ImageFolder(valdir, transforms.Compose([
-            transforms.Resize(256),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            normalize,
-        ])),
-        batch_size=args.batch_size, shuffle=False,
-        num_workers=args.workers, pin_memory=True, blocking=blocking)
+        train_loader = None
+        val_loader = None
 
     # define loss function (criterion) and optimizer
     if args.cuda:
@@ -270,9 +277,10 @@ def main_worker(gpu, ngpus_per_node, args):
     if args.gpu is not None and args.cuda:
         print("Use GPU: {} for training".format(args.gpu))
 
-    print("Use Instance: {} for training".format(gpu))
-    print("Use num threads: {} for training".format(torch.get_num_threads()))
-    # create model
+    if not args.evaluate:
+        print("Use Instance: {} for training".format(gpu))
+        print("Use num threads: {} for training".format(torch.get_num_threads()))
+        # create model
     if args.pretrained:
         print("=> using pre-trained model '{}'".format(args.arch))
     if args.arch == "resnext101_32x4d" and args.pretrained:
@@ -488,8 +496,12 @@ def validate(val_loader, model, criterion, args, is_INT8=False, is_calibration=F
     losses = AverageMeter('Loss', ':.4e')
     top1 = AverageMeter('Acc@1', ':6.2f')
     top5 = AverageMeter('Acc@5', ':6.2f')
+    if args.dummy:
+        number_iter = 391
+    else:
+        number_iter = len(val_loader)
     progress = ProgressMeter(
-        len(val_loader),
+        number_iter,
         [batch_time, losses, top1, top5],
         prefix='Test: ')
 
@@ -520,7 +532,6 @@ def validate(val_loader, model, criterion, args, is_INT8=False, is_calibration=F
         if args.ipex:
             images = images.to(device = 'dpcpp:0')
 
-        number_iter = len(val_loader)
         with torch.no_grad():
             for i in range(number_iter):
                 if not args.evaluate or iterations == 0 or i < iterations + warmup:
@@ -561,7 +572,7 @@ def validate(val_loader, model, criterion, args, is_INT8=False, is_calibration=F
 
             # TODO: this should also be done with the ProgressMeter
             if args.evaluate:
-                batch_size = val_loader.batch_size
+                batch_size = args.batch_size
                 latency = batch_time.avg / batch_size * 1000
                 perf = batch_size/batch_time.avg
                 print('inference latency %3.0f ms'%latency)
